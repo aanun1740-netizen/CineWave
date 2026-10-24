@@ -21,6 +21,13 @@ function posterURL(value) {
     return url.href;
   } catch { return POSTER_FALLBACK; }
 }
+function backdropURL(value) {
+ const normalized=posterURL(value);
+ if(normalized===POSTER_FALLBACK)return null;
+ const url=new URL(normalized);
+ if(url.hostname==='image.tmdb.org'&&url.pathname.startsWith('/t/p/w500/'))url.pathname=url.pathname.replace('/t/p/w500/','/t/p/w1280/');
+ return url.href;
+}
 // Canonical values stay language-independent; only visible labels are translated.
 const GENRE_LABELS = {
  'Action':['Action','Боевик','Մարտաֆիլմ'],
@@ -82,8 +89,7 @@ function localizedMovie(movie, lang = currentLanguage) {
     const choose = values => cleanText(values?.[lang]) || cleanText(values?.en) || cleanText(values?.ru) || cleanText(values?.hy);
     return {title: choose(movie.titles) || movie.title, desc: choose(movie.descriptions)};
   }
-  const translated = movieTranslations[movie.id]?.[lang];
-  return {title: translated?.[0] || movie.title, desc: translated?.[1] || movie.desc || ''};
+  return {title:movie.title,desc:movie.desc||''};
 }
 function genreLabel(genre, lang = currentLanguage) {
  const canonical=canonicalGenre(genre);
@@ -100,5 +106,5 @@ function mapCatalogMovie(row) {
     descriptions:{en:cleanText(row.overview_en),ru:cleanText(row.overview_ru),hy:cleanText(row.overview_hy)},
     title:titles.en || titles.ru || titles.hy || '',desc:'',year:/^\d{4}-\d{2}-\d{2}$/.test(date) ? Number(date.slice(0,4)) : null,
     genres,genre:genres[0] || '',kind:'Movie',rating:row.rating != null ? String(row.rating) : '',duration:'',
-    img:posterURL(row.poster_path),video:cleanText(row.watch_url),progress:globalThis.CineWavePlayer?.progressFor('catalog:'+String(row.id ?? row.tmdb_id))||0};
+    img:posterURL(row.poster_path),backdrop:backdropURL(row.backdrop_path),approval:row.playback_verification||null,video:cleanText(row.watch_url),progress:globalThis.CineWavePlayer?.progressFor('catalog:'+String(row.id ?? row.tmdb_id))||0};
 }

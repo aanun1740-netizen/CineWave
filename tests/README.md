@@ -34,3 +34,13 @@ PGLITE_MODULE=/tmp/cinewave-sql-test/node_modules/@electric-sql/pglite node --te
 ```
 
 The player browser test additionally requires ffmpeg. It generates original H.264/AAC video in a temporary directory, serves byte ranges locally and decodes MP4/HLS in Chromium. Remote film URLs and licensing are not mocked as verified. The SQL test confirms that the current unverified seed aborts, and tests a hypothetical reviewed seed only in an isolated PostgreSQL database. No Supabase modifications are made. See `docs/playback.md` for activation, blocked film verification, compatibility and attribution requirements.
+
+
+Public redesign checks:
+
+```sh
+node --test tests/availability.test.cjs
+python3 tests/storefront_browser.py
+```
+
+No unapproved movie is advertised as immediately watchable or requested from a media host. Local generated-media playback fixtures now carry explicit synthetic approval metadata; those fixtures do not grant rights to real films. The storefront test additionally covers carousels, keyboard focus, hero/catalog binding, persistent device-local My List, profile controls, localized AI failure messages and empty/error states without demo substitution. See `docs/storefront.md` for the Admin separation and optional approval contract.
