@@ -256,9 +256,14 @@ render();
 </script>
 
 <script>
+
+<script>
 (async function loadCineWaveMovies() {
   const SUPABASE_URL = "https://ysecowknittmmmbixgtu.supabase.co";
   const SUPABASE_KEY = "sb_publishable_aTNkxAKz9OG-JJVO2X48Rw_9vnE_8Mj";
+
+  const fallbackPoster =
+    "https://placehold.co/500x750/111720/ffffff?text=CineWave";
 
   try {
     const response = await fetch(
@@ -272,8 +277,7 @@ render();
     );
 
     if (!response.ok) {
-      console.error("Supabase error:", await response.text());
-      return;
+      throw new Error(await response.text());
     }
 
     const rows = await response.json();
@@ -283,11 +287,51 @@ render();
       return;
     }
 
-    console.log("CineWave Supabase movies loaded:", rows.length);
+    const genreMap = {
+      Action: "Action",
+      Adventure: "Adventure",
+      Comedy: "Comedy",
+      Drama: "Drama",
+      Horror: "Horror",
+      "Sci-Fi": "Sci-Fi",
+      Animation: "Animation"
+    };
+
+    const mappedMovies = rows.map((m, index) => ({
+      id: m.tmdb_id || m.id || index + 1,
+      title: m.title_en || m.title_ru || m.title_hy || "Untitled",
+      year: m.release_date
+        ? Number(m.release_date.slice(0, 4))
+        : 0,
+      genre: Array.isArray(m.genre_names) && m.genre_names.length
+        ? (genreMap[m.genre_names[0]] || m.genre_names[0])
+        : "Drama",
+      kind: "Movie",
+      rating: m.rating != null ? String(m.rating) : "NR",
+      duration: "Feature film",
+      img: m.poster_path
+        ? (m.poster_path.startsWith("http")
+            ? m.poster_path
+            : `https://image.tmdb.org/t/p/w500${m.poster_path}`)
+        : fallbackPoster,
+      desc: m.overview_en || m.overview_ru || m.overview_hy || "",
+      video: m.watch_url || "",
+      progress: 0
+    }));
+
+    movies.splice(0, movies.length, ...mappedMovies);
+
+    if (typeof render === "function") {
+      render();
+    }
+
+    console.log("CineWave Supabase movies displayed:", movies.length);
   } catch (error) {
     console.error("CineWave loading error:", error);
   }
 })();
+</script>
+
 </script>
 
 </body>
