@@ -9,6 +9,17 @@ The browser test requires Python Playwright and Chromium at `/usr/bin/chromium`.
 
 Catalog metadata comes exclusively from the published Supabase rows. `title_en/ru/hy` and `overview_en/ru/hy` are selected independently, falling back to English then another supplied language. Catalog IDs are namespaced to prevent collisions with demo translations and the featured item. No translation or film genre is generated from a title.
 
-Genres use `genre_names` and, when present, standard TMDB movie `genre_ids` (taxonomy: https://developer.themoviedb.org/reference/genre-movie-list). `Science Fiction` is normalized to the existing `Sci-Fi` filter. Missing genres remain unknown rather than becoming Drama. The observed 24 published rows all had empty `genre_names` and null `tmdb_id`; genre enrichment belongs in the catalog/import pipeline using an identified, reliable source.
+Genres use `genre_names` and, when present, standard TMDB movie `genre_ids` (taxonomy: https://developer.themoviedb.org/reference/genre-movie-list). `Science Fiction` is normalized to the existing `Sci-Fi` filter. Missing genres remain unknown rather than becoming Drama. The observed 24 published rows all had empty `genre_names` and null `tmdb_id`; a source-backed, review-only backfill for 18 rows is documented in `sql/README.md`. Six rows still require verified metadata. The catalog/import pipeline also needs to populate genres for future rows.
 
 Poster URLs come only from `poster_path`: absolute HTTP(S), protocol-relative URLs, and TMDB image filenames are supported. Nested Wikimedia Special:FilePath URLs from the current importer are unwrapped; this repair does not establish image licensing or availability. Missing, unsafe, malformed, or failed images use the original local SVG at `assets/poster-fallback.svg`. No new third-party artwork is selected. Catalog owners must verify rights for supplied artwork and correct missing/incorrect source records.
+
+Genre-specific checks extend `catalog.test.cjs` and `browser_smoke.py`: text-array normalization, duplicate/blank/malformed values, canonical English/Russian/Armenian labels, dynamically available Crime and secondary Sci-Fi filters, translated search/headings, and selected button state.
+
+The SQL safety test requires PGlite 0.5.11 (an embedded PostgreSQL engine). To keep tooling outside this static app:
+
+```sh
+npm --cache /tmp/cinewave-npm-cache install --prefix /tmp/cinewave-sql-test --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.5.11
+PGLITE_MODULE=/tmp/cinewave-sql-test/node_modules/@electric-sql/pglite node --test tests/genre_sql.test.mjs
+```
+
+This test cannot connect to Supabase. It validates rollback-by-default, null/empty/blank-only handling, preservation of existing genres, title/date identity guards, untouched non-genre fields, exclusion of all six unresolved rows, repeatability, and rejection of an unexpected column type. No production database modification was tested or performed.

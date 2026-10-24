@@ -25,3 +25,15 @@ test('localization chooses supplied fields independently with honest fallback',(
  assert.equal(run("localizedMovie(mapCatalogMovie({id:1}),'en').desc"),'');
  assert.equal(run(`escapeHTML('<img onerror="x">')`),'&lt;img onerror=&quot;x&quot;&gt;');
 });
+test('PostgREST text arrays normalize aliases, translations, whitespace and duplicates',()=>{
+ assert.equal(run("movieGenres({genre_names:[' action ','Боевик','Մարտաֆիլմ','Science Fiction','Фантастика','Գիտաֆանտաստիկ','',null,8]}).join(',')"),'Action,Sci-Fi');
+ assert.equal(run("movieGenres({genre_names:['Crime','Thriller','Crime',' Documentary ']}).join(',')"),'Crime,Thriller,Documentary');
+ for (const value of [null,[],[' ',null],'{Action,Drama}','Action, Drama']) assert.equal(run(`movieGenres({genre_names:${JSON.stringify(value)}}).length`),0);
+ assert.equal(run("movieGenres({genre_names:['Experimental']}).join(',')"),'Experimental');
+});
+test('all supported genres have language-independent keys and three translated labels',()=>{
+ assert.equal(run("Object.entries(GENRE_LABELS).every(([key,labels])=>labels.length===3&&labels.every(label=>canonicalGenre(label)===key))"),true);
+ assert.equal(run("genreLabel('Crime','ru')"),'Криминал');
+ assert.equal(run("genreLabel('Thriller','hy')"),'Թրիլլեր');
+ assert.equal(run("availableGenres([{genres:['Action','Thriller']},{genres:['Thriller','Crime']}]).join(',')"),'Action,Thriller,Crime');
+});
