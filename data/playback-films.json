@@ -1,7 +1,7 @@
 {
   "review_date": "2026-10-25",
   "verification_status": "blocked",
-  "blocker": "Proxy CONNECT 403 prevents reading rights-holder license pages, license terms and official video downloads. No film or playback URL has been verified or commercially cleared in this task.",
+  "blocker": "Official download directories are now accessible, but film identity/license project pages and Creative Commons terms still return HTTP 403. Directory access is not a license grant; no exact streaming movie source or full-film commercial reuse permission has been verified.",
   "films": [
     {
       "title_en": "Big Buck Bunny",
@@ -18,7 +18,8 @@
       "release_date": null,
       "attribution": null,
       "genre_names": [],
-      "evidence_notes": "Candidate only. The official source and terms requests returned proxy CONNECT 403. No Internet Archive upload or third-party license assertion was accepted as evidence."
+      "evidence_notes": "The official directory was inspected and lists BigBuckBunny_320x180.mp4.zip and other ZIP downloads. A ZIP is not a streaming watch_url. Film content/credits and the complete film license remain unverified; the project/license page returns HTTP 403.",
+      "download_directory_verified": true
     },
     {
       "title_en": "Sintel",
@@ -35,7 +36,8 @@
       "release_date": null,
       "attribution": null,
       "genre_names": [],
-      "evidence_notes": "Candidate only. Official identity/license page, license terms and video files could not be accessed. Specific edition, soundtrack rights, attribution and direct MP4 source remain unverified."
+      "evidence_notes": "The official directory was inspected; it lists MKV/ZIP/ISO downloads, not a verified direct MP4/HLS source. Full-film license, edition, soundtrack permissions and commercial reuse remain unverified; the project/license page returns HTTP 403.",
+      "download_directory_verified": true
     },
     {
       "title_en": "Tears of Steel",
@@ -43,7 +45,7 @@
       "rights_holder_to_verify": "Blender Foundation",
       "identity_source": "https://mango.blender.org/",
       "license_source": "https://mango.blender.org/sharing/",
-      "download_directory": "https://download.blender.org/demo/movies/",
+      "download_directory": "https://download.blender.org/demo/movies/ToS/",
       "expected_license_to_verify": "CC BY 3.0",
       "license_terms_source": "https://creativecommons.org/licenses/by/3.0/",
       "verified": false,
@@ -52,7 +54,15 @@
       "release_date": null,
       "attribution": null,
       "genre_names": [],
-      "evidence_notes": "Candidate only. Proxy denied official sharing/download pages. Direct file, full-film identity, version-specific license and commercial-use evidence still require review."
+      "evidence_notes": "The official directory was inspected and includes tears_of_steel_720p.mov and ZIP downloads. No MP4/HLS stream has been verified. Its copyright.txt explicitly licenses only Original Soundtrack files under CC BY-ND 3.0, including commercial use; that is not a grant for the complete film.",
+      "download_directory_verified": true,
+      "related_notice": {
+        "url": "https://download.blender.org/demo/movies/ToS/copyright.txt",
+        "scope": "Original Soundtrack files only; NOT full-film license evidence",
+        "license": "CC BY-ND 3.0",
+        "commercial_use_of_soundtrack_stated": true,
+        "required_credit": "(C) Joram Letwory - www.tearsofsteel.org"
+      }
     }
   ]
 }
