@@ -232,13 +232,14 @@ render();
 
     try {
       const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-  "Content-Type": "application/json",
-  "apikey": "sb_publishable_aTNkxAKz9OG-JJVO2X48Rw_9vnE_8Mj"
-     },
-        body: JSON.stringify({ message })
-      });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "apikey": "sb_publishable_aTNkxAKz9OG-JJVO2X48Rw_9vnE_8Mj",
+    "Authorization": "sb_publishable_aTNkxAKz9OG-JJVO2X48Rw_9vnE_8Mj"
+  },
+  body: JSON.stringify({ message })
+});
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Հարցումը չհաջողվեց։");
       waiting.textContent = data.answer || "Պատասխան չստացվեց։";
