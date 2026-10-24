@@ -1,0 +1,58 @@
+{
+  "review_date": "2026-10-25",
+  "verification_status": "blocked",
+  "blocker": "Proxy CONNECT 403 prevents reading rights-holder license pages, license terms and official video downloads. No film or playback URL has been verified or commercially cleared in this task.",
+  "films": [
+    {
+      "title_en": "Big Buck Bunny",
+      "candidate_year": 2008,
+      "rights_holder_to_verify": "Blender Foundation",
+      "identity_source": "https://peach.blender.org/about/",
+      "license_source": "https://peach.blender.org/about/",
+      "download_directory": "https://download.blender.org/peach/bigbuckbunny_movies/",
+      "expected_license_to_verify": "CC BY 3.0",
+      "license_terms_source": "https://creativecommons.org/licenses/by/3.0/",
+      "verified": false,
+      "commercial_reuse_verified": false,
+      "watch_url": null,
+      "release_date": null,
+      "attribution": null,
+      "genre_names": [],
+      "evidence_notes": "Candidate only. The official source and terms requests returned proxy CONNECT 403. No Internet Archive upload or third-party license assertion was accepted as evidence."
+    },
+    {
+      "title_en": "Sintel",
+      "candidate_year": 2010,
+      "rights_holder_to_verify": "Blender Foundation",
+      "identity_source": "https://durian.blender.org/about/",
+      "license_source": "https://durian.blender.org/about/",
+      "download_directory": "https://download.blender.org/durian/movies/",
+      "expected_license_to_verify": "CC BY 3.0",
+      "license_terms_source": "https://creativecommons.org/licenses/by/3.0/",
+      "verified": false,
+      "commercial_reuse_verified": false,
+      "watch_url": null,
+      "release_date": null,
+      "attribution": null,
+      "genre_names": [],
+      "evidence_notes": "Candidate only. Official identity/license page, license terms and video files could not be accessed. Specific edition, soundtrack rights, attribution and direct MP4 source remain unverified."
+    },
+    {
+      "title_en": "Tears of Steel",
+      "candidate_year": 2012,
+      "rights_holder_to_verify": "Blender Foundation",
+      "identity_source": "https://mango.blender.org/",
+      "license_source": "https://mango.blender.org/sharing/",
+      "download_directory": "https://download.blender.org/demo/movies/",
+      "expected_license_to_verify": "CC BY 3.0",
+      "license_terms_source": "https://creativecommons.org/licenses/by/3.0/",
+      "verified": false,
+      "commercial_reuse_verified": false,
+      "watch_url": null,
+      "release_date": null,
+      "attribution": null,
+      "genre_names": [],
+      "evidence_notes": "Candidate only. Proxy denied official sharing/download pages. Direct file, full-film identity, version-specific license and commercial-use evidence still require review."
+    }
+  ]
+}

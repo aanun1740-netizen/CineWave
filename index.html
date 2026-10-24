@@ -38,6 +38,7 @@ footer{border-top:1px solid var(--line);padding:25px 5vw 35px;color:#8993a1;font
 @media(max-width:400px){.topbar{height:auto;min-height:60px;flex-wrap:wrap;padding:10px 16px}.right{width:100%;margin-left:0}.search{flex:1;min-width:0}.search input{width:100%;min-width:0}.language{flex-shrink:0}}
 @media(prefers-reduced-motion:reduce){.movie,.poster img,.play-overlay{transition:none}}
 </style>
+<link rel="stylesheet" href="player.css">
 </head>
 <body>
 <header class="topbar">
@@ -77,6 +78,8 @@ footer{border-top:1px solid var(--line);padding:25px 5vw 35px;color:#8993a1;font
 <nav class="mobile-nav"><button class="active" data-nav="Home"><span>⌂</span>Home</button><button data-nav="Movies"><span>▤</span>Movies</button><button data-nav="TV Shows"><span>▣</span>TV Shows</button><button data-nav="My List"><span>♡</span>My List</button></nav>
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="dialog"><div class="dialog-top"><strong id="modalTitle">Now playing</strong><button class="close" id="closeModal" aria-label="Close">×</button></div><div class="video-wrap" id="videoWrap"><div class="video-placeholder"><div style="font-size:48px">▶</div><h3>Ready to stream?</h3><p>Add your own licensed video URL in the movie data to enable playback.</p></div></div><div class="dialog-info"><div class="meta" id="modalMeta"></div><p id="modalDesc"></p><button class="btn secondary" id="modalList">＋ Add to My List</button></div></div></div>
 <div class="toast" id="toast"></div>
+<script src="vendor/hls.light.min.js"></script>
+<script src="player.js"></script>
 <script src="catalog.js"></script>
 <script>
 const movies=[
@@ -95,6 +98,12 @@ const movies=[
 ];
 let activeGenre="All",activeNav="Home",watchList=new Set(),currentMovie=null;
 const $=id=>document.getElementById(id);
+let activePlayer=null,playerOpener=null;
+function closeMovie(){
+ const wasOpen=$('modal').classList.contains('open');
+ activePlayer?.destroy();activePlayer=null;$('modal').classList.remove('open');
+ if(wasOpen){if(playerOpener?.isConnected)playerOpener.focus({preventScroll:true});else $('search').focus({preventScroll:true});}
+}
 function card(m){
  const {title:rawTitle}=localizedMovie(m);const title=rawTitle||unknownMetadata('title');
  const genres=m.genres||[m.genre];const meta=[m.year,genres.filter(Boolean).map(genre=>genreLabel(genre)).join(' · ')||unknownMetadata('genre')].filter(Boolean).join(' • ');
@@ -105,15 +114,17 @@ document.addEventListener('error',event=>{const img=event.target;if(img.matches?
 function render(){renderGenreFilters();let q=$("search").value.trim().toLowerCase();let filtered=movies.filter(m=>(activeGenre==="All"||(m.genres||[m.genre]).includes(activeGenre))&&(!q||[localizedMovie(m).title,...Object.values(m.titles||{}),...(m.genres||[m.genre]).flatMap(g=>[g,genreLabel(g)])].some(value=>String(value).toLowerCase().includes(q)))&&(activeNav!=="My List"||watchList.has(m.id))&&(activeNav!=="TV Shows"||m.kind==="TV Show")&&(activeNav!=="Movies"||m.kind==="Movie"));$("movies").innerHTML=filtered.map(card).join("");$("empty").hidden=filtered.length>0;const t=translations[currentLanguage]||translations.en;const navLabel=activeNav==="My List"?t.list:activeNav==="Movies"?t.movies:activeNav==="TV Shows"?t.tv:t.popular;const headingGenre=activeGenre==='All'?t.all:genreLabel(activeGenre);$("popularHeading").textContent=activeNav==="My List"?t.list:activeGenre==="All"?navLabel:headingGenre+" • CineWave";$("continueGrid").innerHTML=movies.filter(m=>m.progress).map(card).join("");$("newGrid").innerHTML=movies.filter(m=>m.year===2025).slice(0,6).map(card).join("");$("continueSection").style.display=activeNav==="My List"||activeNav==="Movies"||activeNav==="TV Shows"?"none":"";document.querySelectorAll("[data-genre]").forEach(b=>{const selected=b.dataset.genre===activeGenre;b.classList.toggle("active",selected);b.setAttribute("aria-pressed",String(selected));});document.querySelectorAll("[data-nav]").forEach(b=>b.classList.toggle("active",b.dataset.nav===activeNav));}
 function toast(msg){$("toast").textContent=msg;$("toast").style.display="block";clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>$("toast").style.display="none",2200)}
 function openMovie(m){
+ const wasOpen=$('modal').classList.contains('open');if(!wasOpen)playerOpener=document.activeElement;
  currentMovie=m;const info=localizedMovie(m);$('modalTitle').textContent=info.title||unknownMetadata('title');$('modalDesc').textContent=info.desc||unknownMetadata('description');
  const meta=[m.year,(m.genres||[m.genre]).filter(Boolean).map(genre=>genreLabel(genre)).join(' · ')||unknownMetadata('genre'),m.rating,m.duration].filter(Boolean);
  $('modalMeta').replaceChildren(...meta.map(value=>{const span=document.createElement('span');span.textContent=value;return span;}));
  $('modalList').textContent=watchList.has(m.id)?translations[currentLanguage].inList:translations[currentLanguage].addList;
- $('videoWrap').replaceChildren();if(m.video){const video=document.createElement('video');video.controls=true;video.autoplay=true;video.playsInline=true;video.src=m.video;$('videoWrap').append(video);}
+ if(activePlayer?.video.dataset.movieId===String(m.id)){activePlayer.localize(currentLanguage);}else{activePlayer?.destroy();activePlayer=CineWavePlayer.mount($('videoWrap'),m,currentLanguage);activePlayer.video.dataset.movieId=String(m.id);}
  $('modal').classList.add('open');
+ if(!wasOpen){const button=$('modal').querySelector('[data-control="play"]:not(:disabled)')||$('closeModal');button.focus({preventScroll:true});}
 }
 document.addEventListener("click",e=>{let c=e.target.closest(".movie");if(c){let m=movies.find(x=>String(x.id)===c.dataset.id);if(m)openMovie(m)}});
-document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches(".movie")){e.preventDefault();let m=movies.find(x=>String(x.id)===e.target.dataset.id);if(m)openMovie(m)}if(e.key==="Escape")$("modal").classList.remove("open")});
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches(".movie")){e.preventDefault();let m=movies.find(x=>String(x.id)===e.target.dataset.id);if(m)openMovie(m)}if(e.key==="Escape"){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else closeMovie();}});
 $('genres').addEventListener('click',event=>{const button=event.target.closest('[data-genre]');if(!button)return;activeGenre=button.dataset.genre;activeNav='Movies';render();});
 document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()=>{activeNav=b.dataset.nav;if(activeNav==="Home")activeGenre="All";render();window.scrollTo({top:0,behavior:"smooth"})}));
 $("search").addEventListener("input",()=>{activeNav="Movies";$("clearSearch").hidden=!$("search").value;render()});
@@ -121,7 +132,7 @@ $("clearSearch").addEventListener("click",()=>{$("search").value="";$("clearSear
 $("heroWatch").addEventListener("click",()=>openMovie({id:99,title:"Beyond the Stars",year:2025,genre:"Adventure / Sci-Fi",rating:"PG-13",duration:"2h 08m",desc:"A daring crew follows one last signal beyond the edge of the known universe."}));
 $("heroList").addEventListener("click",()=>{if(watchList.has(99)){watchList.delete(99);toast("Removed from My List")}else{watchList.add(99);toast("Added to My List")}});
 $("modalList").addEventListener("click",()=>{if(!currentMovie)return;if(watchList.has(currentMovie.id)){watchList.delete(currentMovie.id);toast("Removed from My List")}else{watchList.add(currentMovie.id);toast("Added to My List")} $("modalList").textContent=watchList.has(currentMovie.id)?"✓ In My List":"＋ Add to My List";});
-$("closeModal").addEventListener("click",()=>$("modal").classList.remove("open"));$("modal").addEventListener("click",e=>{if(e.target===$("modal"))$("modal").classList.remove("open")});
+$("closeModal").addEventListener("click",closeMovie);$("modal").addEventListener("click",e=>{if(e.target===$("modal"))closeMovie()});
 $("resetFilters").addEventListener("click",()=>{activeGenre="All";activeNav="Home";$("search").value="";$("clearSearch").hidden=true;render()});
 $("allGenres").addEventListener("click",()=>{activeGenre="All";activeNav="Movies";render();$("genres").scrollIntoView({behavior:"smooth",block:"center"})});
 const translations={
@@ -152,7 +163,7 @@ const featuredMovie={en:['Beyond the Stars','A daring crew follows one last sign
 render();if(currentMovie&&$('modal').classList.contains('open'))openMovie(currentMovie);}
 const baseOpenMovie=openMovie;
 openMovie=function(m){baseOpenMovie(m);const t=translations[currentLanguage]||translations.en;if(m.source!=='supabase' && m.id===99){const ft={en:['Beyond the Stars','A daring crew follows one last signal beyond the edge of the known universe.'],ru:['За пределами звёзд','Отважная команда следует за последним сигналом за пределы известной Вселенной.'],hy:['Աստղերից այն կողմ','Համարձակ անձնակազմը հետևում է վերջին ազդանշանին՝ դեպի հայտնի տիեզերքի սահմաններից այն կողմ։']}[currentLanguage];$('modalTitle').textContent=ft[0];$('modalDesc').textContent=ft[1]}
-$('modalList').textContent=watchList.has(m.id)?t.inList:t.addList;if(!m.video){$('videoWrap').innerHTML=`<div class="video-placeholder"><div style="font-size:48px;color:var(--red)">▶</div><h3>${t.ready}</h3><p>${t.noVideo}</p><p>${t.videoHelp}</p></div>`}};
+$('modalList').textContent=watchList.has(m.id)?t.inList:t.addList;};
 $('language').addEventListener('change',e=>applyLanguage(e.target.value));
 const oldToast=toast;toast=function(msg){const t=translations[currentLanguage]||translations.en;if(msg==='Added to My List')msg=t.added;if(msg==='Removed from My List')msg=t.removed;oldToast(msg)};
 const oldHeroList=$('heroList').onclick;
