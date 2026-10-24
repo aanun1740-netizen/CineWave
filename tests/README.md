@@ -23,3 +23,14 @@ PGLITE_MODULE=/tmp/cinewave-sql-test/node_modules/@electric-sql/pglite node --te
 ```
 
 This test cannot connect to Supabase. It validates rollback-by-default, null/empty/blank-only handling, preservation of existing genres, title/date identity guards, untouched non-genre fields, exclusion of all six unresolved rows, repeatability, and rejection of an unexpected column type. No production database modification was tested or performed.
+
+
+Playback checks:
+
+```sh
+node --test tests/player.test.cjs
+python3 tests/player_browser.py
+PGLITE_MODULE=/tmp/cinewave-sql-test/node_modules/@electric-sql/pglite node --test tests/playback_sql.test.mjs
+```
+
+The player browser test additionally requires ffmpeg. It generates original H.264/AAC video in a temporary directory, serves byte ranges locally and decodes MP4/HLS in Chromium. Remote film URLs and licensing are not mocked as verified. The SQL test confirms that the current unverified seed aborts, and tests a hypothetical reviewed seed only in an isolated PostgreSQL database. No Supabase modifications are made. See `docs/playback.md` for activation, blocked film verification, compatibility and attribution requirements.

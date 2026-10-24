@@ -100,5 +100,5 @@ function mapCatalogMovie(row) {
     descriptions:{en:cleanText(row.overview_en),ru:cleanText(row.overview_ru),hy:cleanText(row.overview_hy)},
     title:titles.en || titles.ru || titles.hy || '',desc:'',year:/^\d{4}-\d{2}-\d{2}$/.test(date) ? Number(date.slice(0,4)) : null,
     genres,genre:genres[0] || '',kind:'Movie',rating:row.rating != null ? String(row.rating) : '',duration:'',
-    img:posterURL(row.poster_path),video:cleanText(row.watch_url),progress:0};
+    img:posterURL(row.poster_path),video:cleanText(row.watch_url),progress:globalThis.CineWavePlayer?.progressFor('catalog:'+String(row.id ?? row.tmdb_id))||0};
 }
