@@ -131,5 +131,126 @@ $('modalList').addEventListener('click',()=>{const t=translations[currentLanguag
 applyLanguage('en');
 render();
 </script>
+  
+<style>
+#cw-ai-button {
+  position: fixed; right: 24px; bottom: 24px; z-index: 9999;
+  border: 0; border-radius: 28px; padding: 14px 20px;
+  background: #7c5cff; color: white; font-weight: 700;
+  cursor: pointer; box-shadow: 0 6px 25px #0007;
+}
+#cw-ai-panel {
+  display: none; position: fixed; right: 24px; bottom: 85px;
+  width: min(360px, calc(100vw - 32px)); height: 480px;
+  max-height: calc(100dvh - 115px); z-index: 9999;
+  background: #0c111b; color: #f4f6fa;
+  border: 1px solid #293244; border-radius: 18px;
+  overflow: hidden; box-shadow: 0 15px 50px #0009;
+  font: 14px/1.5 Arial, sans-serif;
+}
+#cw-ai-panel * { box-sizing: border-box; }
+#cw-ai-head {
+  padding: 15px; background: #151d2b; display: flex;
+  justify-content: space-between; align-items: center;
+}
+#cw-ai-messages {
+  height: calc(100% - 125px); overflow-y: auto;
+  padding: 14px; display: flex; flex-direction: column; gap: 10px;
+}
+.cw-ai-msg { padding: 10px 12px; border-radius: 12px;
+  max-width: 90%; white-space: pre-wrap; overflow-wrap: anywhere; }
+.cw-ai-bot { background: #1b2637; align-self: flex-start; }
+.cw-ai-user { background: #6d50e8; align-self: flex-end; }
+#cw-ai-form { display: flex; gap: 8px; padding: 10px;
+  border-top: 1px solid #293244; }
+#cw-ai-input { min-width: 0; flex: 1; padding: 11px;
+  border-radius: 10px; border: 1px solid #38445a;
+  background: #151d2b; color: white; outline: none; }
+#cw-ai-send { border: 0; border-radius: 10px;
+  padding: 0 14px; background: #7c5cff; color: white;
+  font-weight: bold; cursor: pointer; }
+</style>
+
+<button id="cw-ai-button" type="button">✦ CineWave AI</button>
+
+<section id="cw-ai-panel" aria-label="CineWave AI assistant">
+  <header id="cw-ai-head">
+    <strong>✦ CineWave AI</strong>
+    <button id="cw-ai-close" type="button"
+      aria-label="Close chat"
+      style="background:none;color:white;border:0;font-size:22px;cursor:pointer">×</button>
+  </header>
+  <div id="cw-ai-messages" aria-live="polite">
+    <div class="cw-ai-msg cw-ai-bot">Բարև։ Ես CineWave-ի կինոօգնականն եմ։ Ի՞նչ ֆիլմ ես փնտրում։</div>
+  </div>
+  <form id="cw-ai-form">
+    <input id="cw-ai-input" placeholder="Գրիր հաղորդագրություն…"
+      aria-label="Your message" autocomplete="off" required>
+    <button id="cw-ai-send" type="submit">➤</button>
+  </form>
+</section>
+
+<script>
+(() => {
+  const panel = document.getElementById("cw-ai-panel");
+  const messages = document.getElementById("cw-ai-messages");
+  const form = document.getElementById("cw-ai-form");
+  const input = document.getElementById("cw-ai-input");
+  const send = document.getElementById("cw-ai-send");
+
+  // Public endpoint only; never put a service-role key in website code.
+  const API_URL =
+    "https://ysecowknittmmmbixgtu.supabase.co/functions/v1/cinewave-ai";
+
+  document.getElementById("cw-ai-button").onclick = () => {
+    panel.style.display = "block";
+    input.focus();
+  };
+  document.getElementById("cw-ai-close").onclick = () => {
+    panel.style.display = "none";
+  };
+
+  function addMessage(text, who) {
+    const div = document.createElement("div");
+    div.className = "cw-ai-msg " + (who === "user" ? "cw-ai-user" : "cw-ai-bot");
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    return div;
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const message = input.value.trim();
+    if (!message) return;
+
+    addMessage(message, "user");
+    input.value = "";
+    input.disabled = true;
+    send.disabled = true;
+    const waiting = addMessage("Մտածում եմ…", "bot");
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Հարցումը չհաջողվեց։");
+      waiting.textContent = data.answer || "Պատասխան չստացվեց։";
+    } catch (error) {
+      waiting.textContent =
+        "Չհաջողվեց միանալ AI-ին։ " +
+        (error.message || "Փորձիր մի փոքր ուշ։");
+    } finally {
+      input.disabled = false;
+      send.disabled = false;
+      input.focus();
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
