@@ -22,6 +22,21 @@ footer{border-top:1px solid var(--line);padding:25px 5vw 35px;color:#8993a1;font
 .mobile-nav{display:none}
 @media(max-width:950px){.topbar{gap:20px;padding:0 4vw}.nav{gap:15px}.search input{width:95px}.genre-list{grid-template-columns:repeat(4,minmax(0,1fr))}.movie-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.hero{min-height:460px;padding:50px 5vw}}
 @media(max-width:600px){.topbar{height:60px;padding:0 16px;gap:10px}.brand{font-size:22px}.nav{display:none}.right{gap:6px}.language{max-width:82px;padding:6px 4px;font-size:11px}.search{padding:7px 8px}.search input{width:min(26vw,110px)}.avatar{width:31px;height:31px}.hero{min-height:490px;padding:45px 22px 35px;background-position:58% center;background-image:linear-gradient(90deg,#080b10f2 0%,#080b10c9 55%,#080b1050 100%),linear-gradient(0deg,#080b10 0%,transparent 45%),url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1000&q=80')}.hero h1{font-size:51px;letter-spacing:-2px}.hero p{font-size:14px}.btn{padding:12px 15px}.hero .dots{margin-top:25px}main{padding:0 16px 80px}.section{margin:24px 0 29px}.section h2{font-size:18px}.genre-list{display:flex;overflow:auto;padding:2px 1px 8px;scrollbar-width:none}.genre{flex:0 0 112px;height:83px}.movie-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 12px}.poster{height:clamp(205px,65vw,310px)}.movie-title{font-size:14px}.mobile-nav{position:fixed;bottom:0;left:0;right:0;z-index:12;display:flex;justify-content:space-around;background:#080b10f2;backdrop-filter:blur(15px);border-top:1px solid #ffffff18;padding:10px 5px calc(10px + env(safe-area-inset-bottom));}.mobile-nav button{border:0;background:none;color:#aeb7c4;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px}.mobile-nav button span{font-size:19px}.mobile-nav button.active{color:var(--red)}footer{padding-bottom:90px}.search input{font-size:13px}}
+
+/* Stable poster proportions, readable multi-line titles and keyboard feedback. */
+.movie-grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:22px 17px}
+.movie{border-radius:12px;transition:transform .2s;outline-offset:5px}
+.movie:focus-visible{outline:2px solid var(--red)}
+.poster{height:auto;aspect-ratio:2/3;background:linear-gradient(145deg,#202c40,#080b10)}
+.poster img{aspect-ratio:2/3;object-fit:cover}
+.movie-title{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.4;min-height:2.8em}
+.movie-meta{line-height:1.6;overflow-wrap:anywhere}.progress{height:3px;background:#39414d;margin-top:7px;border-radius:4px}.progress div{height:100%;background:var(--red)}
+.movie:focus-visible .play-overlay{opacity:1;transform:none}
+@media(max-width:600px){.movie-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px}.poster{height:auto}.movie-meta{font-size:11px}}
+.section-head{gap:12px;flex-wrap:wrap}
+@media(min-width:601px) and (max-width:950px){.topbar{height:auto;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}.nav{order:3;width:100%;justify-content:center}}
+@media(max-width:400px){.topbar{height:auto;min-height:60px;flex-wrap:wrap;padding:10px 16px}.right{width:100%;margin-left:0}.search{flex:1;min-width:0}.search input{width:100%;min-width:0}.language{flex-shrink:0}}
+@media(prefers-reduced-motion:reduce){.movie,.poster img,.play-overlay{transition:none}}
 </style>
 </head>
 <body>
@@ -62,6 +77,7 @@ footer{border-top:1px solid var(--line);padding:25px 5vw 35px;color:#8993a1;font
 <nav class="mobile-nav"><button class="active" data-nav="Home"><span>⌂</span>Home</button><button data-nav="Movies"><span>▤</span>Movies</button><button data-nav="TV Shows"><span>▣</span>TV Shows</button><button data-nav="My List"><span>♡</span>My List</button></nav>
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="dialog"><div class="dialog-top"><strong id="modalTitle">Now playing</strong><button class="close" id="closeModal" aria-label="Close">×</button></div><div class="video-wrap" id="videoWrap"><div class="video-placeholder"><div style="font-size:48px">▶</div><h3>Ready to stream?</h3><p>Add your own licensed video URL in the movie data to enable playback.</p></div></div><div class="dialog-info"><div class="meta" id="modalMeta"></div><p id="modalDesc"></p><button class="btn secondary" id="modalList">＋ Add to My List</button></div></div></div>
 <div class="toast" id="toast"></div>
+<script src="catalog.js"></script>
 <script>
 const movies=[
 {id:1,title:"The Batman",year:2022,genre:"Action",kind:"Movie",rating:"PG-13",duration:"2h 56m",img:"https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?auto=format&fit=crop&w=600&q=80",desc:"A shadowy detective follows a trail of clues through a city consumed by corruption.",progress:68},
@@ -79,12 +95,25 @@ const movies=[
 ];
 let activeGenre="All",activeNav="Home",watchList=new Set(),currentMovie=null;
 const $=id=>document.getElementById(id);
-function card(m){const mt=movieTranslations[m.id]?.[currentLanguage];const title=mt?mt[0]:m.title;const genreNames={en:{Action:"Action",Adventure:"Adventure",Comedy:"Comedy",Drama:"Drama",Horror:"Horror","Sci-Fi":"Sci-Fi",Animation:"Animation"},ru:{Action:"Боевик",Adventure:"Приключения",Comedy:"Комедия",Drama:"Драма",Horror:"Ужасы","Sci-Fi":"Фантастика",Animation:"Анимация"},hy:{Action:"Մարտաֆիլմ",Adventure:"Արկածային",Comedy:"Կատակերգություն",Drama:"Դրամա",Horror:"Սարսափ","Sci-Fi":"Գիտաֆանտաստիկ",Animation:"Անիմացիա"}};const genre=genreNames[currentLanguage]?.[m.genre]||m.genre;return `<article class="movie" data-id="${m.id}" tabindex="0" role="button" aria-label="Play ${title}"><div class="poster"><img loading="lazy" src="${m.img}" alt="${title} poster"><button class="play-overlay" tabindex="-1">▶</button></div><div class="movie-title">${title}</div><div class="movie-meta">${m.year} &nbsp;•&nbsp; ${genre}${m.progress?`<div style="height:3px;background:#39414d;margin-top:7px;border-radius:4px"><div style="width:${m.progress}%;height:100%;background:var(--red)"></div></div>`:""}</div></article>`}
-function render(){let q=$("search").value.trim().toLowerCase();let filtered=movies.filter(m=>(activeGenre==="All"||m.genre===activeGenre)&&(!q||m.title.toLowerCase().includes(q)||m.genre.toLowerCase().includes(q))&&(activeNav!=="My List"||watchList.has(m.id))&&(activeNav!=="TV Shows"||m.kind==="TV Show")&&(activeNav!=="Movies"||m.kind==="Movie"));$("movies").innerHTML=filtered.map(card).join("");$("empty").hidden=filtered.length>0;const t=translations[currentLanguage]||translations.en;const navLabel=activeNav==="My List"?t.list:activeNav==="Movies"?t.movies:activeNav==="TV Shows"?t.tv:t.popular;const genreLabel=({All:t.all,Action:t.action,Adventure:t.adventure,Comedy:t.comedy,Drama:t.drama,Horror:t.horror,"Sci-Fi":t.scifi,Animation:t.animation})[activeGenre]||activeGenre;$("popularHeading").textContent=activeNav==="My List"?t.list:activeGenre==="All"?navLabel:genreLabel+" • CineWave";$("continueGrid").innerHTML=movies.filter(m=>m.progress).map(card).join("");$("newGrid").innerHTML=movies.filter(m=>m.year===2025).slice(0,6).map(card).join("");$("continueSection").style.display=activeNav==="My List"||activeNav==="Movies"||activeNav==="TV Shows"?"none":"";document.querySelectorAll("[data-genre]").forEach(b=>b.classList.toggle("active",b.dataset.genre===activeGenre));document.querySelectorAll("[data-nav]").forEach(b=>b.classList.toggle("active",b.dataset.nav===activeNav));}
+function card(m){
+ const {title:rawTitle}=localizedMovie(m);const title=rawTitle||unknownMetadata('title');
+ const genres=m.genres||[m.genre];const meta=[m.year,genres.filter(Boolean).map(genreLabel).join(' · ')||unknownMetadata('genre')].filter(Boolean).join(' • ');
+ return `<article class="movie" data-id="${escapeHTML(m.id)}" tabindex="0" role="button" aria-label="${escapeHTML(title)}"><div class="poster"><img loading="lazy" decoding="async" width="500" height="750" src="${escapeHTML(m.img||POSTER_FALLBACK)}" alt="${escapeHTML(title)}"><span class="play-overlay" aria-hidden="true">▶</span></div><div class="movie-title">${escapeHTML(title)}</div><div class="movie-meta">${escapeHTML(meta)}${m.progress?`<div class="progress"><div style="width:${Math.max(0,Math.min(100,Number(m.progress)||0))}%"></div></div>`:''}</div></article>`;
+}
+// Capture image failures (including lazy images) once; the local fallback cannot loop.
+document.addEventListener('error',event=>{const img=event.target;if(img.matches?.('.poster img')&&!img.dataset.fallback){img.dataset.fallback='true';img.src=POSTER_FALLBACK;}},true);
+function render(){let q=$("search").value.trim().toLowerCase();let filtered=movies.filter(m=>(activeGenre==="All"||(m.genres||[m.genre]).includes(activeGenre))&&(!q||[localizedMovie(m).title,...Object.values(m.titles||{}),...(m.genres||[m.genre]).flatMap(g=>[g,genreLabel(g)])].some(value=>String(value).toLowerCase().includes(q)))&&(activeNav!=="My List"||watchList.has(m.id))&&(activeNav!=="TV Shows"||m.kind==="TV Show")&&(activeNav!=="Movies"||m.kind==="Movie"));$("movies").innerHTML=filtered.map(card).join("");$("empty").hidden=filtered.length>0;const t=translations[currentLanguage]||translations.en;const navLabel=activeNav==="My List"?t.list:activeNav==="Movies"?t.movies:activeNav==="TV Shows"?t.tv:t.popular;const headingGenre=({All:t.all,Action:t.action,Adventure:t.adventure,Comedy:t.comedy,Drama:t.drama,Horror:t.horror,"Sci-Fi":t.scifi,Animation:t.animation})[activeGenre]||activeGenre;$("popularHeading").textContent=activeNav==="My List"?t.list:activeGenre==="All"?navLabel:headingGenre+" • CineWave";$("continueGrid").innerHTML=movies.filter(m=>m.progress).map(card).join("");$("newGrid").innerHTML=movies.filter(m=>m.year===2025).slice(0,6).map(card).join("");$("continueSection").style.display=activeNav==="My List"||activeNav==="Movies"||activeNav==="TV Shows"?"none":"";document.querySelectorAll("[data-genre]").forEach(b=>b.classList.toggle("active",b.dataset.genre===activeGenre));document.querySelectorAll("[data-nav]").forEach(b=>b.classList.toggle("active",b.dataset.nav===activeNav));}
 function toast(msg){$("toast").textContent=msg;$("toast").style.display="block";clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>$("toast").style.display="none",2200)}
-function openMovie(m){currentMovie=m;$("modalTitle").textContent=m.title;$("modalMeta").innerHTML=`<span>${m.year}</span><span>•</span><span>${m.genre}</span><span>•</span><span>${m.rating}</span><span>•</span><span>${m.duration}</span>`;$("modalDesc").textContent=m.desc;$("modalList").textContent=watchList.has(m.id)?"✓ In My List":"＋ Add to My List";$("videoWrap").innerHTML=m.video?`<video controls autoplay playsinline src="${m.video}"></video>`:`<div class="video-placeholder"><div style="font-size:48px;color:var(--red)">▶</div><h3>${m.title}</h3><p>This demo title has no video attached yet.</p><p>To enable playback, add a licensed video URL to this title's <code>video</code> field in the page source.</p></div>`;$("modal").classList.add("open");}
-document.addEventListener("click",e=>{let c=e.target.closest(".movie");if(c){let m=movies.find(x=>x.id===+c.dataset.id);if(m)openMovie(m)}});
-document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches(".movie")){e.preventDefault();let m=movies.find(x=>x.id===+e.target.dataset.id);if(m)openMovie(m)}if(e.key==="Escape")$("modal").classList.remove("open")});
+function openMovie(m){
+ currentMovie=m;const info=localizedMovie(m);$('modalTitle').textContent=info.title||unknownMetadata('title');$('modalDesc').textContent=info.desc||unknownMetadata('description');
+ const meta=[m.year,(m.genres||[m.genre]).filter(Boolean).map(genreLabel).join(' · ')||unknownMetadata('genre'),m.rating,m.duration].filter(Boolean);
+ $('modalMeta').replaceChildren(...meta.map(value=>{const span=document.createElement('span');span.textContent=value;return span;}));
+ $('modalList').textContent=watchList.has(m.id)?translations[currentLanguage].inList:translations[currentLanguage].addList;
+ $('videoWrap').replaceChildren();if(m.video){const video=document.createElement('video');video.controls=true;video.autoplay=true;video.playsInline=true;video.src=m.video;$('videoWrap').append(video);}
+ $('modal').classList.add('open');
+}
+document.addEventListener("click",e=>{let c=e.target.closest(".movie");if(c){let m=movies.find(x=>String(x.id)===c.dataset.id);if(m)openMovie(m)}});
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches(".movie")){e.preventDefault();let m=movies.find(x=>String(x.id)===e.target.dataset.id);if(m)openMovie(m)}if(e.key==="Escape")$("modal").classList.remove("open")});
 document.querySelectorAll("[data-genre]").forEach(b=>b.addEventListener("click",()=>{activeGenre=b.dataset.genre;activeNav="Movies";render()}));
 document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()=>{activeNav=b.dataset.nav;if(activeNav==="Home")activeGenre="All";render();window.scrollTo({top:0,behavior:"smooth"})}));
 $("search").addEventListener("input",()=>{activeNav="Movies";$("clearSearch").hidden=!$("search").value;render()});
@@ -120,9 +149,9 @@ const heads=document.querySelectorAll('.section-head h2');if(heads[0])heads[0].t
 document.querySelectorAll('.section-head .seeall').forEach(b=>b.textContent=t.seeAll);$('resetFilters').textContent=t.reset;document.querySelector('.section-head .movie-meta').textContent=t.fresh;$('empty').textContent=t.empty;document.querySelector('footer').textContent=t.footer;
 document.querySelectorAll('[data-genre]').forEach(b=>{const k=b.dataset.genre;const key={All:'all',Action:'action',Adventure:'adventure',Comedy:'comedy',Drama:'drama',Horror:'horror','Sci-Fi':'scifi',Animation:'animation'}[k];const span=b.querySelector('span');if(span)span.textContent=t[key]||k});
 const featuredMovie={en:['Beyond the Stars','A daring crew follows one last signal beyond the edge of the known universe.'],ru:['За пределами звёзд','Отважная команда следует за последним сигналом за пределы известной Вселенной.'],hy:['Աստղերից այն կողմ','Համարձակ անձնակազմը հետևում է վերջին ազդանշանին՝ դեպի հայտնի տիեզերքի սահմաններից այն կողմ։']}[lang];if($('modalTitle').textContent==='Beyond the Stars'||$('modalTitle').textContent==='За пределами звёзд'||$('modalTitle').textContent==='Աստղերից այն կողմ')$('modalTitle').textContent=featuredMovie[0];
-render();}
+render();if(currentMovie&&$('modal').classList.contains('open'))openMovie(currentMovie);}
 const baseOpenMovie=openMovie;
-openMovie=function(m){baseOpenMovie(m);const t=translations[currentLanguage]||translations.en;const mt=movieTranslations[m.id]?.[currentLanguage];if(mt){$('modalTitle').textContent=mt[0];$('modalDesc').textContent=mt[1];const gm={en:{Action:'Action',Adventure:'Adventure',Comedy:'Comedy',Drama:'Drama',Horror:'Horror','Sci-Fi':'Sci-Fi',Animation:'Animation'},ru:{Action:'Боевик',Adventure:'Приключения',Comedy:'Комедия',Drama:'Драма',Horror:'Ужасы','Sci-Fi':'Фантастика',Animation:'Анимация'},hy:{Action:'Մարտաֆիլմ',Adventure:'Արկածային',Comedy:'Կատակերգություն',Drama:'Դրամա',Horror:'Սարսափ','Sci-Fi':'Գիտաֆանտաստիկ',Animation:'Անիմացիա'}};$('modalMeta').children[2].textContent=gm[currentLanguage]?.[m.genre]||m.genre}else if(m.id===99){const ft={en:['Beyond the Stars','A daring crew follows one last signal beyond the edge of the known universe.'],ru:['За пределами звёзд','Отважная команда следует за последним сигналом за пределы известной Вселенной.'],hy:['Աստղերից այն կողմ','Համարձակ անձնակազմը հետևում է վերջին ազդանշանին՝ դեպի հայտնի տիեզերքի սահմաններից այն կողմ։']}[currentLanguage];$('modalTitle').textContent=ft[0];$('modalDesc').textContent=ft[1]}
+openMovie=function(m){baseOpenMovie(m);const t=translations[currentLanguage]||translations.en;if(m.source!=='supabase' && m.id===99){const ft={en:['Beyond the Stars','A daring crew follows one last signal beyond the edge of the known universe.'],ru:['За пределами звёзд','Отважная команда следует за последним сигналом за пределы известной Вселенной.'],hy:['Աստղերից այն կողմ','Համարձակ անձնակազմը հետևում է վերջին ազդանշանին՝ դեպի հայտնի տիեզերքի սահմաններից այն կողմ։']}[currentLanguage];$('modalTitle').textContent=ft[0];$('modalDesc').textContent=ft[1]}
 $('modalList').textContent=watchList.has(m.id)?t.inList:t.addList;if(!m.video){$('videoWrap').innerHTML=`<div class="video-placeholder"><div style="font-size:48px;color:var(--red)">▶</div><h3>${t.ready}</h3><p>${t.noVideo}</p><p>${t.videoHelp}</p></div>`}};
 $('language').addEventListener('change',e=>applyLanguage(e.target.value));
 const oldToast=toast;toast=function(msg){const t=translations[currentLanguage]||translations.en;if(msg==='Added to My List')msg=t.added;if(msg==='Removed from My List')msg=t.removed;oldToast(msg)};
@@ -260,9 +289,6 @@ render();
   const SUPABASE_URL = "https://ysecowknittmmmbixgtu.supabase.co";
   const SUPABASE_KEY = "sb_publishable_aTNkxAKz9OG-JJVO2X48Rw_9vnE_8Mj";
 
-  const fallbackPoster =
-    "https://placehold.co/500x750/111720/ffffff?text=CineWave";
-
   try {
     const response = await fetch(
       `${SUPABASE_URL}/rest/v1/movies?select=*&is_published=eq.true&order=release_date.desc`,
@@ -285,37 +311,7 @@ render();
       return;
     }
 
-    const genreMap = {
-      Action: "Action",
-      Adventure: "Adventure",
-      Comedy: "Comedy",
-      Drama: "Drama",
-      Horror: "Horror",
-      "Sci-Fi": "Sci-Fi",
-      Animation: "Animation"
-    };
-
-    const mappedMovies = rows.map((m, index) => ({
-      id: m.tmdb_id || m.id || index + 1,
-      title: m.title_en || m.title_ru || m.title_hy || "Untitled",
-      year: m.release_date
-        ? Number(m.release_date.slice(0, 4))
-        : 0,
-      genre: Array.isArray(m.genre_names) && m.genre_names.length
-        ? (genreMap[m.genre_names[0]] || m.genre_names[0])
-        : "Drama",
-      kind: "Movie",
-      rating: m.rating != null ? String(m.rating) : "NR",
-      duration: "Feature film",
-      img: m.poster_path
-        ? (m.poster_path.startsWith("http")
-            ? m.poster_path
-            : `https://image.tmdb.org/t/p/w500${m.poster_path}`)
-        : fallbackPoster,
-      desc: m.overview_en || m.overview_ru || m.overview_hy || "",
-      video: m.watch_url || "",
-      progress: 0
-    }));
+    const mappedMovies = rows.map(mapCatalogMovie);
 
     movies.splice(0, movies.length, ...mappedMovies);
 
