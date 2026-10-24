@@ -45,6 +45,23 @@ try:
    assert page.locator('#modalTitle').text_content()==title
    assert page.locator('#modalDesc').text_content()==desc
    page.locator('#closeModal').click()
+  # Canonical filter keys stay stable while button/card/heading labels change.
+  for lang,crime,scifi in [('en','Crime','Sci-Fi'),('ru','Криминал','Фантастика'),('hy','Քրեական','Գիտաֆանտաստիկ')]:
+   page.locator('#language').select_option(lang)
+   for key,label,title in [('Crime',crime,'Valid artwork fixture'),('Sci-Fi',scifi,None)]:
+    button=page.locator(f'#genres [data-genre="{key}"]')
+    assert button.inner_text()==label
+    button.click()
+    assert button.get_attribute('aria-pressed')=='true'
+    assert page.locator('#movies .movie').count()==1
+    assert label in page.locator('#movies .movie-meta').inner_text()
+    assert page.locator('#popularHeading').text_content()==label+' • CineWave'
+    if title: assert page.locator('#movies .movie-title').text_content()==title
+   page.locator('#resetFilters').click()
+   page.locator('#search').fill(scifi)
+   assert page.locator('#movies .movie').count()==1
+   page.locator('#resetFilters').click()
+  page.locator('#language').select_option('en')
   page.locator('#search').fill('Настоящий')
   assert page.locator('#movies .movie').count()==1
   page.locator('#clearSearch').click();page.locator('[data-genre="Sci-Fi"]').click()
@@ -60,7 +77,27 @@ try:
    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),width
    box=page.locator('#movies .poster').first.bounding_box()
    assert abs(box['height']/box['width']-1.5)<.05
+  # Simulate the reviewed SQL result, without writing to any remote database.
+  evidence=json.loads((root/'data/genre-backfill.json').read_text())
+  rows=[dict(id=item['id'],title_en=item['expected_title'],release_date=item['expected_release_date'],genre_names=item['genre_names']) for item in evidence['updates']]+[dict(id=item['id'],title_en=item['title_en'],release_date=item['release_date'],genre_names=[]) for item in evidence['unresolved']]
+  page.goto(base,wait_until='networkidle')
+  assert page.locator('#movies .movie').count()==24
+  assert page.locator('#movies .movie').filter(has_text='Genre unavailable').count()==6
+  genres=list(dict.fromkeys(genre for row in rows for genre in row['genre_names']))
+  for lang in ['en','ru','hy']:
+   page.locator('#language').select_option(lang)
+   for genre in genres:
+    button=page.locator(f'#genres [data-genre="{genre}"]')
+    assert button.count()==1
+    if lang!='en':assert button.inner_text()!=genre
+    button.click()
+    expected=sorted('catalog:'+str(row['id']) for row in rows if genre in row['genre_names'])
+    actual=sorted(page.locator('#movies .movie').evaluate_all('(cards)=>cards.map(card=>card.dataset.id)'))
+    assert actual==expected,(lang,genre,actual,expected)
+    assert button.get_attribute('aria-pressed')=='true'
+    assert page.locator('#popularHeading').inner_text()==button.inner_text()+' • CineWave'
+   page.locator('#resetFilters').click()
   assert not errors,errors
-  print('PASS catalog, local fallback, escaped titles, en/ru/hy metadata, multilingual search, secondary genre, keyboard modal, My List, mocked AI and four viewport widths')
+  print('PASS catalog, local fallback, escaped titles, en/ru/hy metadata, multilingual search, secondary genre, keyboard modal, My List, mocked AI and four viewport widths; 24-row proposed-backfill fixture filtered by every genre in en/ru/hy')
   b.close()
 finally:server.shutdown()

@@ -21,10 +21,61 @@ function posterURL(value) {
     return url.href;
   } catch { return POSTER_FALLBACK; }
 }
+// Canonical values stay language-independent; only visible labels are translated.
+const GENRE_LABELS = {
+ 'Action':['Action','Боевик','Մարտաֆիլմ'],
+ 'Adventure':['Adventure','Приключения','Արկածային'],
+ 'Animation':['Animation','Анимация','Անիմացիա'],
+ 'Biography':['Biography','Биография','Կենսագրական'],
+ 'Comedy':['Comedy','Комедия','Կատակերգություն'],
+ 'Crime':['Crime','Криминал','Քրեական'],
+ 'Documentary':['Documentary','Документальный','Վավերագրական'],
+ 'Drama':['Drama','Драма','Դրամա'],
+ 'Family':['Family','Семейный','Ընտանեկան'],
+ 'Fantasy':['Fantasy','Фэнтези','Ֆենթեզի'],
+ 'History':['History','Исторический','Պատմական'],
+ 'Horror':['Horror','Ужасы','Սարսափ'],
+ 'Music':['Music','Музыкальный','Երաժշտական'],
+ 'Musical':['Musical','Мюзикл','Մյուզիքլ'],
+ 'Mystery':['Mystery','Детектив','Դետեկտիվ'],
+ 'Romance':['Romance','Мелодрама','Մելոդրամա'],
+ 'Sci-Fi':['Sci-Fi','Фантастика','Գիտաֆանտաստիկ'],
+ 'Short':['Short','Короткометражный','Կարճամետրաժ'],
+ 'Sport':['Sport','Спорт','Սպորտային'],
+ 'Thriller':['Thriller','Триллер','Թրիլլեր'],
+ 'TV Movie':['TV Movie','Телефильм','Հեռուստաֆիլմ'],
+ 'War':['War','Военный','Պատերազմական'],
+ 'Western':['Western','Вестерн','Վեսթերն']
+};
+function genreToken(value) { return cleanText(value).normalize('NFC').toLowerCase().replace(/[\s_-]+/g,' '); }
+const GENRE_ALIASES = new Map();
+for (const [canonical, labels] of Object.entries(GENRE_LABELS)) {
+ for (const label of [canonical,...labels]) GENRE_ALIASES.set(genreToken(label),canonical);
+}
+for (const [alias, canonical] of Object.entries({'Science Fiction':'Sci-Fi','Science-Fiction':'Sci-Fi','SciFi':'Sci-Fi','Historical':'History','Documentary Film':'Documentary','Научная фантастика':'Sci-Fi','Գիտական ֆանտաստիկա':'Sci-Fi'})) GENRE_ALIASES.set(genreToken(alias),canonical);
+function canonicalGenre(value) {
+ const name=cleanText(value);
+ return GENRE_ALIASES.get(genreToken(name)) || name;
+}
 function movieGenres(row) {
-  const names = Array.isArray(row.genre_names) ? row.genre_names.map(cleanText).filter(Boolean) : [];
-  const ids = Array.isArray(row.genre_ids) ? row.genre_ids.map(id => TMDB_GENRES[id]).filter(Boolean) : [];
-  return [...new Set([...names.map(name => name === 'Science Fiction' ? 'Sci-Fi' : name), ...ids])];
+ // PostgREST serializes PostgreSQL text[] as JSON arrays. Do not guess or
+ // split arbitrary strings: unsupported shapes must remain visibly unknown.
+ const names=Array.isArray(row.genre_names) ? row.genre_names.map(canonicalGenre).filter(Boolean) : [];
+ const ids=Array.isArray(row.genre_ids) ? row.genre_ids.map(id=>TMDB_GENRES[id]).filter(Boolean) : [];
+ return [...new Set([...names,...ids])];
+}
+function availableGenres(items) {
+ return [...new Set(items.flatMap(movie=>movie.genres || [movie.genre]).map(canonicalGenre).filter(Boolean))];
+}
+function renderGenreFilters() {
+ const container=document.getElementById('genres');
+ const genres=['All',...availableGenres(movies)];
+ if (!genres.includes(activeGenre)) activeGenre='All';
+ const signature=JSON.stringify([currentLanguage,genres]);
+ if(container.dataset.signature===signature) return;
+ container.dataset.signature=signature;
+ const gradients=['#f9234c,#40152d','#ed332f,#29111a','#246a86,#182b40','#dba12a,#61370f','#854c73,#24192d','#5b6873,#11151d','#2779c9,#111c35','#5a8d52,#203b2b'];
+ container.innerHTML=genres.map((genre,index)=>`<button class="genre" data-genre="${escapeHTML(genre)}" aria-pressed="false" style="--g:linear-gradient(135deg,${gradients[index%gradients.length]})"><span>${escapeHTML(genre==='All'?translations[currentLanguage].all:genreLabel(genre))}</span></button>`).join('');
 }
 function localizedMovie(movie, lang = currentLanguage) {
   if (movie.source === 'supabase') {
@@ -34,9 +85,9 @@ function localizedMovie(movie, lang = currentLanguage) {
   const translated = movieTranslations[movie.id]?.[lang];
   return {title: translated?.[0] || movie.title, desc: translated?.[1] || movie.desc || ''};
 }
-function genreLabel(genre) {
-  const key = {Action:'action',Adventure:'adventure',Animation:'animation',Comedy:'comedy',Drama:'drama',Horror:'horror','Sci-Fi':'scifi'}[genre];
-  return key ? translations[currentLanguage][key] : genre;
+function genreLabel(genre, lang = currentLanguage) {
+ const canonical=canonicalGenre(genre);
+ return GENRE_LABELS[canonical]?.[{en:0,ru:1,hy:2}[lang] ?? 0] || canonical;
 }
 function unknownMetadata(key) {
   return {en:{genre:'Genre unavailable',description:'Description unavailable',title:'Untitled'},ru:{genre:'Жанр не указан',description:'Описание отсутствует',title:'Без названия'},hy:{genre:'Ժանրը նշված չէ',description:'Նկարագրությունը հասանելի չէ',title:'Առանց վերնագրի'}}[currentLanguage][key];
