@@ -44,3 +44,31 @@ python3 tests/storefront_browser.py
 ```
 
 No unapproved movie is advertised as immediately watchable or requested from a media host. Local generated-media playback fixtures now carry explicit synthetic approval metadata; those fixtures do not grant rights to real films. The storefront test additionally covers carousels, keyboard focus, hero/catalog binding, persistent device-local My List, profile controls, localized AI failure messages and empty/error states without demo substitution. See `docs/storefront.md` for the Admin separation and optional approval contract.
+
+Admin checks (all external Auth/CRUD/uploads are intercepted; SQL uses local PostgreSQL):
+
+```sh
+node --test tests/admin_model.test.cjs
+python3 tests/admin_browser.py
+PGLITE_MODULE=/tmp/cinewave-sql-test/node_modules/@electric-sql/pglite node --test tests/admin_sql.test.mjs
+```
+
+See `docs/admin.md` for the exact GitHub Pages route, mandatory owner schema preflight, RLS/role design, migration approval, manual bootstrap, quality integration and unverified production boundaries.
+
+Account and route checks:
+
+```sh
+python3 tests/accounts_browser.py
+PGLITE_MODULE=/tmp/cinewave-sql-test/node_modules/@electric-sql/pglite node --test tests/accounts_sql.test.mjs
+```
+
+The browser suite uses the real bundled SDK with intercepted Auth/REST responses; it creates no remote user. The SQL suite checks additive migration repeatability, owner-only profiles/favorites, forged IDs, anonymous denial, unpublished rows and cascade isolation in embedded PostgreSQL. These are not staging Supabase tests. See `docs/platform-launch.md` for the required real-service checks and currently missing staging access/approval.
+
+Rollback-only staging rehearsal verification (embedded PostgreSQL only):
+
+```sh
+python3 scripts/build_staging_rehearsal.py
+PGLITE_MODULE=/tmp/cinewave-sql-test/node_modules/@electric-sql/pglite node --test tests/staging_rehearsal.test.mjs
+```
+
+Checks default refusal, full rollback twice, postcheck success, and rollback after an injected failure between migrations. Snapshots compare columns, grants, policies, movie RLS, sequence state, row counts and reserved objects. The generated SQL is review-only; no remote execution is authorized. Its project confirmation is manual and cannot detect connection identity.

@@ -44,3 +44,10 @@ test('hero backdrops resize only recognized TMDB paths and never invent artwork'
  assert.equal(run("backdropURL(null)"),null);
  assert.equal(run("backdropURL('javascript:alert(1)')"),null);
 });
+
+test('renditions come only from a complete approval bound to the primary URL',()=>{
+ const row={watch_url:'https://media.example/film.mp4',video_renditions:[{height:1080,url:'https://unreviewed.example/film.mp4'}],playback_verification:{watch_url:'https://media.example/film.mp4',license_verified:true,playback_verified:true,commercial_reuse_verified:true,license_source:'https://rights.example/film',license_terms_source:'https://rights.example/terms',renditions:[{height:360,url:'https://media.example/360.mp4'}]}};
+ assert.equal(run(`verifiedRenditions(${JSON.stringify(row)})[0].height`),360);
+ row.playback_verification.watch_url='https://media.example/another.mp4';assert.equal(run(`verifiedRenditions(${JSON.stringify(row)}).length`),0);
+ row.playback_verification.watch_url=row.watch_url;row.playback_verification.license_verified=false;assert.equal(run(`verifiedRenditions(${JSON.stringify(row)}).length`),0);
+});

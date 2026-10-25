@@ -98,6 +98,12 @@ function genreLabel(genre, lang = currentLanguage) {
 function unknownMetadata(key) {
   return {en:{genre:'Genre unavailable',description:'Description unavailable',title:'Untitled'},ru:{genre:'Жанр не указан',description:'Описание отсутствует',title:'Без названия'},hy:{genre:'Ժանրը նշված չէ',description:'Նկարագրությունը հասանելի չէ',title:'Առանց վերնագրի'}}[currentLanguage][key];
 }
+function verifiedRenditions(row) {
+ const proof=row.playback_verification;
+ const https=value=>{try{const url=new URL(value);return url.protocol==='https:'&&!url.username&&!url.password;}catch{return false;}};
+ if(!proof||proof.watch_url!==cleanText(row.watch_url)||proof.license_verified!==true||proof.playback_verified!==true||proof.commercial_reuse_verified!==true||!https(proof.license_source)||!https(proof.license_terms_source))return [];
+ return Array.isArray(proof.renditions)?proof.renditions:[];
+}
 function mapCatalogMovie(row) {
   const titles = {en:cleanText(row.title_en),ru:cleanText(row.title_ru),hy:cleanText(row.title_hy)};
   const genres = movieGenres(row);
@@ -105,6 +111,6 @@ function mapCatalogMovie(row) {
   return {id:'catalog:' + String(row.id ?? row.tmdb_id),source:'supabase',titles,
     descriptions:{en:cleanText(row.overview_en),ru:cleanText(row.overview_ru),hy:cleanText(row.overview_hy)},
     title:titles.en || titles.ru || titles.hy || '',desc:'',year:/^\d{4}-\d{2}-\d{2}$/.test(date) ? Number(date.slice(0,4)) : null,
-    genres,genre:genres[0] || '',kind:'Movie',rating:row.rating != null ? String(row.rating) : '',duration:'',
-    img:posterURL(row.poster_path),backdrop:backdropURL(row.backdrop_path),approval:row.playback_verification||null,video:cleanText(row.watch_url),progress:globalThis.CineWavePlayer?.progressFor('catalog:'+String(row.id ?? row.tmdb_id))||0};
+    genres,genre:genres[0] || '',kind:row.media_type==='tv'?'TV Show':'Movie',mediaType:row.media_type==='tv'?'tv':'movie',trailer:cleanText(row.trailer_url),rating:row.rating != null ? String(row.rating) : '',duration:'',
+    img:posterURL(row.poster_path),backdrop:backdropURL(row.backdrop_path),approvalRequired:Object.prototype.hasOwnProperty.call(row,'rights_verification_status'),approval:row.playback_verification||null,renditions:verifiedRenditions(row),video:cleanText(row.watch_url),progress:globalThis.CineWavePlayer?.progressFor('catalog:'+String(row.id ?? row.tmdb_id))||0};
 }

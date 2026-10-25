@@ -12,3 +12,5 @@
 .cw-player:fullscreen{display:flex;flex-direction:column;justify-content:center;width:100%;height:100%;background:#000}
 .cw-player:fullscreen .cw-stage{flex:1;min-height:0;aspect-ratio:auto}
 @media(max-width:600px){.modal{padding:8px}.cw-controls{gap:6px;padding:8px}.cw-seek{order:-1;flex-basis:100%;width:100%}.cw-volume{width:65px}.cw-status{font-size:12px;bottom:6px;padding:6px}.cw-controls button{min-width:40px}.cw-time{flex:1}}
+
+.cw-quality{max-width:105px;min-height:38px;background:#1a2331;color:white;border:1px solid #39414d;border-radius:6px;padding:5px;font:inherit;font-size:12px}.cw-quality[hidden]{display:none}

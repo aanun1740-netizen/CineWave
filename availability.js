@@ -12,5 +12,5 @@ function approvedPlayback(movie, curated = []) {
   return Boolean(title)&&title.toLowerCase()===cleanText(movie.titles?.en||movie.title).toLowerCase()&&Number(String(record.release_date||record.candidate_year).slice(0,4))===movie.year;
  };
  const qualifies=(record,managed)=>Boolean(record&&typeof record==='object'&&record.watch_url===movie.video&&record.commercial_reuse_verified===true&&(managed?record.verified===true:(record.license_verified===true&&record.playback_verified===true))&&https(record.license_source)&&https(record.license_terms_source));
- return qualifies(movie.approval,false)||(Array.isArray(curated)?curated:[]).filter(sameFilm).some(record=>qualifies(record,true));
+ return qualifies(movie.approval,false)||(!movie.approvalRequired&&(Array.isArray(curated)?curated:[]).filter(sameFilm).some(record=>qualifies(record,true)));
 }
