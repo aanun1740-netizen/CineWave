@@ -38,6 +38,10 @@ with tempfile.TemporaryDirectory(prefix='cinewave-media-') as temporary:
  threading.Thread(target=server.serve_forever,daemon=True).start()
  base=f'http://127.0.0.1:{server.server_port}/'
  rows=[dict(id=1,title_en='MP4 fixture',genre_names=['Action'],watch_url=base+'test-media/fixture.mp4'),dict(id=2,title_en='HLS fixture',genre_names=['Drama'],watch_url=base+'test-media/fixture.m3u8'),dict(id=3,title_en='Missing source',genre_names=[],watch_url=None),dict(id=4,title_en='Unavailable source',genre_names=[],watch_url=base+'test-media/404.mp4')]
+ # Synthetic fixture approvals authorize only the local generated test media.
+ for row in rows:
+  if row['watch_url']:
+   row['playback_verification']={'watch_url':row['watch_url'],'license_verified':True,'playback_verified':True,'commercial_reuse_verified':True,'license_source':'https://rights.example.org/synthetic-test','license_terms_source':'https://rights.example.org/synthetic-test/terms'}
  try:
   with sync_playwright() as p:
    browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox'])
@@ -89,8 +93,8 @@ with tempfile.TemporaryDirectory(prefix='cinewave-media-') as temporary:
    assert not page.locator('#modal').evaluate('(el)=>el.classList.contains("open")')
    assert page.locator('video').evaluate('(v)=>v.paused&&!v.getAttribute("src")')
    open_movie(3)
-   assert page.get_by_text('No playable video is available for this title.',exact=True).is_visible()
-   assert page.get_by_role('button',name='Play',exact=True).is_disabled()
+   assert page.get_by_text('This film is available to explore. Playback is not currently available.',exact=True).is_visible()
+   assert page.locator('video').count()==0
    close();open_movie(4)
    page.get_by_role('button',name='Try again',exact=True).wait_for()
    assert page.locator('.cw-status').inner_text() in ['This browser cannot play this video format.','This video is unavailable. Check your connection or try again.']

@@ -37,3 +37,10 @@ test('all supported genres have language-independent keys and three translated l
  assert.equal(run("genreLabel('Thriller','hy')"),'Թրիլլեր');
  assert.equal(run("availableGenres([{genres:['Action','Thriller']},{genres:['Thriller','Crime']}]).join(',')"),'Action,Thriller,Crime');
 });
+
+test('hero backdrops resize only recognized TMDB paths and never invent artwork',()=>{
+ assert.equal(run("backdropURL('/landscape.jpg')"),'https://image.tmdb.org/t/p/w1280/landscape.jpg');
+ assert.equal(run("backdropURL('https://art.example/w500/custom.jpg')"),'https://art.example/w500/custom.jpg');
+ assert.equal(run("backdropURL(null)"),null);
+ assert.equal(run("backdropURL('javascript:alert(1)')"),null);
+});
