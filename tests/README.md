@@ -54,3 +54,12 @@ PGLITE_MODULE=/tmp/cinewave-sql-test/node_modules/@electric-sql/pglite node --te
 ```
 
 See `docs/admin.md` for the exact GitHub Pages route, mandatory owner schema preflight, RLS/role design, migration approval, manual bootstrap, quality integration and unverified production boundaries.
+
+Account and route checks:
+
+```sh
+python3 tests/accounts_browser.py
+PGLITE_MODULE=/tmp/cinewave-sql-test/node_modules/@electric-sql/pglite node --test tests/accounts_sql.test.mjs
+```
+
+The browser suite uses the real bundled SDK with intercepted Auth/REST responses; it creates no remote user. The SQL suite checks additive migration repeatability, owner-only profiles/favorites, forged IDs, anonymous denial, unpublished rows and cascade isolation in embedded PostgreSQL. These are not staging Supabase tests. See `docs/platform-launch.md` for the required real-service checks and currently missing staging access/approval.

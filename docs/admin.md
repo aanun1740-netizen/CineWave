@@ -88,3 +88,9 @@ SQL rollback of the feature is **not** automatically provided because dropping s
 - Existing public storefront/catalog/eligibility/player regression suites remain applicable. Native Safari/iOS, real Supabase Auth/Storage HTTP/RLS deployment, existing hidden privileged RPCs and production migration execution remain unverified until owner staging/approval. No test here grants rights to real movies.
 
 Run commands and temporary PGlite installation are in `tests/README.md`. Dependency integrity and SDK licenses are recorded in `vendor/README.md`.
+
+## Public accounts and shared configuration
+
+The public and Admin interfaces now share `config.js` and `auth-client.js`; `admin/config.js` keeps the existing alias. Sessions use per-tab sessionStorage (`cinewave:session`); PKCE verifiers alone use localStorage for email callbacks across tabs. Re-login after upgrading from the earlier Admin-only session key. Both logout paths clear local credentials even when the remote logout fails. Admin roles still come solely from the private database allowlist and server RPC.
+
+The Admin interface has English, Russian and Armenian localization, a persistent language selector, and explicit Movie/TV classification. User-entered titles/descriptions are never translated by the UI. Migration `002_accounts_and_catalog.sql` must follow 001 to add media classification and private account profiles/favorites. See [platform-launch.md](platform-launch.md) for setup, staging restrictions, hash routes and the reviewed cleanup procedure. No old records are removed by either migration.

@@ -7,7 +7,7 @@
 <meta name="description" content="Discover cinema with CineWave. Explore the catalog, save your next film, and watch approved releases.">
 <title>CineWave — Your next great film</title>
 <link rel="stylesheet" href="storefront.css">
-<link rel="stylesheet" href="player.css">
+<link rel="stylesheet" href="player.css"><link rel="stylesheet" href="accounts.css">
 </head>
 <body class="cinewave-site">
 <a class="skip-link" href="#catalog">Skip to movies</a>
@@ -27,7 +27,7 @@
   <select id="language" class="language" aria-label="Choose language"><option value="en">EN</option><option value="ru">RU</option><option value="hy">ՀԱՅ</option></select>
   <button class="avatar" id="profileButton" aria-haspopup="dialog" aria-label="Your space" aria-expanded="false" aria-controls="profilePanel"><svg><use href="#i-user"/></svg></button>
  </div>
- <section id="profilePanel" class="profile-panel" role="dialog" aria-labelledby="profileTitle" hidden><p class="eyebrow">CINEWAVE</p><h2 id="profileTitle">Your space</h2><p id="profileNote"></p><button class="btn secondary" id="profileList">My List</button></section>
+ <section id="profilePanel" class="profile-panel" role="dialog" aria-labelledby="profileTitle" hidden><p class="eyebrow">CINEWAVE</p><h2 id="profileTitle">Your space</h2><p id="profileNote"></p><button class="btn secondary" id="profileList">My List</button><div class="account-menu"><button class="btn secondary" id="menuLogin" data-route="login"></button><button class="btn secondary" id="menuRegister" data-route="register"></button><button class="btn secondary" id="menuProfile" data-route="profile" hidden></button><a class="btn secondary" id="menuAdmin" href="admin/" hidden>Admin</a></div></section>
 </header>
 <main>
  <section class="hero" aria-labelledby="heroTitle">
@@ -40,7 +40,14 @@
   <div class="hero-art" id="heroArt" hidden><div class="hero-art-glow"></div><img id="heroPoster" alt="" width="500" height="750"><span class="art-stamp">CINEWAVE<br><b>◌</b></span></div>
   <div class="hero-pagination" id="heroPagination" aria-label="Featured movies"></div>
  </section>
- <div class="catalog-shell" id="catalog" tabindex="-1">
+ <section class="account-pages" id="accountPages" hidden><div class="account-card"><p class="eyebrow">CINEWAVE</p><h1 id="accountTitle"></h1><p id="accountIntro"></p><p class="account-feedback" id="accountFeedback" role="status" aria-live="polite"></p>
+<form id="userLoginForm" class="account-form" hidden><label><span data-account-text="email"></span><input id="userLoginEmail" type="email" required autocomplete="username"></label><label><span data-account-text="password"></span><input id="userLoginPassword" type="password" required autocomplete="current-password"></label><button class="btn primary" data-account-text="login"></button></form>
+<form id="userRegisterForm" class="account-form" hidden><label><span data-account-text="name"></span><input id="registerName" maxlength="80" required autocomplete="nickname"></label><label><span data-account-text="email"></span><input id="registerEmail" type="email" required autocomplete="username"></label><label><span data-account-text="newPassword"></span><input id="registerPassword" type="password" minlength="12" required autocomplete="new-password"></label><label><span data-account-text="repeat"></span><input id="registerConfirm" type="password" minlength="12" required autocomplete="new-password"></label><button class="btn primary" data-account-text="register"></button></form>
+<form id="forgotForm" class="account-form" hidden><label><span data-account-text="email"></span><input id="forgotEmail" type="email" required autocomplete="email"></label><button class="btn primary" data-account-text="resetLink"></button></form>
+<div id="userProfile" hidden><p class="profile-facts" id="profileIdentity"></p><form id="userProfileForm" class="account-form"><label><span data-account-text="name"></span><input id="profileName" required maxlength="80" autocomplete="nickname"></label><label><span data-account-text="language"></span><select id="profileLanguage"><option value="en">English</option><option value="ru">Русский</option><option value="hy">Հայերեն</option></select></label><button class="btn primary" data-account-text="save"></button></form><div class="account-actions"><button class="btn secondary" id="importGuestList" data-account-text="importList" hidden></button><button class="btn secondary" data-route="my-list" data-account-text="myList"></button><button class="btn secondary" data-route="recover" data-account-text="changePassword"></button><button class="btn secondary" id="userLogout" data-account-text="logout"></button></div></div>
+<form id="passwordForm" class="account-form" hidden><label id="currentPasswordRow"><span data-account-text="password"></span><input id="passwordCurrent" type="password" autocomplete="current-password"></label><label><span data-account-text="newPassword"></span><input id="resetPassword" type="password" minlength="12" required autocomplete="new-password"></label><label><span data-account-text="repeat"></span><input id="resetConfirm" type="password" minlength="12" required autocomplete="new-password"></label><button class="btn primary" data-account-text="changePassword"></button></form>
+<div class="account-links"><button data-route="login" data-account-text="login"></button><button data-route="register" data-account-text="register"></button><button data-route="forgot" data-account-text="forgot"></button><button data-route="home" data-account-text="browse"></button></div></div></section>
+<div class="catalog-shell" id="catalog" tabindex="-1">
   <section class="genre-section"><div class="section-head"><div><p class="eyebrow" id="genreEyebrow">FOLLOW YOUR MOOD</p><h2 id="genreHeading">Find your kind of cinema</h2></div><button class="text-button" id="allGenres">All genres</button></div><div class="genre-list" id="genres"></div></section>
   <div class="catalog-status" id="catalogStatus" role="status" aria-live="polite"><span id="catalogStatusText"></span><button class="text-button" id="retryCatalog" hidden>Try again</button></div>
   <div class="skeletons" id="skeletons" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -53,15 +60,16 @@
 </main>
 <footer><a class="brand" href="#">Cine<span>Wave</span></a><p id="footerText"></p><span>© CineWave</span></footer>
 <nav class="mobile-nav" aria-label="Mobile navigation"><button data-nav="Home"><span aria-hidden="true">◈</span><b>Discover</b></button><button data-nav="Movies"><span aria-hidden="true">▤</span><b>Movies</b></button><button data-nav="TV Shows"><span aria-hidden="true">▣</span><b>TV Shows</b></button><button data-nav="My List"><span aria-hidden="true">♡</span><b>My List</b></button></nav>
-<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="dialog"><div class="dialog-top"><div><span class="eyebrow">CINEWAVE</span><h2 id="modalTitle"></h2></div><button class="close" id="closeModal" aria-label="Close">×</button></div><div class="video-wrap" id="videoWrap"></div><div class="dialog-info"><div class="meta" id="modalMeta"></div><p id="modalDesc"></p><button class="btn secondary" id="modalList">My List</button></div></div></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="dialog"><div class="dialog-top"><div><span class="eyebrow">CINEWAVE</span><h2 id="modalTitle"></h2></div><button class="close" id="closeModal" aria-label="Close">×</button></div><div class="video-wrap" id="videoWrap"></div><div class="dialog-info"><div class="meta" id="modalMeta"></div><p id="modalDesc"></p><div class="detail-actions"><button class="btn primary" id="modalWatch" hidden></button><button class="btn secondary" id="modalList">My List</button><a class="btn secondary" id="modalTrailer" target="_blank" rel="noopener noreferrer" hidden></a></div></div></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <button id="cw-ai-button" type="button" aria-controls="cw-ai-panel" aria-expanded="false">✦ <span>CineWave AI</span></button>
 <section id="cw-ai-panel" role="dialog" aria-labelledby="cw-ai-title" hidden><header id="cw-ai-head"><div><span class="eyebrow">YOUR CINEMA COMPANION</span><h2 id="cw-ai-title">CineWave AI</h2></div><button id="cw-ai-close" aria-label="Close chat">×</button></header><div id="cw-ai-messages" aria-live="polite"><div class="cw-ai-msg cw-ai-bot" id="aiGreeting"></div></div><form id="cw-ai-form"><input id="cw-ai-input" placeholder="Type your message..." aria-label="Your message" autocomplete="off" required><button id="cw-ai-send" type="submit" aria-label="Send message">↑</button></form></section>
+<script src="vendor/supabase.min.js"></script><script src="config.js"></script><script src="auth-client.js"></script>
 <script src="vendor/hls.light.min.js"></script>
 <script src="player.js"></script>
 <script src="catalog.js"></script>
 <script src="availability.js"></script>
 <script src="app.js"></script>
-<script src="ai.js"></script>
+<script src="ai.js"></script><script src="accounts.js"></script><script src="routes.js"></script>
 </body>
 </html>

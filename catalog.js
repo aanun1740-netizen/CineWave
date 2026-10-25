@@ -111,6 +111,6 @@ function mapCatalogMovie(row) {
   return {id:'catalog:' + String(row.id ?? row.tmdb_id),source:'supabase',titles,
     descriptions:{en:cleanText(row.overview_en),ru:cleanText(row.overview_ru),hy:cleanText(row.overview_hy)},
     title:titles.en || titles.ru || titles.hy || '',desc:'',year:/^\d{4}-\d{2}-\d{2}$/.test(date) ? Number(date.slice(0,4)) : null,
-    genres,genre:genres[0] || '',kind:'Movie',rating:row.rating != null ? String(row.rating) : '',duration:'',
+    genres,genre:genres[0] || '',kind:row.media_type==='tv'?'TV Show':'Movie',mediaType:row.media_type==='tv'?'tv':'movie',trailer:cleanText(row.trailer_url),rating:row.rating != null ? String(row.rating) : '',duration:'',
     img:posterURL(row.poster_path),backdrop:backdropURL(row.backdrop_path),approvalRequired:Object.prototype.hasOwnProperty.call(row,'rights_verification_status'),approval:row.playback_verification||null,renditions:verifiedRenditions(row),video:cleanText(row.watch_url),progress:globalThis.CineWavePlayer?.progressFor('catalog:'+String(row.id ?? row.tmdb_id))||0};
 }

@@ -1,24 +1,36 @@
-# Admin Panel change list
+# PR #6 change list
 
-This list covers the Admin feature branch. The public PR #5 HTML, storefront CSS, app controller and AI controller are unchanged. Shared public changes are limited to approved rendition mapping, authoritative server approval and the existing player quality control.
+This branch extends the existing Admin Panel with public accounts, private cloud favorites, Pages hash routes, TV classification and multilingual Admin UI. The existing catalog, artwork, AI controller and MP4/HLS player are retained. No production database operation or deployment is included. See [platform-launch.md](platform-launch.md) for staging and launch requirements.
 
 - [.gitattributes](../.gitattributes)
+- [accounts.css](../accounts.css)
+- [accounts.js](../accounts.js)
 - [admin/admin.css](../admin/admin.css)
 - [admin/admin.js](../admin/admin.js)
 - [admin/config.js](../admin/config.js)
+- [admin/i18n.js](../admin/i18n.js)
 - [admin/index.html](../admin/index.html)
 - [admin/model.js](../admin/model.js)
+- [app.js](../app.js)
+- [auth-client.js](../auth-client.js)
 - [availability.js](../availability.js)
 - [catalog.js](../catalog.js)
+- [config.js](../config.js)
 - [docs/admin-changes.md](../docs/admin-changes.md)
 - [docs/admin.md](../docs/admin.md)
+- [docs/platform-launch.md](../docs/platform-launch.md)
 - [docs/storefront.md](../docs/storefront.md)
+- [index.html](../index.html)
 - [player.css](../player.css)
 - [player.js](../player.js)
+- [routes.js](../routes.js)
 - [sql/admin_bootstrap.example.sql](../sql/admin_bootstrap.example.sql)
 - [sql/inspect_admin_schema.sql](../sql/inspect_admin_schema.sql)
 - [sql/migrations/001_admin_panel.sql](../sql/migrations/001_admin_panel.sql)
+- [sql/migrations/002_accounts_and_catalog.sql](../sql/migrations/002_accounts_and_catalog.sql)
 - [tests/README.md](../tests/README.md)
+- [tests/accounts_browser.py](../tests/accounts_browser.py)
+- [tests/accounts_sql.test.mjs](../tests/accounts_sql.test.mjs)
 - [tests/admin_browser.py](../tests/admin_browser.py)
 - [tests/admin_model.test.cjs](../tests/admin_model.test.cjs)
 - [tests/admin_sql.test.mjs](../tests/admin_sql.test.mjs)

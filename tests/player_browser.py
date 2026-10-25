@@ -65,6 +65,7 @@ with tempfile.TemporaryDirectory(prefix='cinewave-media-') as temporary:
    page.route('**/*',route);page.goto(base,wait_until='networkidle')
    def open_movie(id):
     page.locator(f'#movies [data-id="catalog:{id}"]').click()
+    if id!=3:page.locator('#modalWatch').click()
    def close():page.locator('#closeModal').click()
    open_movie(1)
    page.wait_for_function("document.querySelector('.cw-stage video').readyState>=1")
@@ -135,6 +136,7 @@ with tempfile.TemporaryDirectory(prefix='cinewave-media-') as temporary:
    open_movie(5);page.get_by_role('button',name='Play',exact=True).click()
    page.wait_for_function("document.querySelectorAll('.cw-quality option').length===3")
    assert page.locator('.cw-quality option').all_text_contents()==['Auto','360p','720p']
+   page.wait_for_function("document.querySelector('video').currentTime>0.3&&!document.querySelector('video').paused")
    page.locator('.cw-quality').select_option('level:0')
    page.wait_for_function("document.querySelector('video').videoHeight===360",timeout=20000)
    page.locator('.cw-quality').select_option('level:1')

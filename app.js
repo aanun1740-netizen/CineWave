@@ -6,7 +6,7 @@ const translations={
 };
 const $=id=>document.getElementById(id);
 const movies=[];
-let currentLanguage='en',activeGenre='All',activeNav='Home',currentMovie=null,activePlayer=null,playerOpener=null,featuredMovie=null,heroIndex=0,approvedFilms=[],catalogState='loading',loadingCatalog=false;
+let currentLanguage='en',activeGenre='All',activeNav='Home',currentMovie=null,activePlayer=null,playerOpener=null,currentMovieMode='details',featuredMovie=null,heroIndex=0,approvedFilms=[],catalogState='loading',loadingCatalog=false;
 const failedArtwork=new Set();
 let watchList=new Set();
 try {const saved=JSON.parse(localStorage.getItem('cinewave:my-list'));if(Array.isArray(saved))watchList=new Set(saved.filter(id=>typeof id==='string'));const lang=localStorage.getItem('cinewave:language');if(translations[lang])currentLanguage=lang;}catch{/* Device storage is optional. */}
@@ -14,8 +14,8 @@ function uiText(key,params={}){return String(translations[currentLanguage][key]?
 function icon(name){return `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;}
 function isWatchable(movie){return approvedPlayback(movie,approvedFilms);}
 function toast(message){$('toast').textContent=message;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').textContent='',2400);}
-function toggleList(movie){if(!movie)return;const exists=watchList.has(movie.id);if(exists)watchList.delete(movie.id);else watchList.add(movie.id);try{localStorage.setItem('cinewave:my-list',JSON.stringify([...watchList]));}catch{}toast(uiText(exists?'removed':'added'));renderHero();updateProfile();if(currentMovie){$('modalList').textContent=(watchList.has(currentMovie.id)?'✓ ':'＋ ')+uiText(watchList.has(currentMovie.id)?'inList':'list');$('modalList').setAttribute('aria-pressed',String(watchList.has(currentMovie.id)));}if(activeNav==='My List')render();}
-function updateProfile(){$('profileNote').textContent=uiText('profileNote',{count:watchList.size});}
+async function toggleList(movie){if(!movie)return;const wasSaved=watchList.has(movie.id);const account=window.CineWaveAccounts;if(account&&!account.ready){toast(account.text('working'));return;}if(account?.signedIn){const ok=await account.changeList(movie);if(!ok)return;}const exists=wasSaved;if(exists)watchList.delete(movie.id);else watchList.add(movie.id);if(!account?.signedIn){try{localStorage.setItem('cinewave:my-list',JSON.stringify([...watchList]));}catch{}}toast(uiText(exists?'removed':'added'));renderHero();updateProfile();if(currentMovie){$('modalList').textContent=(watchList.has(currentMovie.id)?'✓ ':'＋ ')+uiText(watchList.has(currentMovie.id)?'inList':'list');$('modalList').setAttribute('aria-pressed',String(watchList.has(currentMovie.id)));}if(activeNav==='My List')render();}
+function updateProfile(){if(window.CineWaveAccounts)window.CineWaveAccounts.updateMenu();else $('profileNote').textContent=uiText('profileNote',{count:watchList.size});}
 function card(movie){
  const title=localizedMovie(movie).title||uiText('titleUnknown'),available=isWatchable(movie);
  const metadata=[movie.year,(movie.genres||[movie.genre]).filter(Boolean).map(g=>genreLabel(g)).join(' · ')||unknownMetadata('genre')].filter(Boolean).join(' • ');
@@ -62,25 +62,33 @@ function render(){
  $('catalogStatus').hidden=catalogState==='ready';$('catalogStatusText').textContent=uiText(catalogState==='loading'?'loading':'loadError');$('retryCatalog').hidden=catalogState!=='error';$('skeletons').hidden=catalogState!=='loading'||movies.length>0;
  document.querySelectorAll('[data-genre]').forEach(button=>{const selected=button.dataset.genre===activeGenre;button.classList.toggle('active',selected);button.setAttribute('aria-pressed',String(selected));});
  document.querySelectorAll('[data-nav]').forEach(button=>{const selected=button.dataset.nav===activeNav;button.classList.toggle('active',selected);if(selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
- requestAnimationFrame(updateRowControls);
+ requestAnimationFrame(updateRowControls);window.CineWaveRouter?.refresh();
 }
 function updateRowControls(){document.querySelectorAll('.row-controls').forEach(controls=>{const row=$(controls.dataset.row);const max=row.scrollWidth-row.clientWidth;const buttons=controls.querySelectorAll('button');if(buttons.length){buttons[0].disabled=row.scrollLeft<=2;buttons[1].disabled=max<=2||row.scrollLeft>=max-2;}});}
 function localizeRowControls(){document.querySelectorAll('.row-controls').forEach(controls=>{controls.innerHTML=`<button type="button" data-scroll="${controls.dataset.row}" data-direction="-1" aria-label="${escapeHTML(uiText('previous'))}">${icon('arrow')}</button><button type="button" data-scroll="${controls.dataset.row}" data-direction="1" aria-label="${escapeHTML(uiText('next'))}">${icon('arrow')}</button>`;});}
-function closeMovie(){
+function closeMovie(silent=false){
  const wasOpen=$('modal').classList.contains('open'),openerId=playerOpener?.closest('.movie')?.dataset.id;
  activePlayer?.destroy();activePlayer=null;$('modal').classList.remove('open');document.body.classList.remove('has-player-dialog');
- if(wasOpen){render();const target=playerOpener?.isConnected?playerOpener:[...$('movies').querySelectorAll('.movie')].find(card=>card.dataset.id===openerId);(target||$('search')).focus({preventScroll:true});}
+ if(wasOpen){render();const target=playerOpener?.isConnected?playerOpener:[...$('movies').querySelectorAll('.movie')].find(card=>card.dataset.id===openerId);(target||$('search')).focus({preventScroll:true});}if(!silent)window.CineWaveRouter?.closeDetails();
 }
-function openMovie(movie){
+function openMovie(movie,mode='details'){
+ currentMovieMode=mode;
  const wasOpen=$('modal').classList.contains('open');if(!wasOpen)playerOpener=document.activeElement;
  currentMovie=movie;const info=localizedMovie(movie);$('modalTitle').textContent=info.title||uiText('titleUnknown');$('modalDesc').textContent=info.desc||uiText('descriptionUnknown');
  const metadata=[movie.year,...(movie.genres||[]).map(g=>genreLabel(g)),movie.rating,movie.duration].filter(Boolean);
  $('modalMeta').replaceChildren(...metadata.map(value=>{const span=document.createElement('span');span.textContent=value;return span;}));
  $('modalList').textContent=(watchList.has(movie.id)?'✓ ':'＋ ')+uiText(watchList.has(movie.id)?'inList':'list');$('modalList').setAttribute('aria-pressed',String(watchList.has(movie.id)));
- if(isWatchable(movie)){
+ if(mode==='watch'&&isWatchable(movie)){
   if(activePlayer?.video.dataset.movieId===movie.id)activePlayer.localize(currentLanguage);
   else{activePlayer?.destroy();activePlayer=CineWavePlayer.mount($('videoWrap'),movie,currentLanguage);activePlayer.video.dataset.movieId=movie.id;}
- }else{activePlayer?.destroy();activePlayer=null;const note=document.createElement('div');note.className='availability-note';note.textContent=uiText('browseOnly');$('videoWrap').replaceChildren(note);}
+ }else{
+  activePlayer?.destroy();activePlayer=null;const frame=document.createElement('div');frame.className='details-art';const image=document.createElement('img');image.className='detail-poster';image.src=failedArtwork.has(movie.img)?POSTER_FALLBACK:movie.img||POSTER_FALLBACK;image.alt=info.title||'';image.onerror=()=>{if(image.src.endsWith(POSTER_FALLBACK))return;image.src=POSTER_FALLBACK;};frame.append(image);
+  if(!isWatchable(movie)){const note=document.createElement('div');note.className='availability-note';note.textContent=uiText('browseOnly');frame.append(note);}$('videoWrap').replaceChildren(frame);
+ }
+ $('modalWatch').hidden=mode==='watch'||!isWatchable(movie);$('modalWatch').textContent=uiText('watch');$('modalList').disabled=false;
+ let trailer=null;try{const url=new URL(movie.trailer);if(url.protocol==='https:'&&!url.username&&!url.password)trailer=url.href;}catch{}
+ $('modalTrailer').hidden=!trailer;$('modalTrailer').textContent={en:'Watch trailer',ru:'Трейлер',hy:'Դիտել թրեյլերը'}[currentLanguage];if(trailer)$('modalTrailer').href=trailer;
+
  $('modal').classList.add('open');document.body.classList.add('has-player-dialog');if(!wasOpen)($('modal').querySelector('[data-control="play"]:not(:disabled)')||$('closeModal')).focus({preventScroll:true});
 }
 function applyLanguage(lang){
@@ -93,36 +101,36 @@ function applyLanguage(lang){
  $('cw-ai-input').placeholder=uiText('aiPlaceholder');$('cw-ai-input').setAttribute('aria-label',uiText('aiMessage'));$('cw-ai-close').setAttribute('aria-label',uiText('aiClose'));$('cw-ai-send').setAttribute('aria-label',uiText('aiSend'));document.querySelector('#cw-ai-head .eyebrow').textContent=uiText('aiEyebrow');
  document.querySelectorAll('.movie-grid').forEach(row=>row.setAttribute('aria-label',uiText('rowLabel')));
  document.querySelectorAll('[data-ai-status]').forEach(node=>node.textContent=uiText(node.dataset.aiStatus));
- localizeRowControls();render();if(currentMovie&&$('modal').classList.contains('open'))openMovie(currentMovie);
+ localizeRowControls();render();window.CineWaveAccounts?.localize();if(currentMovie&&$('modal').classList.contains('open'))openMovie(currentMovie,currentMovieMode);
 }
 document.addEventListener('click',event=>{
- const article=event.target.closest('.movie');if(article){const movie=movies.find(m=>m.id===article.dataset.id);if(movie)openMovie(movie);}
- const nav=event.target.closest('[data-nav]');if(nav){activeNav=nav.dataset.nav;activeGenre='All';$('search').value='';$('clearSearch').hidden=true;render();if(activeNav==='Home')window.scrollTo({top:0,behavior:reducedMotion()?'auto':'smooth'});else $('catalog').scrollIntoView({behavior:reducedMotion()?'auto':'smooth'});}
+ const article=event.target.closest('.movie');if(article){const movie=movies.find(m=>m.id===article.dataset.id);if(movie){if(window.CineWaveRouter)window.CineWaveRouter.navigate('movie/'+encodeURIComponent(movie.id));else openMovie(movie);}}
+ const nav=event.target.closest('[data-nav]');if(nav&&window.CineWaveRouter){window.CineWaveRouter.navigate({Home:'home',Movies:'movies','TV Shows':'tv','My List':'my-list'}[nav.dataset.nav]);return;}if(nav){activeNav=nav.dataset.nav;activeGenre='All';$('search').value='';$('clearSearch').hidden=true;render();if(activeNav==='Home')window.scrollTo({top:0,behavior:reducedMotion()?'auto':'smooth'});else $('catalog').scrollIntoView({behavior:reducedMotion()?'auto':'smooth'});}
  const arrow=event.target.closest('[data-scroll]');if(arrow){const row=$(arrow.dataset.scroll);row.scrollBy({left:Number(arrow.dataset.direction)*row.clientWidth*.85,behavior:reducedMotion()?'auto':'smooth'});}
  const feature=event.target.closest('[data-feature]');if(feature){heroIndex=Number(feature.dataset.feature);renderHero();}
  if(!$('profilePanel').hidden&&!event.target.closest('#profilePanel,#profileButton')){$('profilePanel').hidden=true;$('profileButton').setAttribute('aria-expanded','false');}
 });
 function reducedMotion(){return matchMedia('(prefers-reduced-motion: reduce)').matches;}
 document.addEventListener('keydown',event=>{
- if(event.target.matches('.movie')){if(['Enter',' '].includes(event.key)){event.preventDefault();const movie=movies.find(m=>m.id===event.target.dataset.id);if(movie)openMovie(movie);}else if(['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();(event.key==='ArrowRight'?event.target.nextElementSibling:event.target.previousElementSibling)?.focus();}}
+ if(event.target.matches('.movie')){if(['Enter',' '].includes(event.key)){event.preventDefault();const movie=movies.find(m=>m.id===event.target.dataset.id);if(movie){if(window.CineWaveRouter)window.CineWaveRouter.navigate('movie/'+encodeURIComponent(movie.id));else openMovie(movie);}}else if(['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();(event.key==='ArrowRight'?event.target.nextElementSibling:event.target.previousElementSibling)?.focus();}}
  if(event.key==='Escape'){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else if(!$('cw-ai-panel').hidden)window.closeCineWaveAI?.();else if(!$('profilePanel').hidden){$('profilePanel').hidden=true;$('profileButton').setAttribute('aria-expanded','false');$('profileButton').focus();}else closeMovie();}
  if(event.key==='Tab'&&$('modal').classList.contains('open')){const focusable=[...$('modal').querySelectorAll('button:not(:disabled),input:not(:disabled),[tabindex="0"]')].filter(node=>node.getClientRects().length);const first=focusable[0],last=focusable.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}
 });
-$('genres').addEventListener('click',event=>{const button=event.target.closest('[data-genre]');if(button){activeGenre=button.dataset.genre;activeNav='Movies';render();}});
-$('search').addEventListener('input',()=>{activeNav='Movies';$('clearSearch').hidden=!$('search').value;render();});
+$('genres').addEventListener('click',event=>{const button=event.target.closest('[data-genre]');if(button){activeGenre=button.dataset.genre;activeNav='Movies';window.CineWaveRouter?.listing('movies');render();}});
+$('search').addEventListener('input',()=>{activeNav='Movies';window.CineWaveRouter?.listing('movies');$('clearSearch').hidden=!$('search').value;render();});
 $('clearSearch').addEventListener('click',()=>{$('search').value='';$('clearSearch').hidden=true;render();$('search').focus();});
-$('resetFilters').addEventListener('click',()=>{activeGenre='All';activeNav='Home';$('search').value='';$('clearSearch').hidden=true;render();});
-$('allGenres').addEventListener('click',()=>{activeGenre='All';activeNav='Movies';render();});
-$('heroWatch').addEventListener('click',()=>{if(featuredMovie)openMovie(featuredMovie);});$('heroList').addEventListener('click',()=>toggleList(featuredMovie));$('modalList').addEventListener('click',()=>toggleList(currentMovie));
-$('closeModal').addEventListener('click',closeMovie);$('modal').addEventListener('click',event=>{if(event.target===$('modal'))closeMovie();});
+$('resetFilters').addEventListener('click',()=>{activeGenre='All';activeNav='Home';window.CineWaveRouter?.listing('home');$('search').value='';$('clearSearch').hidden=true;render();});
+$('allGenres').addEventListener('click',()=>{activeGenre='All';activeNav='Movies';window.CineWaveRouter?.listing('movies');render();});
+$('heroWatch').addEventListener('click',()=>{if(featuredMovie)window.CineWaveRouter.navigate((isWatchable(featuredMovie)?'watch/':'movie/')+encodeURIComponent(featuredMovie.id));});$('modalWatch').addEventListener('click',()=>{if(currentMovie&&isWatchable(currentMovie))window.CineWaveRouter.navigate('watch/'+encodeURIComponent(currentMovie.id));});$('heroList').addEventListener('click',()=>toggleList(featuredMovie));$('modalList').addEventListener('click',()=>toggleList(currentMovie));
+$('closeModal').addEventListener('click',()=>closeMovie());$('modal').addEventListener('click',event=>{if(event.target===$('modal'))closeMovie();});
 $('language').addEventListener('change',event=>applyLanguage(event.target.value));
 $('profileButton').addEventListener('click',()=>{$('profilePanel').hidden=!$('profilePanel').hidden;$('profileButton').setAttribute('aria-expanded',String(!$('profilePanel').hidden));});
-$('profileList').addEventListener('click',()=>{activeNav='My List';activeGenre='All';$('search').value='';$('clearSearch').hidden=true;$('profilePanel').hidden=true;$('profileButton').setAttribute('aria-expanded','false');render();$('catalog').scrollIntoView({behavior:reducedMotion()?'auto':'smooth'});});
+$('profileList').addEventListener('click',()=>{activeNav='My List';activeGenre='All';window.CineWaveRouter?.listing('my-list');$('search').value='';$('clearSearch').hidden=true;$('profilePanel').hidden=true;$('profileButton').setAttribute('aria-expanded','false');render();$('catalog').scrollIntoView({behavior:reducedMotion()?'auto':'smooth'});});
 $('askAI').addEventListener('click',()=>window.openCineWaveAI?.());
 for(const row of document.querySelectorAll('.movie-grid'))row.addEventListener('scroll',updateRowControls,{passive:true});
 window.addEventListener('resize',updateRowControls,{passive:true});
 
-const PUBLIC_API={url:'https://ysecowknittmmmbixgtu.supabase.co',key:'sb_publishable_aTNkxAKz9OG-JJVO2X48Rw_9vnE_8Mj'};
+const PUBLIC_API=window.CINEWAVE_CONFIG;
 async function loadCatalog(){
  if(loadingCatalog)return;loadingCatalog=true;catalogState='loading';render();
  try{

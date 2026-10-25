@@ -67,7 +67,10 @@ try:
   assert page.locator('#statPublished').inner_text()=='1' and page.locator('#statPlayable').inner_text()=='0'
   page.locator('#addMovie').click()
   def field(name,value):page.locator(f'#movieForm [name="{name}"]').fill(value)
-  field('title_en','Temporary admin fixture');field('title_ru','Временный фильм');field('title_hy','Ժամանակավոր ֆիլմ');field('overview_en','English');field('overview_ru','Описание');field('overview_hy','Նկարագրություն');field('genres','Action, Drama');field('watch_url','https://media.example/fixture.mp4');field('rights_holder','Synthetic producer');field('license_type','Synthetic permission');field('original_source_url','https://rights.example/film');field('license_evidence_url','https://rights.example/grant');field('license_terms_url','https://rights.example/terms');field('attribution','Synthetic credit');page.locator('[name="commercial_streaming_permission"]').check()
+  field('title_en','Temporary admin fixture');
+  for locale in ['ru','hy','en']:
+   page.locator('#adminLanguage').select_option(locale);assert page.locator('[name=title_en]').input_value()=='Temporary admin fixture';assert page.locator('#saveMovie').inner_text()
+  field('title_ru','Временный фильм');field('title_hy','Ժամանակավոր ֆիլմ');field('overview_en','English');field('overview_ru','Описание');field('overview_hy','Նկարագրություն');field('genres','Action, Drama');field('watch_url','https://media.example/fixture.mp4');field('rights_holder','Synthetic producer');field('license_type','Synthetic permission');field('original_source_url','https://rights.example/film');field('license_evidence_url','https://rights.example/grant');field('license_terms_url','https://rights.example/terms');field('attribution','Synthetic credit');page.locator('[name="commercial_streaming_permission"]').check()
   png=base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=')
   page.locator('#posterUpload').set_input_files({'name':'fixture.png','mimeType':'image/png','buffer':png})
   page.get_by_text('Image uploaded. Save the movie to attach it. Existing images were not overwritten.',exact=True).wait_for()

@@ -14,6 +14,7 @@
   if(out.watch_url&&!media(out.watch_url))throw new Error('Use an HTTPS MP4 or .m3u8 URL for playback.');
   for(const name of ['poster_path','backdrop_path'])if(out[name]&&!https(out[name])&&!/^\/?[\w-]+\.(png|jpg|jpeg|webp)$/i.test(out[name]))throw new Error('Artwork must be an HTTPS URL or an existing TMDB file path.');
   if(out.release_date&&!/^\d{4}-\d{2}-\d{2}$/.test(out.release_date))throw new Error('Use a valid ISO release date.');
+  out.media_type=values.media_type==='tv'?'tv':'movie';
   out.genre_names=[...new Set(String(values.genres||'').split(',').map(s=>s.trim()).filter(Boolean))];out.video_renditions=renditions(sources);if(out.video_renditions.some(source=>source.url===out.watch_url))throw new Error('A rendition must not repeat the primary URL.');out.commercial_streaming_permission=values.commercial_streaming_permission===true;return out;
  }
  function ready(row){const p=row.playback_verification;return Boolean(p&&p.watch_url===row.watch_url&&p.license_verified===true&&p.playback_verified===true&&p.commercial_reuse_verified===true&&https(p.license_source)&&https(p.license_terms_source)&&media(row.watch_url));}
