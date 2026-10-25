@@ -48,3 +48,8 @@ This branch extends the existing Admin Panel with public accounts, private cloud
 - [vendor/supabase-licenses/iceberg-js_LICENSE](../vendor/supabase-licenses/iceberg-js_LICENSE)
 - [vendor/supabase-licenses/tslib_LICENSE.txt](../vendor/supabase-licenses/tslib_LICENSE.txt)
 - [vendor/supabase.min.js](../vendor/supabase.min.js)
+
+Staging preparation additions:
+
+- [docs/staging-validation.md](staging-validation.md)
+- [sql/inspect_staging_schema.sql](../sql/inspect_staging_schema.sql)

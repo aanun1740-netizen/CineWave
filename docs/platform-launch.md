@@ -22,7 +22,7 @@ Guest favorites remain local to the device. Signed-in favorites are isolated in 
 
 ## Migrations and staging: NOT RUN
 
-User-designated staging: **CineWave-Test**. Its URL/reference and secure connection have not been supplied. The owner explicitly requires both securely configured access and approval before staging migrations. No remote migration is authorized at this point. Local PGlite tests do not constitute Supabase staging validation.
+User-designated staging: **CineWave-Test**. Its URL is `https://zayssiouqexwdicudalc.supabase.co` and reference is `zayssiouqexwdicudalc`. The owner reports an empty matching movies table with RLS and published-only public SELECT. Secure access has not been configured; schema details have not been remotely verified. The owner explicitly requires both securely configured access and approval before staging migrations. No remote migration is authorized at this point. See [staging-validation.md](staging-validation.md) for the exact review and execution procedure. Local PGlite tests do not constitute Supabase staging validation.
 
 After those prerequisites are met:
 
