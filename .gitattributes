@@ -1,0 +1,2 @@
+vendor/supabase.min.js -whitespace
+vendor/supabase-licenses/* -whitespace

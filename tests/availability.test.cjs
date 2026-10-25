@@ -24,6 +24,7 @@ test('approval binds to the exact supported media URL with public license eviden
 test('curated evidence must match title, year, exact URL and completed verification',()=>{
  const record={title_en:'Catalog film',release_date:'2008-04-10',watch_url:movie.video,verified:true,commercial_reuse_verified:true,license_source:proof.license_source,license_terms_source:proof.license_terms_source};
  const without={...movie,approval:null};assert.equal(check(without,[record]),true);
+ assert.equal(check({...without,approvalRequired:true},[record]),false,'installed server verification cannot be bypassed by stale curated evidence');
  for(const patch of [{title_en:'Another film'},{release_date:'2009-04-10'},{watch_url:movie.video+'?changed'},{verified:false},{commercial_reuse_verified:false}])assert.equal(check(without,[{...record,...patch}]),false);
  assert.equal(check(without,[null,{},'malformed',42]),false);
  const pending=JSON.parse(fs.readFileSync('data/playback-films.json','utf8')).films;assert.equal(check(without,pending),false);

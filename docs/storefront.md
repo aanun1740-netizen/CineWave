@@ -30,7 +30,7 @@ There are two supported read-only approval inputs:
    }
    ```
 
-The exact `watch_url` must match the row's current URL. Changing a media URL requires new approval for that URL. Unknown/malformed/string-valued flags, absent metadata, unsupported extensions, non-HTTPS remote URLs and embedded credentials are rejected. Same-origin HTTP is permitted for local media tests. This is a presentation policy, not DRM, rights verification by the browser, or access control; media hosts/backends remain responsible for authentication, entitlements and delivery. URL/codec failures are still handled by the existing player.
+The exact `watch_url` must match the row's current URL. Changing a media URL requires new approval for that URL. After the Admin verification schema is installed, server approval is authoritative; the managed-file fallback cannot override cleared or rejected server verification. Unknown/malformed/string-valued flags, absent metadata, unsupported extensions, non-HTTPS remote URLs and embedded credentials are rejected. Same-origin HTTP is permitted for local media tests. This is a presentation policy, not DRM, rights verification by the browser, or access control; media hosts/backends remain responsible for authentication, entitlements and delivery. URL/codec failures are still handled by the existing player.
 
 At inspection the live catalog contained 24 published movies with no `watch_url` and no approval column. They remain visible as catalog entries, without immediate-watch claims. No production fields, records, genres, posters or playback approvals were modified.
 

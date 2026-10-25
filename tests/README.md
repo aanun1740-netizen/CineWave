@@ -44,3 +44,13 @@ python3 tests/storefront_browser.py
 ```
 
 No unapproved movie is advertised as immediately watchable or requested from a media host. Local generated-media playback fixtures now carry explicit synthetic approval metadata; those fixtures do not grant rights to real films. The storefront test additionally covers carousels, keyboard focus, hero/catalog binding, persistent device-local My List, profile controls, localized AI failure messages and empty/error states without demo substitution. See `docs/storefront.md` for the Admin separation and optional approval contract.
+
+Admin checks (all external Auth/CRUD/uploads are intercepted; SQL uses local PostgreSQL):
+
+```sh
+node --test tests/admin_model.test.cjs
+python3 tests/admin_browser.py
+PGLITE_MODULE=/tmp/cinewave-sql-test/node_modules/@electric-sql/pglite node --test tests/admin_sql.test.mjs
+```
+
+See `docs/admin.md` for the exact GitHub Pages route, mandatory owner schema preflight, RLS/role design, migration approval, manual bootstrap, quality integration and unverified production boundaries.

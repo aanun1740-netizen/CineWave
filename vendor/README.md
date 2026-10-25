@@ -5,3 +5,10 @@ Full Apache-2.0 terms are included in `Apache-2.0.txt` (SPDX license-list-data s
 Package integrity: `sha512-MsPlx6yVW4Qv4C7mEVou4/gk/5cN2dVxOTnrNjPSmyH2f0Ln+/UkG10Ax1PE6OvrmTVPKgQYozTtBaPOuCzq7A==`.
 
 Bundle SHA-256: `0251332c00a216a35d7d6919044d60da82b78beb3bd50ac6c662ae74a2f5474b`.
+
+
+Admin Auth SDK: unmodified UMD bundle from `@supabase/supabase-js@2.118.0`, MIT. Bundled package notices are in `supabase-licenses/`. Installed with npm artifact-integrity verification, with scripts disabled.
+
+SDK bundle SHA-256: `ee3be8de192b97cb1d73d1e95d6b82bb1f6b658c0f97c4ef757fc331996ed3d3`. Package integrity: `sha512-FxI8UXMVC2UG7IkeiI8fuQZqq2oI3JeSuN8MPIC2RLVaoEAxKS0nqE6kii9Ewpq8f9gNPM6git1Y8f0vN/QLFw==`.
+
+The SDK and notices retain their original bytes, including significant template-string whitespace and license CRLF endings. Narrow `.gitattributes` entries exempt these copied artifacts from Git whitespace linting; package-integrity and recorded SHA-256 verification remain intact.
