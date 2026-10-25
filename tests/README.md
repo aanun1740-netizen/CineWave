@@ -63,3 +63,12 @@ PGLITE_MODULE=/tmp/cinewave-sql-test/node_modules/@electric-sql/pglite node --te
 ```
 
 The browser suite uses the real bundled SDK with intercepted Auth/REST responses; it creates no remote user. The SQL suite checks additive migration repeatability, owner-only profiles/favorites, forged IDs, anonymous denial, unpublished rows and cascade isolation in embedded PostgreSQL. These are not staging Supabase tests. See `docs/platform-launch.md` for the required real-service checks and currently missing staging access/approval.
+
+Rollback-only staging rehearsal verification (embedded PostgreSQL only):
+
+```sh
+python3 scripts/build_staging_rehearsal.py
+PGLITE_MODULE=/tmp/cinewave-sql-test/node_modules/@electric-sql/pglite node --test tests/staging_rehearsal.test.mjs
+```
+
+Checks default refusal, full rollback twice, postcheck success, and rollback after an injected failure between migrations. Snapshots compare columns, grants, policies, movie RLS, sequence state, row counts and reserved objects. The generated SQL is review-only; no remote execution is authorized. Its project confirmation is manual and cannot detect connection identity.

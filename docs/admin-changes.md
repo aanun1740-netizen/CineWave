@@ -53,3 +53,10 @@ Staging preparation additions:
 
 - [docs/staging-validation.md](staging-validation.md)
 - [sql/inspect_staging_schema.sql](../sql/inspect_staging_schema.sql)
+
+Rollback rehearsal review additions:
+
+- [scripts/build_staging_rehearsal.py](../scripts/build_staging_rehearsal.py)
+- [sql/rehearsals/cinewave_test_rollback.sql](../sql/rehearsals/cinewave_test_rollback.sql)
+- [sql/rehearsals/cinewave_test_postcheck.sql](../sql/rehearsals/cinewave_test_postcheck.sql)
+- [tests/staging_rehearsal.test.mjs](../tests/staging_rehearsal.test.mjs)
