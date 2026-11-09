@@ -2,46 +2,45 @@
 <html lang="hy">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark light">
-  <title>KinoLab-Test — Privacy &amp; aggregate analytics</title>
+  <title>KinoLab — Գաղտնիություն / Privacy / Конфиденциальность</title>
+  <link rel="canonical" href="https://kinolabmovies.com/privacy.html">
   <style>
-    :root { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #f7f5f0; background: #20152e; }
-    body { max-width: 820px; margin: 0 auto; padding: 24px 16px 70px; line-height: 1.7; }
-    a { color: #d4f458; } a:focus-visible { outline: 3px solid #d4f458; outline-offset: 4px; }
-    h1 { font-size: clamp(1.7rem, 5vw, 2.5rem); } h2 { margin-top: 2rem; font-size: 1.3rem; }
-    section { padding: 2px 0 18px; border-bottom: 1px solid #ffffff32; }
-    .tag { color: #d4f458; font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; }
-    @media (prefers-color-scheme: light) { :root { color: #20152e; background: #f7f5f0; } a, .tag { color:#536b1b; } section { border-color: #20152e30; } }
+    :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#f7f5f0;background:#20152e}
+    body{max-width:820px;margin:0 auto;padding:24px 16px 70px;line-height:1.7}
+    a{color:#d4f458} a:focus-visible{outline:3px solid #d4f458;outline-offset:4px}
+    h1{font-size:clamp(1.7rem,5vw,2.5rem)}h2{margin-top:2rem;font-size:1.3rem}
+    section{padding:2px 0 18px;border-bottom:1px solid #ffffff32}
+    .tag{color:#d4f458;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase}
+    @media(prefers-color-scheme:light){:root{color:#20152e;background:#f7f5f0}a,.tag{color:#536b1b}section{border-color:#20152e30}}
   </style>
 </head>
 <body>
-  <p class="tag">KinoLab-Test · staging site</p>
-  <h1>Privacy / Գաղտնիություն / Конфиденциальность</h1>
+  <p class="tag">KinoLab · kinolabmovies.com</p>
+  <h1>Գաղտնիություն / Privacy / Конфиденциальность</h1>
   <section lang="hy">
     <h2>Հայերեն</h2>
-    <p>KinoLab-Test-ը թեստային կինոկատալոգ է։ Կայքի բարելավման համար մենք կարող ենք հաշվարկել էջերի բացումները, ֆիլմերի էջերի բացումները և «Դիտել» կոճակների սեղմումները՝ ըստ ամսաթվի, կայքի լեզվի, ֆիլմի ներքին ID-ի և հեռախոս/համակարգիչ տեսակի։ Սրանք ընդհանուր հաշվիչներ են, ոչ թե եզակի այցելուների թիվ։</p>
-    <p>Այս վիճակագրության աղյուսակում չենք պահում անուն, էլ. հասցե, IP հասցե, որոնման բառեր կամ այցելուներին նույնականացնող ID։ Հաշվիչը չի ավելացնում թրեքինգային քուքիներ։ Տեխնիկական ծառայություններն, այդ թվում՝ Supabase-ը, կարող են մշակել ցանցային տեղեկությունները (օրինակ՝ IP հասցեն) իրենց անվտանգության և ծառայության մատուցման նպատակներով։</p>
-    <p>Վիճակագրությունը տեսանելի է միայն թույլտվություն ունեցող ադմինին։ Թեստային հաշվիչների տվյալները կարող են ձեռքով ջնջվել, և նախատեսված է մինչև 90 օր պահպանում՝ պարբերական մաքրմամբ։ Այլ կայք տանող «Դիտել» հղումներն ունեն իրենց սեփական գաղտնիության պայմանները։ Գրանցումն ու մուտքն օգտագործում են առանձին նույնականացման ծառայություն և կարող են պահպանել մուտքի սեսիայի տեղեկություններ։</p>
-    <p>Հյուրերին առաջարկվող անվճար դիտման հղումները սահմանափակվում են 5 տարբեր ֆիլմով։ Այդ ընտրությունների ներքին ID-ները պահվում են միայն տվյալ բրաուզերի localStorage-ում՝ սահմանաչափը հիշելու համար, և մեր վիճակագրության աղյուսակ չեն փոխանցվում։ Գրանցված օգտատերերը չեն սահմանափակվում։ Բրաուզերի տվյալները մաքրելիս այս ընտրությունները կարող են վերակայվել։</p>
-    <p>Գովազդներ և գործընկերային հետևման հղումներ այս փուլում չենք միացրել։ Դրանք հետագայում կարող են պահանջել առանձին գաղտնիության տեղեկացում կամ համաձայնություն։</p>
+    <p>KinoLab-ը ֆիլմերի և սերիալների տեղեկատու կատալոգ է։ Կարող եք ուսումնասիրել կատալոգը առանց հաշվի։ Գրանցվելիս Supabase Authentication-ը մշակում է Ձեր էլփոստը, մուտքի տվյալները և սեսիան՝ մուտքը պահպանելու և հաշիվը պաշտպանելու նպատակով։</p>
+    <p>Եթե մուտք եք գործել, Ձեր պրոֆիլի անունը, ընտրված լեզուն և «Իմ ցանկը» պահվում են մեր Supabase տվյալների բազայում։ «Իմ ցանկը» տեսանելի է միայն Ձեր հաշվին։ Հյուրի 5 ֆիլմի դիտման հղման սահմանաչափը հիշելու համար ֆիլմերի ներքին ID-ները պահվում են միայն Ձեր բրաուզերի localStorage-ում և կարող են վերակայվել բրաուզերի տվյալները մաքրելիս։</p>
+    <p>Այս գործարկման տարբերակում KinoLab-ի սեփական դիտումների ագրեգացված վիճակագրության հավաքումը անջատված է։ GitHub Pages-ը, Supabase-ը և այլ ծառայություններ, որոնք ապահովում են կայքի աշխատանքը, կարող են մշակել տեխնիկական տվյալներ, օրինակ՝ IP հասցեներ, իրենց ծառայությունների մատուցման և անվտանգության նպատակներով։</p>
+    <p>«Դիտել» կոճակով կարող եք անցնել երրորդ կողմի կայք։ Այդ կայքի աշխատանքն ու գաղտնիության կանոնները վերահսկվում են համապատասխան ծառայության կողմից։ AI օգնականին ուղարկած հաղորդագրությունը կարող է մշակվել AI ծառայություն մատուցողի կողմից պատասխանը կազմելու համար։</p>
+    <p>Այս փուլում գովազդային հետագծման համակարգեր միացված չեն։</p>
   </section>
   <section lang="ru">
     <h2>Русский</h2>
-    <p>KinoLab-Test — тестовый каталог фильмов. Для улучшения сайта мы можем подсчитывать загрузки страниц, открытия карточек фильмов и нажатия «Смотреть», группируя их по дате, языку, внутреннему ID фильма и типу устройства (телефон или компьютер). Это суммарные события, а не число уникальных посетителей.</p>
-    <p>В таблице аналитики не сохраняются имена, электронные адреса, IP-адреса, поисковые запросы или идентификаторы пользователей. Сам счётчик не устанавливает отслеживающие cookie. Поставщики инфраструктуры, включая Supabase, могут обрабатывать сетевые данные, например IP-адрес, для работы и защиты сервиса.</p>
-    <p>Агрегаты доступны только уполномоченному администратору. Данные можно удалить вручную; предполагается хранение не более 90 дней при регулярной очистке. Внешние сайты, открываемые по ссылке «Смотреть», имеют собственные правила конфиденциальности. Регистрация и вход используют отдельный сервис авторизации, который может хранить данные сессии.</p>
-    <p>Гость может выбрать ссылки просмотра пяти разных фильмов. В localStorage браузера сохраняются только внутренние ID этих фильмов, чтобы помнить лимит; эти данные не отправляются в таблицу аналитики. Для зарегистрированных пользователей ограничение не действует. Очистка данных браузера может сбросить выбор.</p>
-    <p>Реклама и партнёрские отслеживающие ссылки на этом этапе не включены. В дальнейшем для них могут потребоваться отдельные уведомления или согласие.</p>
+    <p>KinoLab — информационный каталог фильмов и сериалов. Каталог можно просматривать без аккаунта. При регистрации Supabase Authentication обрабатывает ваш адрес электронной почты, данные входа и сеанс для доступа и защиты аккаунта.</p>
+    <p>Для пользователей с аккаунтом в базе Supabase хранятся имя профиля, выбранный язык и «Мой список». Ваш список доступен только вашему аккаунту. Для запоминания лимита в пять ссылок просмотра для гостей внутренние ID выбранных фильмов сохраняются в localStorage вашего браузера. Очистка данных браузера может сбросить лимит.</p>
+    <p>В этой версии собственный агрегированный сбор статистики KinoLab отключён. Сервисы инфраструктуры, включая GitHub Pages и Supabase, могут обрабатывать технические данные, например IP-адрес, для работы и безопасности.</p>
+    <p>Кнопка «Смотреть» может открывать сторонний сайт со своими правилами конфиденциальности. Сообщения, отправленные AI-помощнику, могут обрабатываться поставщиком AI для формирования ответа. Рекламное отслеживание на данном этапе не включено.</p>
   </section>
   <section lang="en">
     <h2>English</h2>
-    <p>KinoLab-Test is a staging film catalog. To improve it, we may count page loads, film-detail opens and Watch-button clicks by date, site language, internal film ID and broad device type (mobile or desktop). These are aggregate event counts, not unique visitor counts.</p>
-    <p>Our analytics table does not store names, email addresses, IP addresses, search terms or visitor identifiers. This counter does not set tracking cookies. Infrastructure providers, including Supabase, may still process network details such as IP addresses to operate and secure their services.</p>
-    <p>Only authorized administrators can view the aggregates. Data can be deleted manually and is intended to be retained for up to 90 days through periodic housekeeping. External Watch destinations have their own privacy practices. Sign-in and registration use a separate authentication service, which may retain session details.</p>
-    <p>Guests can choose Watch links for five distinct films. Only those films’ internal IDs are saved in this browser’s localStorage to remember the free allowance. These IDs are not sent to our aggregate analytics table. Signed-in accounts are not subject to the five-film limit. Clearing browser data may reset the choices.</p>
-    <p>Advertising and affiliate tracking links are not enabled at this stage. Future monetization may require separate notices or consent controls.</p>
+    <p>KinoLab is an informational movie and series catalog. You can browse titles without an account. When you register, Supabase Authentication processes your email address, sign-in credentials and session information to provide and secure access.</p>
+    <p>For signed-in users, your profile name, preferred language and My List are stored in the Supabase database. Your list is restricted to your account. To remember the five-film guest Watch-link limit, internal IDs of selected films are stored in your browser's localStorage; clearing browser data may reset this count.</p>
+    <p>KinoLab's own aggregate usage analytics are disabled in this release candidate. Infrastructure providers including GitHub Pages and Supabase may process technical information such as IP addresses to operate and secure their services.</p>
+    <p>Watch buttons may take you to third-party websites with their own privacy practices. Messages sent to the AI assistant may be processed by the AI provider to generate a response. Advertising tracking is not enabled at this stage.</p>
   </section>
+  <p><a href="/">KinoLab</a></p>
 </body>
 </html>
