@@ -4,7 +4,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   use: {
-    baseURL: "http://127.0.0.1:4173/CineWave-Test-/",
+    baseURL: "http://127.0.0.1:4173/",
     browserName: "chromium",
     // H.264 (MP4 and our HLS segments) needs a browser with proprietary codecs.
     // Use the same branded Chrome channel locally and in CI; never silently
@@ -17,7 +17,7 @@ export default defineConfig({
   },
   webServer: {
     command: "npm run preview -- --host 127.0.0.1 --port 4173 --strictPort",
-    url: "http://127.0.0.1:4173/CineWave-Test-/",
+    url: "http://127.0.0.1:4173/",
     reuseExistingServer: !process.env.CI,
   },
   projects: [
