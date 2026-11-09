@@ -1,0 +1,584 @@
+/* Public CineWave storefront only. No admin selectors, routes or dependencies. */
+body.cinewave-site{--bg:#111114;--panel:#1b1b21;--muted:#a7a6b1;--red:#f83d65;--line:#ffffff12;margin:0;background:var(--bg);color:#f4f2f5;font:15px/1.5 Inter,"Noto Sans Armenian",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.cinewave-site *{box-sizing:border-box}.cinewave-site [hidden]{display:none!important}.cinewave-site button,.cinewave-site input,.cinewave-site select{font:inherit}.cinewave-site button{cursor:pointer}.cinewave-site button:disabled{cursor:default}.cinewave-site a{color:inherit;text-decoration:none}.cinewave-site button{color:inherit}.cinewave-site svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}.cinewave-site :focus-visible{outline:2px solid #ff6e8d;outline-offset:5px}.cinewave-site .icon-defs{position:absolute;width:0;height:0;overflow:hidden}.cinewave-site .skip-link{position:fixed;top:-80px;left:20px;z-index:200;background:var(--red);padding:12px 20px;border-radius:8px}.cinewave-site .skip-link:focus{top:12px}
+.cinewave-site .topbar{height:90px;display:flex;align-items:center;gap:46px;padding:0 5.2vw;position:relative;z-index:20;background:#111114;border-bottom:1px solid var(--line)}
+.cinewave-site .brand{display:inline-flex;align-items:center;font-size:25px;font-weight:800;letter-spacing:-1px;white-space:nowrap;gap:0}.cinewave-site .brand>span:last-child{color:var(--red)}.cinewave-site .brand-wave{display:flex;align-items:center;gap:3px;margin-right:11px;height:30px;transform:skew(-12deg)}.cinewave-site .brand-wave i{width:4px;border-radius:5px;background:var(--red);height:15px}.cinewave-site .brand-wave i:nth-child(2){height:28px}.cinewave-site .brand-wave i:nth-child(3){height:22px}.cinewave-site .brand-wave i:nth-child(4){height:11px}
+.cinewave-site .nav{display:flex;align-items:center;gap:25px;height:100%}.cinewave-site .nav button{height:100%;position:relative;padding:0;background:none;border:0;font-size:13px;font-weight:650;color:#aaa9b3;white-space:nowrap;transition:color .2s}.cinewave-site .nav button:hover,.cinewave-site .nav button.active{color:#fff}.cinewave-site .nav button.active:after{content:"";height:3px;width:20px;border-radius:4px;background:var(--red);position:absolute;bottom:20px;left:calc(50% - 10px)}
+.cinewave-site .right{display:flex;align-items:center;gap:15px;margin-left:auto;min-width:0}.cinewave-site .search{display:flex;align-items:center;gap:10px;max-width:210px;border-bottom:1px solid #ffffff28;padding:9px 0;color:#b7b4c0}.cinewave-site .search input{width:140px;min-width:0;background:none;border:0;outline:none;color:white;font-size:12px}.cinewave-site .search input::placeholder{color:#95929f}.cinewave-site #clearSearch{background:none;border:0;padding:0}.cinewave-site .language{border:0;color:#e5e1e8;background:#202026;border-radius:6px;padding:8px 6px;font-size:11px;font-weight:700;max-width:68px}.cinewave-site .avatar{display:grid;place-items:center;width:38px;height:38px;border:1px solid #ffffff23;background:#26242c;border-radius:50%}.cinewave-site .avatar svg{width:17px}.cinewave-site .profile-panel{position:absolute;right:5vw;top:80px;width:min(310px,90vw);padding:25px;background:#24222b;border:1px solid #ffffff20;border-radius:15px;box-shadow:0 20px 60px #0008}.cinewave-site .profile-panel h2{font-size:22px;margin:8px 0}.cinewave-site .profile-panel p:not(.eyebrow){font-size:13px;color:var(--muted)}
+.cinewave-site .hero{min-height:650px;position:relative;display:flex;align-items:center;padding:65px 8vw 85px;overflow:hidden;background:radial-gradient(ellipse at 80% 35%,#49233555,transparent 58%),linear-gradient(110deg,#17171d,#1d1b24 65%,#16161c)}
+.cinewave-site .hero-backdrop{position:absolute;width:70%;height:100%;right:0;top:0;object-fit:cover;opacity:.44;filter:saturate(.6);mask-image:linear-gradient(to right,transparent,#000 35%)}.cinewave-site .hero-shade{position:absolute;inset:0;background:linear-gradient(90deg,#111114 3%,#111114b8 45%,#11111410),linear-gradient(0deg,#111114,transparent 25%,transparent 85%,#11111455)}.cinewave-site .hero-grain{position:absolute;inset:0;background:radial-gradient(circle at 85% 50%,#f83d6515,transparent 50%);pointer-events:none}.cinewave-site .hero-content{position:relative;z-index:2;max-width:600px;width:55%}.cinewave-site .eyebrow{font-size:10px;font-weight:750;letter-spacing:2.6px;color:#d1b4bd;text-transform:uppercase;margin:0}.cinewave-site .hero .eyebrow{display:flex;align-items:center;gap:12px;color:#ff809c;letter-spacing:3px}.cinewave-site .hero .eyebrow:before{content:"";width:23px;height:1px;background:var(--red)}.cinewave-site .hero h1{font-size:clamp(36px,5.3vw,76px);line-height:1.08;font-weight:750;letter-spacing:-2.5px;margin:22px 0;overflow-wrap:anywhere;text-wrap:balance}.cinewave-site .meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:#c5c0cb;font-size:12px}.cinewave-site .meta span+span:before{content:"·";margin-right:12px;color:#857e8c}.cinewave-site .hero-content>p{font-size:14px;line-height:1.9;color:#bdb8c5;margin:24px 0 30px;max-width:465px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}.cinewave-site .actions{display:flex;gap:12px;flex-wrap:wrap}.cinewave-site .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;border-radius:7px;border:0;padding:13px 24px;font-size:12px;font-weight:750;transition:background .2s,transform .2s,box-shadow .2s}.cinewave-site .btn svg{width:17px;height:17px}.cinewave-site .primary{background:var(--red);color:white;box-shadow:0 6px 28px #f83d6528}.cinewave-site .primary:hover:not(:disabled){background:#ff5579;box-shadow:0 8px 35px #f83d6545;transform:translateY(-2px)}.cinewave-site .secondary{background:#ffffff0b;border:1px solid #ffffff25;color:#ece7ee}.cinewave-site .secondary:hover{background:#ffffff17}.cinewave-site .btn:disabled{opacity:.4}.cinewave-site .hero-bottom{display:flex;align-items:center;gap:14px;color:#918795;font-size:10px;letter-spacing:1px;margin-top:42px}.cinewave-site .hero-line{width:38px;height:1px;background:#ffffff30}.cinewave-site .hero-art{position:absolute;right:12vw;top:50%;height:405px;width:270px;transform:translateY(-50%) rotate(5deg);z-index:1}.cinewave-site .hero-art>img{width:100%;height:100%;object-fit:cover;border-radius:10px;border:1px solid #ffffff2c;box-shadow:0 30px 90px #0008}.cinewave-site .hero-art-glow{position:absolute;inset:0;box-shadow:0 0 100px 50px #f83d6517;z-index:-1}.cinewave-site .art-stamp{position:absolute;bottom:25px;right:-40px;display:grid;place-items:center;padding:18px;border:1px solid #ffffff29;border-radius:50%;font-size:7px;letter-spacing:2px;background:#17131edc;backdrop-filter:blur(10px);width:92px;height:92px;transform:rotate(-5deg)}.cinewave-site .art-stamp b{font-size:24px;line-height:1}.cinewave-site .hero-pagination{position:absolute;bottom:30px;left:8vw;display:flex;gap:8px;z-index:3}.cinewave-site .hero-pagination button{width:28px;height:28px;border:0;padding:0;background:none;display:grid;place-items:center}.cinewave-site .hero-pagination button:after{content:"";width:6px;height:6px;border-radius:20px;background:#ffffff35;transition:width .3s,background .3s}.cinewave-site .hero-pagination button.active{width:40px}.cinewave-site .hero-pagination button.active:after{width:26px;background:var(--red)}
+.cinewave-site .catalog-shell{padding:0 5.2vw 55px;position:relative;max-width:1800px;margin:auto}.cinewave-site .genre-section{padding:24px 0 30px;border-bottom:1px solid var(--line);margin-bottom:34px}.cinewave-site .section-head{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:20px}.cinewave-site .section-head h2{font-size:22px;line-height:1.3;letter-spacing:-.6px;font-weight:650;margin:0}.cinewave-site .section-head .eyebrow{margin-bottom:7px;font-size:8px;color:#8f8596;letter-spacing:2.5px}.cinewave-site .text-button{background:none;border:0;padding:5px 0;font-size:11px;font-weight:600;color:#ada3b4;transition:color .2s}.cinewave-site .text-button:hover{color:#fff}.cinewave-site .genre-list{display:flex;gap:9px;overflow:auto;padding:5px 3px 10px;scrollbar-width:thin;scrollbar-color:#50404b transparent}.cinewave-site .genre{flex-shrink:0;border:1px solid #ffffff12;border-radius:6px;background:#1c1b21;padding:10px 20px;font-size:11px;color:#b6aebd;white-space:nowrap;transition:background .2s,color .2s,border-color .2s}.cinewave-site .genre:hover{background:#2b222b;color:#f3ecf5}.cinewave-site .genre.active{background:#f83d651c;color:#ff7e9b;border-color:#f83d6550}.cinewave-site .section{margin:38px 0 45px;min-width:0}.cinewave-site .section-subtitle{color:#817a8a;font-size:11px;margin:8px 0 0}.cinewave-site .section-actions{display:flex;gap:22px;align-items:center}.cinewave-site .row-controls{display:flex;gap:8px}.cinewave-site .row-controls button{width:30px;height:30px;display:grid;place-items:center;border:1px solid #ffffff18;border-radius:50%;background:#1e1c23;transition:background .2s}.cinewave-site .row-controls button svg{width:15px;height:15px}.cinewave-site .row-controls button:first-child svg{transform:rotate(180deg)}.cinewave-site .row-controls button:hover:enabled{background:#f83d65}.cinewave-site .row-controls button:disabled{opacity:.25}
+.cinewave-site .movie-grid{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 100px)/6);gap:20px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;scrollbar-width:none;padding:6px 2px 12px}.cinewave-site .movie-grid::-webkit-scrollbar{display:none}.cinewave-site .movie{min-width:0;cursor:pointer;scroll-snap-align:start;border-radius:8px;outline-offset:2px}.cinewave-site .poster{position:relative;aspect-ratio:2/3;border-radius:8px;overflow:hidden;background:#25212c;border:1px solid #ffffff09;box-shadow:0 8px 20px #0002}.cinewave-site .poster>img{height:100%;width:100%;display:block;object-fit:cover;transition:transform .45s,opacity .3s}.cinewave-site .poster:after{content:"";position:absolute;inset:40% 0 0;background:linear-gradient(transparent,#111114b3);pointer-events:none}.cinewave-site .movie:hover .poster>img,.cinewave-site .movie:focus-visible .poster>img{transform:scale(1.055)}.cinewave-site .poster-badge{position:absolute;top:10px;left:10px;z-index:1;background:#1a1820db;padding:4px 7px;border:1px solid #ffffff20;border-radius:4px;font-size:8px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:#d1c6d6}.cinewave-site .poster-badge.available{background:#f83d65;color:white;border-color:#ff7e9b88}.cinewave-site .play-overlay{position:absolute;z-index:2;bottom:12px;left:12px;right:12px;display:flex;align-items:center;justify-content:center;gap:7px;min-height:35px;padding:8px;border-radius:6px;font-size:10px;font-weight:700;background:#f83d65e8;color:white;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s}.cinewave-site .play-overlay svg{height:14px;width:14px}.cinewave-site .movie:hover .play-overlay,.cinewave-site .movie:focus-visible .play-overlay{opacity:1;transform:translateY(0)}.cinewave-site .movie-title{margin:13px 0 5px;font-size:12px;font-weight:650;line-height:1.5;min-height:3em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;color:#e8e3ec}.cinewave-site .movie-meta{font-size:10px;color:#8e8597;line-height:1.6;overflow-wrap:anywhere}.cinewave-site .progress{height:2px;background:#ffffff20;margin-top:9px;border-radius:4px}.cinewave-site .progress>div{height:100%;background:var(--red)}.cinewave-site .is-results .movie-grid{grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(6,minmax(0,1fr));overflow:visible}.cinewave-site .is-results .row-controls{display:none}.cinewave-site .empty,.cinewave-site .catalog-status{color:#a498ae;padding:18px 0;font-size:13px}.cinewave-site .catalog-status{display:flex;gap:20px;align-items:center}.cinewave-site .skeletons{display:grid;grid-template-columns:repeat(6,1fr);gap:20px}.cinewave-site .skeletons i{aspect-ratio:2/3;background:linear-gradient(110deg,#1e1b23,#2c2531,#1e1b23);background-size:200% 100%;border-radius:8px;animation:cw-shimmer 1.8s infinite}@keyframes cw-shimmer{to{background-position:-200% 0}}
+.cinewave-site .discovery-note{margin-top:55px;padding:30px 36px;border-radius:12px;border:1px solid #f83d651a;background:radial-gradient(ellipse at 0% 50%,#f83d650e,transparent 75%),#19161e;display:flex;gap:25px;align-items:center}.cinewave-site .note-orbit{font-size:40px;color:#fc6688}.cinewave-site .discovery-note h2{font-size:20px;font-weight:600;letter-spacing:-.5px;margin:5px 0}.cinewave-site .discovery-note p:not(.eyebrow){font-size:12px;color:#9c8fa6;margin:0}.cinewave-site .discovery-note .btn{margin-left:auto;flex-shrink:0}.cinewave-site footer{padding:30px 5.2vw;border-top:1px solid var(--line);display:flex;align-items:center;gap:30px;color:#827989;font-size:10px}.cinewave-site footer .brand{font-size:20px;color:#eee6f1}.cinewave-site footer p{max-width:600px}.cinewave-site footer>span{margin-left:auto;white-space:nowrap}
+.cinewave-site .modal{position:fixed;inset:0;z-index:70;background:#070609df;backdrop-filter:blur(10px);padding:25px;display:none;align-items:center;justify-content:center}.cinewave-site .modal.open{display:flex}.cinewave-site .dialog{background:#1c1922;border:1px solid #ffffff15;border-radius:16px;max-width:900px;width:100%;max-height:90dvh;overflow:auto;box-shadow:0 30px 100px #0007}.cinewave-site .dialog-top{padding:22px;display:flex;align-items:center;justify-content:space-between;gap:16px}.cinewave-site .dialog-top h2{font-size:20px;margin:5px 0 0}.cinewave-site .close{width:34px;height:34px;border-radius:50%;background:#ffffff0c;border:1px solid #ffffff14;font-size:22px;flex-shrink:0}.cinewave-site .dialog-info{padding:25px}.cinewave-site .dialog-info>p{color:#b3a6be;font-size:14px;line-height:1.8;white-space:pre-line}.cinewave-site .availability-note{padding:35px 25px;background:#131117;color:#a89cb3;font-size:13px;border-block:1px solid #ffffff08}.cinewave-site .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);z-index:90;max-width:90vw;background:#f4eaf5;color:#211526;border-radius:8px;padding:12px 22px;font-size:12px;box-shadow:0 10px 35px #0005}.cinewave-site .toast:empty{display:none}.cinewave-site .mobile-nav{display:none}
+.cinewave-site #cw-ai-button{position:fixed;right:24px;bottom:24px;z-index:50;border:1px solid #f9709060;background:#30202b;color:#ff9ab2;padding:12px 18px;border-radius:40px;font-size:12px;box-shadow:0 8px 35px #0004;transition:transform .2s}.cinewave-site #cw-ai-button:hover{transform:translateY(-3px)}.cinewave-site #cw-ai-panel{position:fixed;right:24px;bottom:85px;width:min(365px,calc(100vw - 32px));height:min(480px,calc(100dvh - 130px));z-index:80;display:flex;flex-direction:column;background:#211c27;border:1px solid #ffffff20;border-radius:15px;box-shadow:0 20px 70px #0009;overflow:hidden}.cinewave-site #cw-ai-head{padding:18px;display:flex;justify-content:space-between;align-items:center;background:#2a212f}.cinewave-site #cw-ai-head .eyebrow{font-size:8px;letter-spacing:1.5px}.cinewave-site #cw-ai-head h2{font-size:16px;margin:4px 0 0}.cinewave-site #cw-ai-close{background:none;border:0;font-size:24px}.cinewave-site #cw-ai-messages{flex:1;overflow:auto;min-height:0;padding:16px;display:flex;flex-direction:column;gap:12px}.cinewave-site .cw-ai-msg{font-size:12px;line-height:1.7;padding:12px;border-radius:10px;max-width:93%;white-space:pre-wrap;overflow-wrap:anywhere}.cinewave-site .cw-ai-bot{background:#332b3b;align-self:flex-start}.cinewave-site .cw-ai-user{background:#79334d;align-self:flex-end}.cinewave-site #cw-ai-form{padding:12px;border-top:1px solid #ffffff0b;display:flex;gap:8px}.cinewave-site #cw-ai-input{min-width:0;flex:1;padding:11px;background:#17131c;color:white;border:1px solid #ffffff18;border-radius:7px;font-size:12px}.cinewave-site #cw-ai-send{min-width:35px;border:0;border-radius:7px;background:var(--red);font-size:20px}.cinewave-site #cw-ai-send:disabled{opacity:.5}
+@media(min-width:1600px){.cinewave-site .hero-art{right:17vw}.cinewave-site .hero{min-height:710px}}
+@media(max-width:1200px){.cinewave-site .topbar{gap:28px}.cinewave-site .nav{gap:16px}.cinewave-site .search{max-width:145px}.cinewave-site .search input{width:100px}.cinewave-site .hero-art{right:9vw;width:230px;height:345px}.cinewave-site .hero-content{width:58%}.cinewave-site .movie-grid{grid-auto-columns:calc((100% - 64px)/4.4);gap:16px}.cinewave-site .is-results .movie-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(max-width:950px){.cinewave-site .topbar{height:auto;min-height:90px;flex-wrap:wrap;gap:0;padding-top:20px}.cinewave-site .nav{order:3;width:100%;height:48px;gap:27px}.cinewave-site .nav button.active:after{bottom:4px}.cinewave-site .right{gap:16px}.cinewave-site .search{max-width:220px}.cinewave-site .search input{width:160px}.cinewave-site .hero{min-height:560px;padding-inline:6vw}.cinewave-site .hero h1{font-size:47px}.cinewave-site .hero-art{right:8vw;width:190px;height:285px}.cinewave-site .art-stamp{right:-20px;width:70px;height:70px}.cinewave-site .hero-pagination{left:6vw}.cinewave-site .is-results .movie-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.cinewave-site .discovery-note{padding:25px;gap:20px}.cinewave-site .discovery-note h2{font-size:18px}.cinewave-site footer{flex-wrap:wrap;gap:15px}.cinewave-site footer p{flex-basis:65%}}
+@media(max-width:600px){.cinewave-site .topbar{padding:16px 20px;min-height:75px;gap:15px}.cinewave-site .brand{font-size:22px}.cinewave-site .brand-wave{margin-right:8px}.cinewave-site .right{gap:10px}.cinewave-site .language{font-size:10px;padding:7px 4px}.cinewave-site .avatar{width:32px;height:32px}.cinewave-site .nav{display:none}.cinewave-site .search{order:4;position:relative;width:100%;max-width:none;border:1px solid #ffffff12;border-radius:6px;padding:8px 12px;gap:8px}.cinewave-site .right{display:contents}.cinewave-site .language{margin-left:auto}.cinewave-site .search input{width:100%;font-size:12px}.cinewave-site #clearSearch{margin-left:auto}.cinewave-site .hero{min-height:520px;padding:48px 23px 70px;align-items:flex-end}.cinewave-site .hero-content{width:100%;max-width:none}.cinewave-site .hero h1{font-size:40px;max-width:90%;letter-spacing:-1.5px;margin:18px 0}.cinewave-site .hero-backdrop{width:100%;opacity:.3;mask-image:linear-gradient(to bottom,#000,transparent)}.cinewave-site .hero-shade{background:linear-gradient(0deg,#111114 4%,#111114bb 60%,#11111466)}.cinewave-site .hero-art{display:none}.cinewave-site .hero-content>p{font-size:12px;max-width:100%;margin:20px 0 24px;-webkit-line-clamp:3}.cinewave-site .hero .eyebrow{font-size:8px;letter-spacing:2px}.cinewave-site .hero .meta{font-size:10px;gap:8px}.cinewave-site .hero .meta span+span:before{margin-right:8px}.cinewave-site .btn{font-size:11px;padding:12px 18px;min-height:44px}.cinewave-site .hero-bottom{margin-top:26px;font-size:8px;letter-spacing:.7px}.cinewave-site .hero-pagination{left:24px;bottom:25px}.cinewave-site .catalog-shell{padding:0 20px 35px}.cinewave-site .genre-section{padding:15px 0 20px;margin-bottom:24px}.cinewave-site .section-head{gap:10px;margin-bottom:14px}.cinewave-site .section-head h2{font-size:18px;letter-spacing:-.4px}.cinewave-site .section-head .eyebrow{font-size:7px;letter-spacing:2px}.cinewave-site .genre{padding:9px 14px;font-size:10px}.cinewave-site .movie-grid{grid-auto-columns:calc((100% - 24px)/2.35);gap:12px}.cinewave-site .movie-title{font-size:11px;margin-top:10px}.cinewave-site .movie-meta{font-size:9px}.cinewave-site .poster-badge{font-size:7px;top:7px;left:7px;padding:3px 5px}.cinewave-site .section{margin:28px 0}.cinewave-site .is-results .movie-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cinewave-site .section-actions{gap:12px}.cinewave-site .row-controls{gap:6px}.cinewave-site .row-controls button{width:27px;height:27px}.cinewave-site .text-button{font-size:9px}.cinewave-site .section-subtitle{font-size:10px;max-width:230px}.cinewave-site .discovery-note{padding:22px;flex-wrap:wrap;gap:16px;margin-top:35px}.cinewave-site .note-orbit{font-size:30px}.cinewave-site .discovery-note>div{flex:1}.cinewave-site .discovery-note .eyebrow{font-size:8px}.cinewave-site .discovery-note h2{font-size:16px}.cinewave-site .discovery-note p:not(.eyebrow){font-size:10px}.cinewave-site .discovery-note .btn{margin-left:46px}.cinewave-site footer{padding:25px 20px 135px;align-items:flex-start}.cinewave-site footer p{flex-basis:100%;margin:0}.cinewave-site footer>span{margin-left:0}.cinewave-site .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;justify-content:space-around;padding:10px 4px calc(10px + env(safe-area-inset-bottom));background:#16131ceb;border-top:1px solid #ffffff12;backdrop-filter:blur(16px)}.cinewave-site .mobile-nav button{background:none;border:0;color:#82758b;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 5px;min-width:0}.cinewave-site .mobile-nav span{font-size:19px;line-height:1.1}.cinewave-site .mobile-nav b{font-weight:500;font-size:8px}.cinewave-site .mobile-nav .active{color:#ff789b}.cinewave-site #cw-ai-button{bottom:83px;right:15px;padding:10px 14px;font-size:10px}.cinewave-site #cw-ai-panel{right:16px;bottom:130px;height:min(450px,calc(100dvh - 165px))}.cinewave-site .toast{bottom:145px;font-size:11px}.cinewave-site .modal{padding:10px}.cinewave-site .dialog-top{padding:17px}.cinewave-site .dialog-top h2{font-size:17px}.cinewave-site .dialog-info{padding:20px}.cinewave-site .skeletons{grid-template-columns:repeat(3,1fr);gap:10px}}
+@media(prefers-reduced-motion:reduce){.cinewave-site *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+body.cinewave-site.has-player-dialog{overflow:hidden}
+
+body.cinewave-site.is-browsing .hero{display:none}
+.cinewave-site .secondary[aria-pressed="true"]{border-color:#f83d6560;background:#f83d6514;color:#ff9ab2}
+/* MOVIE LAB — NEON THEME */
+body.cinewave-site {
+  --bg: #050916;
+  --panel: #0d1426;
+  --muted: #a8b5d2;
+  --red: #ff00b8;
+  --line: #3178ff30;
+  background: var(--bg);
+  color: #f7f9ff;
+}
+
+.cinewave-site .topbar {
+  background: #050916;
+  border-bottom: 1px solid #247dff55;
+  box-shadow: 0 3px 22px #007bff15;
+}
+
+.cinewave-site .brand {
+  color: #ffffff;
+  text-shadow: 0 0 15px #008cff55;
+}
+
+.cinewave-site .brand > span:last-child {
+  color: #ff00b8;
+  text-shadow: 0 0 14px #ff00b866;
+}
+
+.cinewave-site .brand-wave i {
+  background: linear-gradient(#00c8ff, #ff00b8);
+  box-shadow: 0 0 9px #ff00b855;
+}
+
+.cinewave-site .nav button.active:after {
+  background: linear-gradient(90deg, #00c8ff, #ff00b8);
+}
+
+.cinewave-site .hero {
+  background:
+    radial-gradient(ellipse at 78% 40%, #7022d744, transparent 60%),
+    linear-gradient(110deg, #050916, #101637);
+}
+
+.cinewave-site .hero-shade {
+  background: linear-gradient(
+    90deg,
+    #050916 3%,
+    #050916b8 45%,
+    #05091610
+  );
+}
+
+.cinewave-site .primary {
+  background: linear-gradient(110deg, #00baff, #8b3dff, #ff00b8);
+  box-shadow: 0 5px 24px #a124ff55;
+}
+
+.cinewave-site .primary:hover:not(:disabled) {
+  background: linear-gradient(110deg, #26d7ff, #a45cff, #ff32ca);
+  box-shadow: 0 8px 32px #a124ff77;
+}
+
+.cinewave-site .secondary {
+  background: #0b1428;
+  border: 1px solid #3178ff70;
+}
+
+.cinewave-site .genre {
+  background: #0c1428;
+  border: 1px solid #3178ff35;
+  color: #dce6ff;
+}
+
+.cinewave-site .genre.active {
+  background: #ff00b822;
+  border-color: #ff00b8;
+  color: #ff80dc;
+}
+
+.cinewave-site .poster {
+  border: 1px solid #3178ff35;
+  box-shadow: 0 7px 24px #0007;
+}
+
+.cinewave-site .movie:hover .poster {
+  border-color: #ff00b8;
+  box-shadow: 0 0 20px #ff00b844;
+}
+
+.cinewave-site .progress > div,
+.cinewave-site .hero-pagination button.active:after {
+  background: linear-gradient(90deg, #00c8ff, #ff00b8);
+}
+
+@media (max-width: 600px) {
+  .cinewave-site .hero-shade {
+    background: linear-gradient(
+      0deg,
+      #050916 4%,
+      #050916bb 60%,
+      #05091666
+    );
+  }
+}
+/* MOVIELAB — SOFT NEON FINISH */
+
+/* Navigation */
+.cinewave-site .nav button:hover {
+  color: #8edcff;
+  text-shadow: 0 0 9px #39bfff45;
+}
+
+.cinewave-site .nav button.active {
+  color: #f4eaff;
+  text-shadow: 0 0 9px #d18aff40;
+}
+
+/* Collection heading */
+.cinewave-site .hero .eyebrow {
+  color: #b9dfff;
+  text-shadow: 0 0 10px #65aaff55;
+}
+
+.cinewave-site .hero .eyebrow::before {
+  background: linear-gradient(90deg, #69d9ff, #df83d9);
+}
+
+/* MovieLab AI floating button */
+.cinewave-site #cw-ai-button {
+  background: linear-gradient(120deg, #10243b, #292044);
+  color: #e5dcff;
+  border: 1px solid #8e8af080;
+  box-shadow: 0 5px 22px #579cff25;
+}
+
+.cinewave-site #cw-ai-button:hover {
+  border-color: #c18fff;
+  box-shadow: 0 7px 26px #b577f944;
+}
+
+
+/* MOVIELAB — MOBILE COMPACT LAYOUT */
+@media (max-width: 600px) {
+  /* Let the content determine the hero height instead of reserving a large empty banner. */
+  .cinewave-site .hero {
+    min-height: 0;
+    padding: 38px 20px 37px;
+    align-items: flex-end;
+  }
+  .cinewave-site .hero h1 {
+    font-size: clamp(30px, 8.6vw, 38px);
+    line-height: 1.12;
+    max-width: 100%;
+    margin: 13px 0;
+    overflow-wrap: anywhere;
+  }
+  .cinewave-site .hero-content > p {
+    line-height: 1.6;
+    margin: 14px 0 18px;
+  }
+  .cinewave-site .hero .actions {
+    display: flex;
+    gap: 9px;
+  }
+  .cinewave-site .hero .actions .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 11px 10px;
+    line-height: 1.3;
+    justify-content: center;
+  }
+  .cinewave-site .hero-bottom {
+    margin-top: 17px;
+  }
+  .cinewave-site .hero-pagination {
+    left: 20px;
+    bottom: 11px;
+  }
+  .cinewave-site .catalog-shell {
+    padding-bottom: 26px;
+  }
+  .cinewave-site .genre-section {
+    margin-bottom: 17px;
+  }
+  .cinewave-site .section {
+    margin: 22px 0;
+  }
+  /* Keep the AI call-to-action readable and easy to tap on phones. */
+  .cinewave-site .discovery-note {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    padding: 18px;
+    margin-top: 25px;
+  }
+  .cinewave-site .discovery-note .note-orbit {
+    font-size: 26px;
+  }
+  .cinewave-site .discovery-note > div {
+    min-width: 0;
+  }
+  .cinewave-site .discovery-note h2 {
+    font-size: 16px;
+    line-height: 1.35;
+  }
+  .cinewave-site .discovery-note .btn {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    justify-content: center;
+    text-align: center;
+  }
+  .cinewave-site .mobile-nav button {
+    min-height: 44px;
+  }
+  .cinewave-site footer {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 360px) {
+  .cinewave-site .hero {
+    padding-inline: 17px;
+  }
+  .cinewave-site .hero h1 {
+    font-size: 29px;
+  }
+  .cinewave-site .hero .actions .btn {
+    font-size: 10px;
+    padding-inline: 7px;
+  }
+}
+
+
+/* MOVIELAB — MOBILE NAV COLOR UPDATE
+   Match the blue/pink logo, with legible inactive and active states.
+   Only the small-screen navigation is affected. */
+@media (max-width: 600px) {
+  .cinewave-site .mobile-nav {
+    background: linear-gradient(115deg, rgba(5, 13, 35, .97), rgba(17, 13, 40, .97));
+    border-top: 1px solid rgba(89, 148, 255, .42);
+    box-shadow: 0 -7px 25px rgba(0, 0, 0, .32), 0 -1px 12px rgba(49, 120, 255, .13);
+  }
+
+  .cinewave-site .mobile-nav button {
+    color: #b9c9e6;
+    border-radius: 11px;
+    transition: color .2s ease, background-color .2s ease;
+  }
+
+  .cinewave-site .mobile-nav button span {
+    color: #a7c6f5;
+  }
+
+  .cinewave-site .mobile-nav button b {
+    font-size: 9px;
+    font-weight: 600;
+    color: inherit;
+  }
+
+  .cinewave-site .mobile-nav button.active {
+    color: #ffe1f5;
+    background: linear-gradient(110deg, rgba(0, 186, 255, .18), rgba(255, 0, 184, .17));
+    box-shadow: inset 0 0 0 1px rgba(225, 122, 244, .27);
+  }
+
+  .cinewave-site .mobile-nav button.active span {
+    color: #ff8ae4;
+    text-shadow: 0 0 10px rgba(255, 0, 184, .28);
+  }
+
+  .cinewave-site .mobile-nav button:focus-visible {
+    outline: 2px solid #78d4ff;
+    outline-offset: 2px;
+  }
+}
+
+@media (max-width: 600px) and (hover: hover) {
+  .cinewave-site .mobile-nav button:hover:not(.active) {
+    color: #ffffff;
+    background: rgba(61, 113, 196, .20);
+  }
+}
+
+/* Staging MovieLab AI: catalog matches remain distinct from Gemini text. */
+.cinewave-site .cw-ai-catalog { margin: 12px 0 4px; padding: 12px; border: 1px solid rgba(110,165,255,.35); border-radius: 13px; background: rgba(15,30,55,.65); }
+.cinewave-site .cw-ai-catalog > p { margin: 0 0 9px; font-size: 12px; color: #b9dfff; }
+.cinewave-site .cw-ai-catalog-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 40px; padding: 8px 10px; margin-top: 5px; border-radius: 8px; border: 1px solid rgba(110,165,255,.30); background: #111e38; color: #f5f8ff; text-align: left; cursor: pointer; }
+.cinewave-site .cw-ai-catalog-item:hover, .cinewave-site .cw-ai-catalog-item:focus-visible { border-color: #8dd7ff; background: #183054; }
+
+/* MovieLab AI 2.2: compact poster-backed result cards */
+.cinewave-site .cw-ai-catalog-item img {width:44px;height:65px;object-fit:cover;border-radius:5px;flex:none;background:#0b1428}
+.cinewave-site .cw-ai-catalog-meta {display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.cinewave-site .cw-ai-catalog-meta strong {font-size:13px;overflow-wrap:anywhere}
+.cinewave-site .cw-ai-catalog-meta small {font-size:11px;color:#bac9df}
+
+/* MovieLab logo: white by default, soft sky-blue on hover, click and keyboard focus. */
+.cinewave-site .brand img[src*="movielab-house-clapper-logo"] {
+  filter: invert(1);
+  transition: filter .22s ease, transform .22s ease;
+}
+.cinewave-site .brand:hover img[src*="movielab-house-clapper-logo"],
+.cinewave-site .brand:focus-visible img[src*="movielab-house-clapper-logo"] {
+  filter: invert(76%) sepia(25%) saturate(1260%) hue-rotate(167deg) brightness(109%) drop-shadow(0 0 8px rgba(100,210,255,.52));
+  transform: translateY(-1px);
+}
+.cinewave-site .brand:active img[src*="movielab-house-clapper-logo"] {
+  filter: invert(69%) sepia(39%) saturate(1700%) hue-rotate(172deg) brightness(112%) drop-shadow(0 0 12px rgba(70,195,255,.7));
+  transform: scale(.97);
+}
+@media(prefers-reduced-motion:reduce) {
+  .cinewave-site .brand img[src*="movielab-house-clapper-logo"] { transition: none; transform: none; }
+}
+
+/* Explicitly opened, trusted third-party video embeds in movie details. */
+.cinewave-site .movielab-trusted-embed { display:block; width:100%; aspect-ratio:16/9; min-height:220px; border:0; background:#050916; }
+
+/* A clear, low-friction external watch option for providers that disallow iframe. */
+.cinewave-site .movielab-external-watch {display:flex;flex-direction:column;align-items:flex-start;gap:7px;max-width:100%}
+.cinewave-site .movielab-external-watch .btn {text-decoration:none}
+.cinewave-site .movielab-external-disclosure {font-size:11px;line-height:1.4;color:#bdcde4}
+
+
+/* Wide cinematic featured section on desktop; preserve responsive mobile layout. */
+@media (min-width: 951px) {
+  body.cinewave-site .hero {
+    min-height: max(740px, calc(100svh - 90px));
+    padding: 88px clamp(46px, 8vw, 170px) 115px;
+  }
+  body.cinewave-site .hero-content {
+    max-width: 780px;
+    width: min(57%, 780px);
+  }
+  body.cinewave-site .hero-art {
+    width: clamp(310px, 25vw, 450px);
+    height: auto;
+    aspect-ratio: 2 / 3;
+    right: clamp(80px, 13vw, 260px);
+  }
+  body.cinewave-site .hero-content > p { max-width: 590px; }
+}
+@media (min-width: 601px) and (max-width: 950px) {
+  body.cinewave-site .hero { min-height: 680px; }
+  body.cinewave-site .hero-art { width: 230px; height: 345px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.cinewave-site .hero-art,body.cinewave-site .hero-backdrop {transition:none;}
+}
+
+/* Clickable poster-watch controls match the previous overlay visual style. */
+.cinewave-site .poster a.play-overlay,
+.cinewave-site .poster button.play-overlay {
+  text-decoration:none;
+  cursor:pointer;
+  width:auto;
+  font-family:inherit;
+  border:0;
+}
+.cinewave-site .poster .play-overlay:focus-visible {
+  opacity:1;
+  transform:translateY(0);
+  outline:2px solid #90ceff;
+  outline-offset:2px;
+}
+@media(hover:none) {
+  .cinewave-site .poster a.play-overlay,
+  .cinewave-site .poster button.play-overlay { opacity:1;transform:none; }
+}
+
+
+/* KINOLAB — user-selected cinematic lime / midnight redesign */
+body.cinewave-site {
+  --bg:#0b0914; --panel:#171120; --muted:#aaa4b6;
+  --red:#d6ff43; --line:#ffffff20;
+  background:#0b0914;color:#f6f5fb;
+}
+body.cinewave-site .topbar{
+  background:#0d0a16f5; border-bottom:1px solid #ffffff1a;
+  height:92px; padding-inline:clamp(22px,5vw,88px);
+  backdrop-filter:blur(20px);
+}
+body.cinewave-site .brand { min-width:170px;display:flex;align-items:center; }
+body.cinewave-site .brand img { width:clamp(142px,12vw,190px)!important;height:auto!important; }
+body.cinewave-site .nav button.active,body.cinewave-site .nav button:hover,
+body.cinewave-site .mobile-nav .active {color:#d6ff43;text-shadow:none;}
+body.cinewave-site .nav button.active:after,
+body.cinewave-site .hero-pagination button.active:after,
+body.cinewave-site .progress>div { background:#d6ff43; }
+body.cinewave-site .nav button.active:after {height:2px;}
+body.cinewave-site .hero {
+  min-height:min(780px,calc(100svh - 92px));
+  background:linear-gradient(115deg,#090814,#171222 65%,#151020);
+  padding:clamp(70px,8vw,130px) clamp(28px,6vw,110px) 100px;
+  isolation:isolate;
+}
+body.cinewave-site .hero-backdrop {
+  width:100%;height:100%;right:0;top:0;opacity:.88;
+  mask-image:none;filter:saturate(.95) contrast(1.06);
+}
+body.cinewave-site .hero-shade {
+  background:linear-gradient(90deg,#0a0917 0%,#0a0917ee 25%,#0a09179e 48%,#0a091720 78%),
+             linear-gradient(0deg,#0b0914 0%,transparent 28%);
+}
+body.cinewave-site .hero-grain {
+  background:radial-gradient(circle at 76% 30%,#ecff7715,transparent 60%);
+}
+body.cinewave-site .hero-content {max-width:680px;width:58%;z-index:2;}
+body.cinewave-site .hero .eyebrow,
+body.cinewave-site .section .eyebrow {color:#d6ff43;text-shadow:none;}
+body.cinewave-site .hero .eyebrow:before {background:#d6ff43;}
+body.cinewave-site .hero h1 {
+  font-size:clamp(48px,6vw,92px);font-weight:900;letter-spacing:-.045em;
+  line-height:1.03;text-shadow:0 4px 28px #0009;
+}
+body.cinewave-site .hero-content>p {
+  color:#f0ebf5;font-size:clamp(14px,1.2vw,18px);line-height:1.65;
+  max-width:540px;text-shadow:0 2px 12px #0009;
+}
+body.cinewave-site .meta {color:#e3ddea;}
+body.cinewave-site .btn.primary,body.cinewave-site .primary {
+  color:#11110c;background:#d6ff43;border:1px solid #d6ff43;
+  box-shadow:0 9px 28px #b2e62d33;font-weight:800;
+}
+body.cinewave-site .btn.primary:hover:not(:disabled),body.cinewave-site .primary:hover:not(:disabled) {
+  color:#0c0c0b;background:#e5ff83;box-shadow:0 12px 35px #b2e62d55;
+}
+body.cinewave-site .btn.secondary,body.cinewave-site .secondary {
+  background:#110e1bba;border:1px solid #cfc8db77;color:#fff;
+}
+body.cinewave-site .btn.secondary:hover,body.cinewave-site .secondary:hover {background:#ffffff1b;}
+body.cinewave-site :focus-visible {outline-color:#d6ff43;}
+body.cinewave-site .hero-art {width:clamp(270px,23vw,380px);aspect-ratio:2/3;height:auto;right:9vw;}
+body.cinewave-site .hero-art>img {border-radius:14px;box-shadow:0 25px 90px #000c;}
+body.cinewave-site .art-stamp {display:none;}
+body.cinewave-site .hero-pagination button.active:after {background:#d6ff43;}
+body.cinewave-site .genre {background:#171120;border:1px solid #393146;color:#efebf3;}
+body.cinewave-site .genre.active {background:#d6ff431d;border-color:#d6ff43;color:#e7ff97;}
+body.cinewave-site .poster {border:1px solid #ffffff24;border-radius:10px;}
+body.cinewave-site .movie:hover .poster {border-color:#d6ff43;box-shadow:0 5px 30px #d6ff4330;}
+body.cinewave-site .play-overlay {background:#d6ff43;color:#171120;}
+body.cinewave-site .poster-badge.available {background:#d6ff43;color:#171120;}
+body.cinewave-site .section-head h2 {font-weight:850;letter-spacing:-.035em;}
+body.cinewave-site #cw-ai-button {background:#1d1928;border-color:#d6ff4380;color:#e8ffb0;}
+body.cinewave-site .mobile-nav {background:#0e0b17f5;border-top-color:#d6ff4340;}
+body.cinewave-site .search {border-color:#ffffff25;}
+@media (max-width:950px) {
+ body.cinewave-site .hero {min-height:610px;}
+ body.cinewave-site .hero-content {width:65%;}
+ body.cinewave-site .hero h1 {font-size:clamp(40px,6vw,65px);}
+}
+@media (max-width:600px) {
+ body.cinewave-site .topbar {min-height:72px;height:auto;padding:14px 18px;}
+ body.cinewave-site .brand {min-width:120px;}
+ body.cinewave-site .brand img {width:145px!important;}
+ body.cinewave-site .hero {
+   min-height:640px;padding:270px 21px 78px;align-items:flex-end;
+   background:#110d1c;
+ }
+ body.cinewave-site .hero-backdrop {opacity:.9;mask-image:none;}
+ body.cinewave-site .hero-shade {
+  background:linear-gradient(0deg,#0b0914 0%,#0b0914b8 34%,#0b091400 84%),
+             linear-gradient(90deg,#0b091438,transparent);
+ }
+ body.cinewave-site .hero-art {display:none;}
+ body.cinewave-site .hero-content {width:100%;max-width:100%;}
+ body.cinewave-site .hero h1 {font-size:clamp(39px,10vw,53px);line-height:1.04;max-width:100%;}
+ body.cinewave-site .hero-content>p {color:#f3edf5;font-size:13px;line-height:1.55;}
+ body.cinewave-site .hero-pagination {bottom:24px;left:22px;}
+ body.cinewave-site .btn.primary {color:#0d1010;}
+}
+
+/* KINOLAB OFFICIAL BRAND PALETTE: lime #D4F458 / purple #20152E / warm white #F7F5F0 */
+body.cinewave-site{--bg:#20152E;--panel:#20152E;--red:#D4F458;--muted:#F7F5F0;--line:#F7F5F033;background:#20152E;color:#F7F5F0;}
+body.cinewave-site .topbar,body.cinewave-site .mobile-nav{background:#20152Ef5;border-color:#F7F5F030}
+body.cinewave-site .hero{background:#20152E}
+body.cinewave-site .hero-shade{background:linear-gradient(90deg,#20152E 0%,#20152Ee6 25%,#20152E88 53%,#20152E0a 85%),linear-gradient(0deg,#20152E,transparent 27%)}
+body.cinewave-site .hero-grain{background:radial-gradient(circle at 80% 35%,#D4F45818,transparent 60%)}
+body.cinewave-site .primary,body.cinewave-site .btn.primary{background:#D4F458;color:#20152E;border-color:#D4F458;box-shadow:0 8px 24px #D4F45822}
+body.cinewave-site .primary:hover:not(:disabled),body.cinewave-site .btn.primary:hover:not(:disabled){background:#D4F458;color:#20152E;filter:brightness(1.05)}
+body.cinewave-site .secondary,body.cinewave-site .btn.secondary{background:#20152Ed9;color:#F7F5F0;border:1px solid #F7F5F066}
+body.cinewave-site .genre,body.cinewave-site .search{background:#20152E;color:#F7F5F0;border-color:#F7F5F044}
+body.cinewave-site .genre.active{background:#D4F4581f;color:#D4F458;border-color:#D4F458}
+body.cinewave-site .nav button.active,body.cinewave-site .nav button:hover,body.cinewave-site .hero .eyebrow,body.cinewave-site .section .eyebrow,body.cinewave-site .mobile-nav .active{color:#D4F458}
+body.cinewave-site .hero .eyebrow:before,body.cinewave-site .nav button.active:after,body.cinewave-site .hero-pagination button.active:after,body.cinewave-site .progress>div{background:#D4F458}
+body.cinewave-site .hero h1,body.cinewave-site .hero-content>p,body.cinewave-site .section-head h2,body.cinewave-site .movie-title{color:#F7F5F0}
+body.cinewave-site .poster,body.cinewave-site .movie:hover .poster{border-color:#D4F45855}
+body.cinewave-site .play-overlay,body.cinewave-site .poster-badge.available{background:#D4F458;color:#20152E}
+body.cinewave-site #cw-ai-button{background:#20152E;color:#D4F458;border-color:#D4F458}
+body.cinewave-site :focus-visible{outline-color:#D4F458}
+body.cinewave-site .brand{min-width:160px}
+body.cinewave-site .brand img{min-width:160px;width:180px!important;max-width:100%;height:auto!important}
+@media(max-width:600px){body.cinewave-site .hero-shade{background:linear-gradient(0deg,#20152E 0%,#20152Ec9 40%,#20152E00 92%)}body.cinewave-site .brand{min-width:160px}body.cinewave-site .brand img{width:160px!important;min-width:160px}}
+
+/* KinoLab searchable db.json title archive: only metadata, no streaming. */
+.cinewave-site .archive-title-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.cinewave-site .archive-title{display:flex;align-items:center;gap:12px;min-width:0;padding:14px;border:1px solid #F7F5F036;border-radius:10px;background:#20152E}
+.cinewave-site .archive-title-symbol{display:grid;place-items:center;flex:0 0 30px;height:30px;background:#D4F458;color:#20152E;font-weight:900;font-size:20px;border-radius:5px}
+.cinewave-site .archive-title strong{display:block;font-size:13px;line-height:1.35;color:#F7F5F0;overflow-wrap:anywhere}
+.cinewave-site .archive-title small{display:block;color:#c9c1cd;font-size:10px;margin-top:6px}
+@media(max-width:950px){.cinewave-site .archive-title-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.cinewave-site .archive-title-grid{grid-template-columns:1fr 1fr;gap:8px}.cinewave-site .archive-title{padding:10px;gap:7px}.cinewave-site .archive-title-symbol{flex-basis:24px;height:24px;font-size:17px}.cinewave-site .archive-title strong{font-size:11px}}
+
+
+/* KinoLab AI — compact, keyboard-safe mobile chat (2026-11-04).
+   Keep the floating window small and prevent Safari's input-focus zoom. */
+@media (max-width: 700px) {
+  body.cinewave-site #cw-ai-panel {
+    position: fixed;
+    box-sizing: border-box;
+    width: min(350px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+    height: min(350px, 48dvh);
+    max-height: calc(100dvh - 165px);
+    min-height: 0;
+    right: 12px;
+    left: auto;
+    bottom: calc(119px + env(safe-area-inset-bottom, 0px));
+    top: auto;
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  body.cinewave-site #cw-ai-head {
+    flex: 0 0 auto;
+    padding: 10px 12px;
+  }
+  body.cinewave-site #cw-ai-head h2 { font-size: 15px; }
+  body.cinewave-site #cw-ai-messages {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 9px 11px;
+  }
+  body.cinewave-site #cw-ai-form {
+    flex: 0 0 auto;
+    padding: 9px 10px;
+  }
+  body.cinewave-site #cw-ai-input {
+    font-size: 16px;
+    min-height: 42px;
+  }
+  body.cinewave-site #cw-ai-send {
+    min-width: 42px;
+    min-height: 42px;
+  }
+  body.cinewave-site .cw-ai-msg {
+    padding: 9px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}
+@media (max-width: 700px) and (max-height: 460px) {
+  body.cinewave-site #cw-ai-panel {
+    bottom: 12px;
+    height: min(260px, calc(100dvh - 24px));
+    max-height: calc(100dvh - 24px);
+  }
+}

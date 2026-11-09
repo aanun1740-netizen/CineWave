@@ -1,0 +1,727 @@
+/* KinoLab storefront theme switch. The default dark theme remains unchanged.
+   This stylesheet loads after storefront.css and accounts.css, but never affects Studio. */
+body.cinewave-site .theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid rgba(212,244,88,.52);
+  border-radius: 50%;
+  background: #31243d;
+  color: #d4f458;
+  box-shadow: 0 2px 10px #0002;
+  transition: background .18s, border-color .18s, transform .18s;
+}
+body.cinewave-site .theme-toggle svg { width: 20px; height: 20px; }
+body.cinewave-site .theme-toggle:hover { background: #423153; transform: translateY(-1px); }
+body.cinewave-site .theme-toggle:focus-visible { outline: 2px solid #d4f458; outline-offset: 3px; }
+body.cinewave-site .brand-logo-dark { display: block !important; object-fit: contain; object-position:left center; }
+body.cinewave-site .brand-logo-light { display: none !important; }
+body.cinewave-site .brand img {
+  width: 180px !important;
+  max-width: 100%;
+  height: 65px !important;
+  object-fit: contain;
+  object-position: left center;
+}
+@media (max-width: 600px) {
+  body.cinewave-site .theme-toggle { width: 38px; height: 38px; min-height: 38px; }
+  body.cinewave-site .theme-toggle svg {width:19px;height:19px;}
+  body.cinewave-site .brand img {width: 160px !important; height: 55px !important;}
+}
+@media (max-width: 380px) {
+  body.cinewave-site .topbar {gap:6px; padding-inline:10px;}
+  body.cinewave-site .language {padding:7px 2px;}
+  body.cinewave-site .theme-toggle {width:34px;height:34px;min-height:34px;}
+  body.cinewave-site .avatar {width:30px;height:30px;}
+}
+
+/* Official warm-light palette: ivory background, purple type, lime accents. */
+body.cinewave-site[data-theme="light"] {
+  --bg: #f7f5f0;
+  --panel: #ffffff;
+  --muted: #5d5466;
+  --line: #20152e25;
+  --red: #648018;
+  background: #f7f5f0;
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .brand-logo-dark { display: none !important; }
+body.cinewave-site[data-theme="light"] .brand-logo-light { display: block !important; }
+body.cinewave-site[data-theme="light"] .topbar,
+body.cinewave-site[data-theme="light"] .mobile-nav {
+  background: #f7f5f0f6;
+  border-color: #20152e24;
+  box-shadow: 0 3px 20px #20152e08;
+}
+body.cinewave-site[data-theme="light"] .topbar .nav button {
+  color: #554960;
+}
+body.cinewave-site[data-theme="light"] .topbar .nav button:is(.active,:hover),
+body.cinewave-site[data-theme="light"] .mobile-nav button.active {
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .nav button.active:after { background: #718a29; }
+body.cinewave-site[data-theme="light"] .mobile-nav button { color: #645a70; }
+body.cinewave-site[data-theme="light"] .search,
+body.cinewave-site[data-theme="light"] .genre {
+  border-color: #20152e38;
+  background: #ffffff;
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .search input,
+body.cinewave-site[data-theme="light"] .search button {
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .search input::placeholder {
+  color: #6a6171;
+}
+body.cinewave-site[data-theme="light"] .language,
+body.cinewave-site[data-theme="light"] .avatar,
+body.cinewave-site[data-theme="light"] .theme-toggle {
+  background: #ffffff;
+  border: 1px solid #20152e30;
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .theme-toggle:hover,
+body.cinewave-site[data-theme="light"] .avatar:hover { background: #ece8e2; }
+body.cinewave-site[data-theme="light"] :focus-visible { outline-color: #536c10; }
+
+/* The hero remains readable even with a very dark photo. */
+body.cinewave-site[data-theme="light"] .hero {
+  background: #eeece6;
+}
+body.cinewave-site[data-theme="light"] .hero-backdrop {
+  opacity: .27;
+  filter: saturate(.65);
+}
+body.cinewave-site[data-theme="light"] .hero-shade {
+  background: linear-gradient(90deg,#f7f5f0 0%,#f7f5f0ee 37%,#f7f5f0a9 65%,#f7f5f006 100%),
+              linear-gradient(0deg,#f7f5f0 0%,transparent 40%);
+}
+body.cinewave-site[data-theme="light"] .hero-grain {
+  background: radial-gradient(circle at 80% 35%,#d4f45840,transparent 60%);
+}
+body.cinewave-site[data-theme="light"] .hero h1,
+body.cinewave-site[data-theme="light"] .hero-content>p,
+body.cinewave-site[data-theme="light"] .section-head h2,
+body.cinewave-site[data-theme="light"] .movie-title {
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .hero .meta,
+body.cinewave-site[data-theme="light"] .meta,
+body.cinewave-site[data-theme="light"] .hero-bottom,
+body.cinewave-site[data-theme="light"] .movie-meta,
+body.cinewave-site[data-theme="light"] .section-subtitle {
+  color: #655b6d;
+}
+body.cinewave-site[data-theme="light"] .hero .eyebrow,
+body.cinewave-site[data-theme="light"] .section .eyebrow {
+  color: #536b1b;
+}
+body.cinewave-site[data-theme="light"] .hero .eyebrow::before,
+body.cinewave-site[data-theme="light"] .hero-pagination button.active::after {
+  background: #718a29;
+}
+body.cinewave-site[data-theme="light"] .hero-pagination button::after {
+  background: #20152e5c;
+}
+body.cinewave-site[data-theme="light"] .btn.primary,
+body.cinewave-site[data-theme="light"] .primary {
+  background: #d4f458;
+  color: #20152e;
+  border-color: #a8c63e;
+  box-shadow: 0 6px 24px #20152e18;
+}
+body.cinewave-site[data-theme="light"] .btn.primary:hover:not(:disabled),
+body.cinewave-site[data-theme="light"] .primary:hover:not(:disabled) {
+  background: #c4e54a;
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .btn.secondary,
+body.cinewave-site[data-theme="light"] .secondary {
+  background: #ffffffd9;
+  border: 1px solid #20152e54;
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .btn.secondary:hover,
+body.cinewave-site[data-theme="light"] .secondary:hover { background: #eae8e1; }
+body.cinewave-site[data-theme="light"] .genre:hover,
+body.cinewave-site[data-theme="light"] .genre.active {
+  background: #e7f4bf;
+  border-color: #819934;
+  color: #28371b;
+}
+body.cinewave-site[data-theme="light"] .text-button { color: #55466a; }
+body.cinewave-site[data-theme="light"] .text-button:hover { color: #20152e; }
+body.cinewave-site[data-theme="light"] .poster,
+body.cinewave-site[data-theme="light"] .movie:hover .poster { border-color: #20152e38; }
+body.cinewave-site[data-theme="light"] .poster-badge:not(.available) {
+  color: #20152e;
+  background: #ffffffec;
+  border-color: #20152e24;
+}
+body.cinewave-site[data-theme="light"] .discovery-note {
+  background: radial-gradient(ellipse at 0% 50%,#d4f45838,transparent 80%),#ffffff;
+  border-color: #20152e22;
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .discovery-note p:not(.eyebrow) {
+  color: #5d5267;
+}
+body.cinewave-site[data-theme="light"] .note-orbit { color: #718a29; }
+body.cinewave-site[data-theme="light"] footer {
+  border-color: #20152e24;
+  color: #655a6c;
+}
+body.cinewave-site[data-theme="light"] footer .brand { color: #20152e; }
+body.cinewave-site[data-theme="light"] .skeletons i {
+  background: linear-gradient(110deg,#eeeae6,#dad5cc,#eeeae6);
+  background-size: 200% 100%;
+}
+
+/* Dialogs, user profile and account pages. Video player itself stays dark. */
+body.cinewave-site[data-theme="light"] .profile-panel,
+body.cinewave-site[data-theme="light"] .dialog,
+body.cinewave-site[data-theme="light"] .account-card {
+  background: #ffffff;
+  color: #20152e;
+  border: 1px solid #20152e2e;
+  box-shadow: 0 22px 65px #20152e1b;
+}
+body.cinewave-site[data-theme="light"] .dialog-info>p,
+body.cinewave-site[data-theme="light"] .account-card>p,
+body.cinewave-site[data-theme="light"] .profile-facts,
+body.cinewave-site[data-theme="light"] .route-not-found {
+  color: #5d5366;
+}
+body.cinewave-site[data-theme="light"] .profile-facts strong { color: #20152e; }
+body.cinewave-site[data-theme="light"] .details-art {
+  background: radial-gradient(ellipse,#eee9e2,#ffffff);
+}
+body.cinewave-site[data-theme="light"] .account-form label { color: #4a3c58; }
+body.cinewave-site[data-theme="light"] .account-form input,
+body.cinewave-site[data-theme="light"] .account-form select {
+  background: #faf9f6;
+  color: #20152e;
+  border: 1px solid #20152e3a;
+}
+body.cinewave-site[data-theme="light"] .account-links button {
+  color: #50356d;
+}
+body.cinewave-site[data-theme="light"] .account-feedback { color: #8b324b; }
+body.cinewave-site[data-theme="light"] .modal { background: #20152e9e; }
+body.cinewave-site[data-theme="light"] .archive-title {
+  background: #ffffff;
+  border-color: #20152e24;
+}
+body.cinewave-site[data-theme="light"] .archive-title strong { color: #20152e; }
+body.cinewave-site[data-theme="light"] .archive-title small { color: #5d5366; }
+body.cinewave-site[data-theme="light"] .archive-title-symbol { color: #20152e; background: #d4f458; }
+body.cinewave-site[data-theme="light"] .toast {
+  background: #20152e;
+  color: #f7f5f0;
+}
+
+/* AI conversation is light too, without changing its mobile sizing. */
+body.cinewave-site[data-theme="light"] #cw-ai-button {
+  background: #ffffff;
+  color: #20152e;
+  border-color: #819934;
+}
+body.cinewave-site[data-theme="light"] #cw-ai-panel {
+  background: #faf9f6;
+  color: #20152e;
+  border-color: #20152e38;
+  box-shadow: 0 20px 50px #20152e36;
+}
+body.cinewave-site[data-theme="light"] #cw-ai-head {
+  background: #f0eee8;
+}
+body.cinewave-site[data-theme="light"] #cw-ai-close {
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .cw-ai-bot {
+  background: #ebe8e1;
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .cw-ai-user {
+  background: #d4f458;
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] #cw-ai-form {
+  border-color: #20152e24;
+}
+body.cinewave-site[data-theme="light"] #cw-ai-input {
+  background: #ffffff;
+  color: #20152e;
+  border-color: #20152e45;
+}
+body.cinewave-site[data-theme="light"] #cw-ai-send {
+  background: #d4f458;
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .cw-ai-catalog {
+  background: #f0eee7;
+  border-color: #20152e2e;
+}
+body.cinewave-site[data-theme="light"] .cw-ai-catalog > p { color: #20152e; }
+body.cinewave-site[data-theme="light"] .cw-ai-catalog-item {
+  background: #ffffff;
+  border-color: #20152e38;
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .cw-ai-catalog-item:hover {
+  background: #e7f4bf;
+}
+
+/* Small devices: the screenshot must remain legible behind the chat and nav. */
+@media (max-width: 600px) {
+  body.cinewave-site[data-theme="light"] .hero-shade {
+    background: linear-gradient(0deg,#f7f5f0 0%,#f7f5f0de 42%,#f7f5f00e 100%);
+  }
+  body.cinewave-site[data-theme="light"] .hero-content>p {color:#20152e;}
+  body.cinewave-site[data-theme="light"] .mobile-nav {
+    background: #f7f5f0f4;
+    border-color: #20152e24;
+  }
+  body.cinewave-site[data-theme="light"].account-view .account-links button {
+    background: #ffffff;
+    color: #50356d;
+    border-color: #20152e3b;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.cinewave-site .theme-toggle {transition:none;}
+}
+
+
+/* KinoLab warm off-white light theme. The dark theme is unchanged.
+   Warm ivory is the lightest surface; large dark or pure-white panels are avoided. */
+body.cinewave-site[data-theme="light"] {
+  --bg: #F7F5F0;
+  --panel: #F1EEE8;
+  --muted: #6B6275;
+  --line: #20152E1F;
+  background: #F7F5F0;
+  color: #20152E;
+}
+body.cinewave-site[data-theme="light"] .topbar {
+  background: #F7F5F0f8;
+  border-color: #20152E1F;
+  box-shadow: 0 3px 14px #20152E0B;
+}
+/* Keep the movie backdrop and poster visible, but let ivory dominate the hero. */
+body.cinewave-site[data-theme="light"] .hero {
+  min-height: clamp(500px, 63svh, 660px);
+  background: linear-gradient(112deg, #F7F5F0 0%, #F1EEE8 67%, #EAE5DD 100%);
+  border-bottom: 1px solid #20152E22;
+}
+body.cinewave-site[data-theme="light"] .hero-backdrop {
+  opacity: 1;
+  filter: saturate(1.06) contrast(1.1);
+  /* Hide only the part directly behind the left-hand text. Keep the
+     actors on the right fully visible, including their original colors. */
+  mask-image: linear-gradient(to right, transparent 0%, transparent 22%, #000 58%, #000 100%);
+}
+body.cinewave-site[data-theme="light"] .hero-shade {
+  /* Warm-white reading area on the left only; no milky layer over
+     the full film image on the right. */
+  background: linear-gradient(to right,
+    #F7F5F0 0%,
+    #F7F5F0f5 24%,
+    #F7F5F0aa 40%,
+    #F7F5F02b 57%,
+    transparent 73%);
+}
+body.cinewave-site[data-theme="light"] .hero-grain {
+  background: transparent;
+}
+body.cinewave-site[data-theme="light"] .hero h1,
+body.cinewave-site[data-theme="light"] .hero-content>p {
+  color: #20152E;
+  text-shadow: none;
+}
+body.cinewave-site[data-theme="light"] .hero .meta,
+body.cinewave-site[data-theme="light"] .hero-bottom {
+  color: #62596D;
+}
+body.cinewave-site[data-theme="light"] .hero .eyebrow {
+  color: #536B1B;
+}
+body.cinewave-site[data-theme="light"] .hero .eyebrow:before,
+body.cinewave-site[data-theme="light"] .hero-pagination button.active:after {
+  background: #78912C;
+}
+body.cinewave-site[data-theme="light"] .hero-pagination button:after {
+  background: #20152E47;
+}
+body.cinewave-site[data-theme="light"] .hero-art > img {
+  border: 5px solid #F1EEE8;
+  box-shadow: 0 15px 42px #20152E35;
+}
+body.cinewave-site[data-theme="light"] .hero .btn.secondary {
+  background: #F1EEE8;
+  color: #20152E;
+  border-color: #20152E48;
+}
+body.cinewave-site[data-theme="light"] .hero .btn.secondary:hover {
+  background: #E8E3DA;
+}
+body.cinewave-site[data-theme="light"] .catalog-shell {
+  background: transparent;
+  color: #20152E;
+}
+body.cinewave-site[data-theme="light"] .genre-section {
+  background: #F1EEE8;
+  border: 1px solid #20152E15;
+  border-radius: 14px;
+  margin-top: 19px;
+  margin-bottom: 27px;
+  padding: 19px 22px 13px;
+}
+body.cinewave-site[data-theme="light"] .genre {
+  background: #F7F5F0;
+  border-color: #20152E25;
+}
+body.cinewave-site[data-theme="light"] .genre.active,
+body.cinewave-site[data-theme="light"] .genre:hover {
+  background: #D4F458;
+  color: #20152E;
+  border-color: #9AB737;
+}
+body.cinewave-site[data-theme="light"] .catalog-shell .section {
+  background: #F1EEE8;
+  border: 1px solid #20152E14;
+  border-radius: 14px;
+  padding: 22px 22px 20px;
+  box-shadow: 0 5px 16px #20152E0A;
+}
+body.cinewave-site[data-theme="light"] .catalog-shell .section:nth-of-type(even) {
+  background: #F3F0EA;
+}
+body.cinewave-site[data-theme="light"] .section-head {
+  padding-bottom: 13px;
+  border-bottom: 1px solid #20152E17;
+}
+body.cinewave-site[data-theme="light"] .section-head h2 {
+  color: #20152E;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+body.cinewave-site[data-theme="light"] .section-head h2::before {
+  content: "";
+  display: inline-block;
+  flex: 0 0 4px;
+  align-self: stretch;
+  min-height: 21px;
+  background: #849D36;
+  border-radius: 5px;
+}
+body.cinewave-site[data-theme="light"] .movie-grid {
+  padding-top: 10px;
+  padding-bottom: 15px;
+}
+body.cinewave-site[data-theme="light"] .movie {
+  padding: 6px;
+  border: 1px solid #20152E1F;
+  border-radius: 12px;
+  background: #F7F5F0;
+  box-shadow: 0 4px 13px #20152E12;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+body.cinewave-site[data-theme="light"] .movie:hover,
+body.cinewave-site[data-theme="light"] .movie:focus-visible {
+  transform: translateY(-2px);
+  border-color: #849D36;
+  box-shadow: 0 10px 21px #20152E20;
+}
+body.cinewave-site[data-theme="light"] .movie .poster {
+  background: #E8E3DB;
+  border: 1px solid #20152E2B;
+  box-shadow: 0 3px 12px #20152E14;
+}
+body.cinewave-site[data-theme="light"] .movie:hover .poster {
+  border-color: #849D36;
+  box-shadow: 0 7px 17px #20152E23;
+}
+body.cinewave-site[data-theme="light"] .movie-title {
+  padding: 0 2px;
+  color: #20152E;
+  font-weight: 750;
+}
+body.cinewave-site[data-theme="light"] .movie-meta {
+  padding: 0 2px 2px;
+  color: #655B6D;
+}
+body.cinewave-site[data-theme="light"] .row-controls button {
+  border: 1px solid #20152E33;
+  background: #F7F5F0;
+  color: #20152E;
+}
+body.cinewave-site[data-theme="light"] .row-controls button:hover:enabled {
+  background: #D4F458;
+  color: #20152E;
+}
+body.cinewave-site[data-theme="light"] .empty,
+body.cinewave-site[data-theme="light"] .catalog-status {
+  background: #ECE7DE;
+  border: 1px dashed #20152E30;
+  border-radius: 9px;
+  padding: 20px;
+  color: #5D5366;
+}
+body.cinewave-site[data-theme="light"] .discovery-note {
+  background: linear-gradient(118deg, #ECE7DE, #F1EEE8);
+  border: 1px solid #20152E22;
+  box-shadow: 0 7px 18px #20152E10;
+  color: #20152E;
+}
+body.cinewave-site[data-theme="light"] .discovery-note h2 {
+  color: #20152E;
+}
+body.cinewave-site[data-theme="light"] .discovery-note .eyebrow,
+body.cinewave-site[data-theme="light"] .note-orbit {
+  color: #536B1B;
+}
+body.cinewave-site[data-theme="light"] .discovery-note p:not(.eyebrow) {
+  color: #5D5366;
+}
+body.cinewave-site[data-theme="light"] .discovery-note .btn.secondary {
+  background: #D4F458;
+  color: #20152E;
+  border-color: #A9C744;
+}
+body.cinewave-site[data-theme="light"] .discovery-note .btn.secondary:hover {
+  background: #C7E74D;
+}
+body.cinewave-site[data-theme="light"] .archive-title {
+  background: #F7F5F0;
+  box-shadow: 0 4px 11px #20152E0A;
+}
+body.cinewave-site[data-theme="light"] footer {
+  background: #ECE7DE;
+  border-top: 1px solid #20152E22;
+}
+/* Keep the small-screen hero photographic, with readable dark text. */
+@media (max-width: 600px) {
+  body.cinewave-site[data-theme="light"] .hero {
+    min-height: 600px;
+    background: #F1EEE8;
+  }
+  body.cinewave-site[data-theme="light"] .hero-backdrop {
+    opacity: 1;
+    filter: saturate(1.05) contrast(1.1);
+    mask-image: none;
+  }
+  body.cinewave-site[data-theme="light"] .hero-shade {
+    /* On phones show the cast clearly above the text. Only the bottom
+       of the picture fades into the off-white controls/copy area. */
+    background: linear-gradient(to top,
+      #F7F5F0 0%,
+      #F7F5F0fa 17%,
+      #F7F5F0e8 28%,
+      #F7F5F08a 39%,
+      #F7F5F000 59%);
+  }
+  body.cinewave-site[data-theme="light"] .hero h1,
+  body.cinewave-site[data-theme="light"] .hero-content>p {
+    color: #20152E;
+    text-shadow: none;
+  }
+  body.cinewave-site[data-theme="light"] .genre-section {
+    padding: 13px 12px 10px;
+    margin: 12px 0 20px;
+    border-radius: 11px;
+  }
+  body.cinewave-site[data-theme="light"] .catalog-shell .section {
+    padding: 15px 11px 17px;
+    margin: 20px 0;
+    border-radius: 11px;
+  }
+  body.cinewave-site[data-theme="light"] .movie-grid { gap: 9px; }
+  body.cinewave-site[data-theme="light"] .movie {
+    padding: 5px;
+    border-radius: 9px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.cinewave-site[data-theme="light"] .movie { transition: none; }
+}
+
+/* External TV series: season/episode links in the existing movie dialog. */
+body.cinewave-site .series-episode-section {
+  margin: 18px 0 8px;
+  padding: 16px;
+  background: #271c34;
+  border: 1px solid #f7f5f02f;
+  border-radius: 12px;
+}
+body.cinewave-site .series-episode-section h3 {
+  font-size: 16px;
+  margin: 0 0 12px;
+  color: #f7f5f0;
+}
+body.cinewave-site .series-episode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 9px;
+}
+body.cinewave-site .series-episode-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 43px;
+  padding: 10px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid #d4f45886;
+  border-radius: 8px;
+  background: #20152e;
+  color: #f7f5f0;
+}
+body.cinewave-site .series-episode-link:hover,
+body.cinewave-site .series-episode-link:focus-visible {
+  background: #d4f458;
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .series-episode-section {
+  background: #f1eee8;
+  border-color: #20152e2c;
+}
+body.cinewave-site[data-theme="light"] .series-episode-section h3 {
+  color: #20152e;
+}
+body.cinewave-site[data-theme="light"] .series-episode-link {
+  background: #f7f5f0;
+  color: #20152e;
+  border-color: #20152e3e;
+}
+body.cinewave-site[data-theme="light"] .series-episode-link:hover,
+body.cinewave-site[data-theme="light"] .series-episode-link:focus-visible {
+  background: #d4f458;
+  border-color: #89a22c;
+}
+@media (max-width: 600px) {
+  body.cinewave-site .series-episode-section {padding: 12px;}
+  body.cinewave-site .series-episode-grid {grid-template-columns: repeat(2,minmax(0,1fr));}
+}
+
+/* Staging analytics disclosure: visible and keyboard-accessible in both themes. */
+body.cinewave-site footer .privacy-link {
+  display: inline-block;
+  color: #d4f458;
+  font-size: .82rem;
+  line-height: 1.5;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+body.cinewave-site footer .privacy-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+body.cinewave-site[data-theme="light"] footer .privacy-link { color: #536b1b; }
+
+/* KinoLab-Test guest registration invitation, shown after 5 distinct films. */
+body.cinewave-site .guest-gate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(12, 7, 20, .82);
+  overflow: auto;
+}
+body.cinewave-site .guest-gate-dialog {
+  position: relative;
+  width: min(100%, 510px);
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+  padding: clamp(24px, 5vw, 42px);
+  border: 1px solid #d4f45854;
+  border-radius: 22px;
+  background: #20152e;
+  box-shadow: 0 26px 90px #000a;
+  color: #f7f5f0;
+  text-align: center;
+}
+body.cinewave-site .guest-gate-brand {
+  color: #d4f458;
+  font-size: .82rem;
+  letter-spacing: .12em;
+  font-weight: 750;
+}
+body.cinewave-site .guest-gate-dialog h2 {
+  margin: 14px 0;
+  font-size: clamp(1.35rem, 5vw, 1.85rem);
+  color: #f7f5f0;
+}
+body.cinewave-site .guest-gate-dialog p {
+  margin: 12px 0;
+  line-height: 1.6;
+}
+body.cinewave-site .guest-gate-action {
+  display: block;
+  width: 100%;
+  justify-content: center;
+  margin: 22px 0 12px;
+}
+body.cinewave-site .guest-gate-text-button {
+  display: block;
+  width: 100%;
+  padding: 11px 8px;
+  border: 0;
+  background: transparent;
+  color: #d4f458;
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+}
+body.cinewave-site .guest-gate-note {
+  font-size: .83rem;
+  opacity: .8;
+}
+body.cinewave-site .guest-gate-close {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #f7f5f0;
+  cursor: pointer;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+body.cinewave-site .guest-gate-dialog button:focus-visible {
+  outline: 3px solid #d4f458;
+  outline-offset: 3px;
+}
+body.cinewave-site .series-episode-link:is(button) { font: inherit; cursor: pointer; }
+@media (max-width: 520px) {
+  body.cinewave-site .guest-gate-dialog { padding: 22px 20px; }
+}
+
+/* Small, low-distraction remaining allowance notice above the hero. */
+body.cinewave-site .guest-film-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  background: #20152e;
+  color: #f7f5f0;
+  font-size: .88rem;
+}
+body.cinewave-site .guest-film-status strong { color: #d4f458; font-variant-numeric: tabular-nums; }
+body.cinewave-site[data-theme="light"] .guest-film-status { background: #eae8df; color: #20152e; }
+body.cinewave-site[data-theme="light"] .guest-film-status strong { color: #536b1b; }
