@@ -24,6 +24,7 @@ jobs:
           cache: npm
           cache-dependency-path: kinolab-next/package-lock.json
       - run: npm ci --ignore-scripts
+      - run: npm run build
       - run: npx playwright install --with-deps chrome
       - name: Check public Pages catalog and protected admin on desktop and mobile
         run: npx playwright test e2e/live-pages.spec.js --project=desktop --project=mobile
