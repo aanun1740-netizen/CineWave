@@ -49,6 +49,7 @@ export default function useAccount() {
       const [
         { data: profile, error: profileError },
         { data: list, error: listError },
+        { data: externalList, error: externalListError },
         role,
       ] = await Promise.all([
         client
@@ -60,10 +61,14 @@ export default function useAccount() {
           .from("user_watchlist")
           .select("movie_id")
           .eq("user_id", session.user.id),
+        client
+          .from("user_external_watchlist")
+          .select("external_movie_id")
+          .eq("user_id", session.user.id),
         client.rpc("cinewave_is_admin"),
       ]);
       if (generation !== epoch.current) return;
-      if (profileError || listError) {
+      if (profileError || listError || externalListError) {
         patch({
           cloudReady: false,
           admin: !role.error && role.data === true,
@@ -74,7 +79,7 @@ export default function useAccount() {
       patch({
         profile,
         ...(revision === listRevision.current
-          ? { list: new Set(list.map((row) => "catalog:" + row.movie_id)) }
+          ? { list: new Set([...list.map((row) => "catalog:" + row.movie_id), ...externalList.map((row) => "external:" + row.external_movie_id)]) }
           : {}),
         cloudReady: true,
         admin: !role.error && role.data === true,
@@ -122,17 +127,22 @@ export default function useAccount() {
     try {
       if (state.session) {
         if (!state.cloudReady) throw new Error("listFailed");
-        const movieId = movie.id.replace(/^catalog:/, ""),
-          uid = state.session.user.id;
+        const external = movie.id.startsWith("external:");
+        const prefix = external ? /^external:/ : /^catalog:/;
+        const movieId = movie.id.replace(prefix, "");
+        if (!/^[0-9]+$/.test(movieId)) throw new Error("listFailed");
+        const uid = state.session.user.id;
+        const table = external ? "user_external_watchlist" : "user_watchlist";
+        const idColumn = external ? "external_movie_id" : "movie_id";
         const { error } = has
           ? await client
-              .from("user_watchlist")
+              .from(table)
               .delete()
               .eq("user_id", uid)
-              .eq("movie_id", movieId)
+              .eq(idColumn, movieId)
           : await client
-              .from("user_watchlist")
-              .insert({ user_id: uid, movie_id: movieId });
+              .from(table)
+              .insert({ user_id: uid, [idColumn]: movieId });
         if (error) throw new Error("listFailed");
       }
       if (generation !== epoch.current) return;
