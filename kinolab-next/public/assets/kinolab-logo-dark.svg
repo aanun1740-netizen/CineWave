@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 475 120" role="img" aria-labelledby="title">
+<title id="title">KinoLab</title>
+<g fill="#D4F458">
+<path d="M10 10H48V110H10Z"/>
+<path d="M48 51L88 10H131L76 61Z"/>
+<path d="M48 69L76 61L131 110H88Z"/>
+</g>
+<text x="150" y="89" fill="#20152E" font-family="Inter,Arial,Helvetica,sans-serif" font-size="76" font-weight="800" letter-spacing="-3.8">KinoLab</text>
+</svg>

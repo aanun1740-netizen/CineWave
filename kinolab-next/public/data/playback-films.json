@@ -1,0 +1,68 @@
+{
+  "review_date": "2026-10-25",
+  "verification_status": "blocked",
+  "blocker": "Official download directories are now accessible, but film identity/license project pages and Creative Commons terms still return HTTP 403. Directory access is not a license grant; no exact streaming movie source or full-film commercial reuse permission has been verified.",
+  "films": [
+    {
+      "title_en": "Big Buck Bunny",
+      "candidate_year": 2008,
+      "rights_holder_to_verify": "Blender Foundation",
+      "identity_source": "https://peach.blender.org/about/",
+      "license_source": "https://peach.blender.org/about/",
+      "download_directory": "https://download.blender.org/peach/bigbuckbunny_movies/",
+      "expected_license_to_verify": "CC BY 3.0",
+      "license_terms_source": "https://creativecommons.org/licenses/by/3.0/",
+      "verified": false,
+      "commercial_reuse_verified": false,
+      "watch_url": null,
+      "release_date": null,
+      "attribution": null,
+      "genre_names": [],
+      "evidence_notes": "The official directory was inspected and lists BigBuckBunny_320x180.mp4.zip and other ZIP downloads. A ZIP is not a streaming watch_url. Film content/credits and the complete film license remain unverified; the project/license page returns HTTP 403.",
+      "download_directory_verified": true
+    },
+    {
+      "title_en": "Sintel",
+      "candidate_year": 2010,
+      "rights_holder_to_verify": "Blender Foundation",
+      "identity_source": "https://durian.blender.org/about/",
+      "license_source": "https://durian.blender.org/about/",
+      "download_directory": "https://download.blender.org/durian/movies/",
+      "expected_license_to_verify": "CC BY 3.0",
+      "license_terms_source": "https://creativecommons.org/licenses/by/3.0/",
+      "verified": false,
+      "commercial_reuse_verified": false,
+      "watch_url": null,
+      "release_date": null,
+      "attribution": null,
+      "genre_names": [],
+      "evidence_notes": "The official directory was inspected; it lists MKV/ZIP/ISO downloads, not a verified direct MP4/HLS source. Full-film license, edition, soundtrack permissions and commercial reuse remain unverified; the project/license page returns HTTP 403.",
+      "download_directory_verified": true
+    },
+    {
+      "title_en": "Tears of Steel",
+      "candidate_year": 2012,
+      "rights_holder_to_verify": "Blender Foundation",
+      "identity_source": "https://mango.blender.org/",
+      "license_source": "https://mango.blender.org/sharing/",
+      "download_directory": "https://download.blender.org/demo/movies/ToS/",
+      "expected_license_to_verify": "CC BY 3.0",
+      "license_terms_source": "https://creativecommons.org/licenses/by/3.0/",
+      "verified": false,
+      "commercial_reuse_verified": false,
+      "watch_url": null,
+      "release_date": null,
+      "attribution": null,
+      "genre_names": [],
+      "evidence_notes": "The official directory was inspected and includes tears_of_steel_720p.mov and ZIP downloads. No MP4/HLS stream has been verified. Its copyright.txt explicitly licenses only Original Soundtrack files under CC BY-ND 3.0, including commercial use; that is not a grant for the complete film.",
+      "download_directory_verified": true,
+      "related_notice": {
+        "url": "https://download.blender.org/demo/movies/ToS/copyright.txt",
+        "scope": "Original Soundtrack files only; NOT full-film license evidence",
+        "license": "CC BY-ND 3.0",
+        "commercial_use_of_soundtrack_stated": true,
+        "required_credit": "(C) Joram Letwory - www.tearsofsteel.org"
+      }
+    }
+  ]
+}
