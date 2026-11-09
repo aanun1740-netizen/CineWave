@@ -1,0 +1,97 @@
+name: Publish KinoLab production (manual approval only)
+
+# Never deploy automatically from a push, pull request, or staging branch.
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish KinoLab on GitHub Pages after owner approval"
+        required: true
+        type: boolean
+        default: false
+      confirm_repository:
+        description: "For publication, enter aanun1740-netizen/CineWave"
+        required: false
+        type: string
+      approved_sha:
+        description: "For publication, enter the current FULL main commit SHA"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kinolab-pages-production
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: kinolab-next
+    steps:
+      - name: Validate explicit production release approval
+        env:
+          PUBLISH: ${{ inputs.publish }}
+          CONFIRM_REPOSITORY: ${{ inputs.confirm_repository }}
+          APPROVED_SHA: ${{ inputs.approved_sha }}
+        run: |
+          if [ "$PUBLISH" = "true" ]; then
+            test "$GITHUB_REF" = "refs/heads/main"
+            test "$CONFIRM_REPOSITORY" = "aanun1740-netizen/CineWave"
+            test "$APPROVED_SHA" = "$GITHUB_SHA"
+          fi
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kinolab-next/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chrome
+      - name: Validate live public data read-only without editing Supabase records
+        run: npx playwright test e2e/production-readonly.spec.js --project=desktop --project=mobile
+      - name: Upload tested Pages build
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: kinolab-next/dist/
+      - name: Keep failure diagnostics
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: kinolab-production-release-diagnostics
+          path: kinolab-next/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  deploy:
+    if: >-
+      github.repository == 'aanun1740-netizen/CineWave' &&
+      github.ref == 'refs/heads/main' &&
+      inputs.publish == true &&
+      inputs.confirm_repository == 'aanun1740-netizen/CineWave' &&
+      inputs.approved_sha == github.sha
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Verify existing GitHub Pages setup, without enabling it automatically
+        uses: actions/configure-pages@v5
+        with:
+          enablement: false
+      - name: Publish reviewed KinoLab artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
