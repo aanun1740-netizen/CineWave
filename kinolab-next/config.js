@@ -1,24 +1,23 @@
+// KinoLab production candidate: browser-safe publishable key, no privileged secrets.
+// Uses the existing main CineWave project's public Supabase configuration.
+// Production schema, RLS and Auth must be verified before any release.
 window.CINEWAVE_CONFIG = Object.freeze({
-  url: "https://zayssiouqexwdicudalc.supabase.co",
-  key: "sb_publishable_jnNJZVXtRFzWakYL5u4aug_kaVcu85B",
-  // Staging only: aggregate counter enabled after owner SQL permission checks.
-  // Never copy this configuration into the main production KinoLab site.
-  analyticsEnabled: true
+  url: "https://ysecowknittmmmbixgtu.supabase.co",
+  key: "sb_publishable_aTNkxAKz9OG-JJVO2X48Rw_9vnE_8Mj",
+  analyticsEnabled: false
 });
-
-// Fail closed before SDK creation or direct backend requests.
+// Retain compatibility with the existing React Auth and backend clients.
 window.CineWaveStaging = Object.freeze({
   assertURL(value) {
     const url = new URL(value);
-    if (url.origin !== 'https://zayssiouqexwdicudalc.supabase.co' || url.username || url.password) {
-      throw new Error('CineWave-Test- permits only the staging Supabase project.');
+    if (url.origin !== "https://ysecowknittmmmbixgtu.supabase.co" || url.username || url.password) {
+      throw new Error("Backend URL is outside the approved production origin.");
     }
     return url;
   },
   fetch(input, init) {
-    this.assertURL(typeof input === 'string' || input instanceof URL ? input : input.url);
-    // Do not follow redirects to another backend.
-    return window.fetch(input, {...init, redirect: 'error'});
+    this.assertURL(typeof input === "string" || input instanceof URL ? input : input.url);
+    return window.fetch(input, {...init, redirect: "error"});
   }
 });
 window.CineWaveStaging.assertURL(window.CINEWAVE_CONFIG.url);
