@@ -9,7 +9,7 @@
     "dev": "vite --host 0.0.0.0",
     "preview": "vite preview --host 0.0.0.0",
     "build": "vite build",
-    "test": "node --test tests/production-config.test.cjs"
+    "test": "node --test tests/production-config.test.cjs && vitest run"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
