@@ -1,8 +1,9 @@
 import "../catalog.js";
+import { siteBase } from "./site-base.js";
 import { allowedExternalWatch } from "./services/external-links";
 import "../availability.js";
 import "../model.js";
-export const POSTER_FALLBACK = `${import.meta.env.BASE_URL}assets/poster-fallback.svg`;
+export const POSTER_FALLBACK = `${siteBase()}assets/poster-fallback.svg`;
 const catalog = window.CineWaveCatalog;
 export const { localizedMovie, genreLabel, availableGenres, canonicalGenre } =
   catalog;
