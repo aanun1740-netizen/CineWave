@@ -23,6 +23,18 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm run build
+      - name: Install Chrome for read-only public production browser smoke tests
+        run: npx playwright install --with-deps chrome
+      - name: Test catalog, real public artwork, language and admin login gate (no credentials)
+        run: npx playwright test e2e/production-readonly.spec.js --project=desktop --project=mobile
+      - name: Preserve browser screenshots only on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinolab-production-browser-diagnostics
+          path: kinolab-next/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Confirm build artifacts without publication
         run: test -f dist/index.html && test -f dist/admin/index.html
       - name: Preserve production build for private review (never deploy)
