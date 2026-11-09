@@ -5,7 +5,7 @@ afterEach(() => {
   localStorage.clear();
   sessionStorage.clear();
   document.body.className = "cinewave-site";
-  history.replaceState(null, "", "/CineWave-Test-/");
+  history.replaceState(null, "", "/");
 });
 window.scrollTo = vi.fn();
 window.matchMedia = vi.fn(() => ({
