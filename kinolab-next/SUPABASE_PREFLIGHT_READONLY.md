@@ -96,3 +96,9 @@ The owner approved starting production schema setup and importing the saved 47-f
 
 **Security status**: New tables have RLS, and no anonymous `TRUNCATE` privileges. An advisory warning remains for the intentionally authenticated `SECURITY DEFINER` admin-check RPC; review regularly and never grant anonymous execution.
 
+
+## Artwork bucket setup completed
+
+Migration `kinolab_production_poster_bucket_and_admin_storage_rls` created production's public `cinewave-assets` bucket with 8 MB per-object limits, JPEG/PNG/WebP only, and four admin-only Storage object policies for SELECT/INSERT/UPDATE/DELETE. Verified bucket exists and contains **zero objects**. This is intentional: the owner's 63 downloaded image files have **not** been uploaded.
+
+**Do not rewrite poster_path yet**: the 47 imported records still reference staging images. Restore the actual 63 source objects to matching paths in the new bucket, test each URL and then update matching `poster_path` values with a verified transaction. No new admin account or privileged Storage action has been added.
