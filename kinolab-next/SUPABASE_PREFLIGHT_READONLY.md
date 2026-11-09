@@ -102,3 +102,12 @@ The owner approved starting production schema setup and importing the saved 47-f
 Migration `kinolab_production_poster_bucket_and_admin_storage_rls` created production's public `cinewave-assets` bucket with 8 MB per-object limits, JPEG/PNG/WebP only, and four admin-only Storage object policies for SELECT/INSERT/UPDATE/DELETE. Verified bucket exists and contains **zero objects**. This is intentional: the owner's 63 downloaded image files have **not** been uploaded.
 
 **Do not rewrite poster_path yet**: the 47 imported records still reference staging images. Restore the actual 63 source objects to matching paths in the new bucket, test each URL and then update matching `poster_path` values with a verified transaction. No new admin account or privileged Storage action has been added.
+
+## Verified production image restoration — 2026-11-10
+
+- Owner uploaded 62 genuine image files from their local ZIP to production Storage bucket `cinewave-assets`, inside the original single UUID-named directory. Staging also contains a separate empty-folder placeholder, which was correctly omitted.
+- Cross-checked production vs staging media: both contain exactly 62 JPEG/PNG/WEBP files, totaling **26,878,652 bytes**. The sorted filename-and-size digest matched: `2cdd462d36c3752f5c94998258379a16`. Content-byte hashes were not checked.
+- Before link rewrite, all 47 imported film posters matched production Storage objects with 0 missing.
+- Transactional, precondition-guarded SQL rewrite changed `poster_path` prefixes for exactly 47 rows from staging Supabase to production Supabase, without changing names or other columns.
+- Read-only verification after rewrite: **47 external films**, **47 production poster URLs**, **47 matching files**, **0 staging poster URLs**, **24 original movies intact**, and **62 production images present**.
+- Remains to validate end-to-end public image HTTP responses, production Auth/admin account, AI, release workflow, and domain/DNS. GitHub Pages main branch and Cloudflare remain unmodified.
