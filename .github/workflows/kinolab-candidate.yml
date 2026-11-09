@@ -1,0 +1,27 @@
+name: KinoLab production candidate checks (no deploy)
+on:
+  pull_request:
+    paths:
+      - 'kinolab-next/**'
+      - '.github/workflows/kinolab-candidate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify_candidate:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: kinolab-next
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kinolab-next/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run build
+      - name: Confirm build artifacts without publication
+        run: test -f dist/index.html && test -f dist/admin/index.html
