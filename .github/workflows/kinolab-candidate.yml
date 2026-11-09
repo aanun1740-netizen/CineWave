@@ -25,3 +25,10 @@ jobs:
       - run: npm run build
       - name: Confirm build artifacts without publication
         run: test -f dist/index.html && test -f dist/admin/index.html
+      - name: Preserve production build for private review (never deploy)
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinolab-production-candidate-build
+          path: kinolab-next/dist/
+          if-no-files-found: error
+          retention-days: 7
