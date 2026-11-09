@@ -47,6 +47,24 @@ Supabase references:
 - https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable
 - https://supabase.com/docs/guides/auth/password-security
 
+## Production restoration update — 2026-11-10
+
+**Verified state changed**: Supabase now reports `ACTIVE_HEALTHY` for `ysecowknittmmmbixgtu`. The owner restored the project through the dashboard. Read-only SQL queries now succeed.
+
+Actual production database inspection shows:
+- `public.movies`: **0** rows, RLS enabled.
+- No other application tables or views in `public`; no `cinewave_private` or `kinolab_analytics` application objects were observed.
+- **0** rows in `auth.users` and `auth.identities` (count-only queries; no user PII retrieved).
+- **0** Storage buckets.
+- **0** public RPC functions (e.g. `cinewave_is_admin` is missing).
+- Existing Edge Functions `dynamic-handler`, `hyper-action`, `cinewave-ai` are deployed, but their functional compatibility/auth has **not** been tested.
+- An enabled publishable API key now exists. The candidate source still requires functional verification of the exact public key and Auth service.
+- Supabase security advisor reports no current lints for this sparse production project; this is not evidence that migrated schema would be safe.
+
+The source frontend can build, but **production is not ready**: uploading only 47 catalog rows will not work without their table schema/RLS and user/Admin/AI contracts. The staging poster bucket contains 63 media object records that must be backed up and re-hosted; changing URLs without copying actual image bytes would break posters.
+
+**Required next work**: prepare and review explicit production migrations (tables, views, RPC, policies, storage) from audited staging definitions; verify latest catalog CSV and image backups; establish production administrator with a verified authenticated account; validate auth redirects and AI function; then stage a non-live preview. Never copy real auth.users/password data wholesale from staging or copy private CSV exports into the public GitHub repo.
+
 ## Release blockers / next actions
 
 1. Restore/reactivate the **existing** production project only with owner authorization and after reviewing its plan implications. Do not create a paid project automatically.
