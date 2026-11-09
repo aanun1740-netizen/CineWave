@@ -13,9 +13,9 @@ test("production candidate points only at the existing public production Supabas
   assert.doesNotMatch(config, /sb_secret_|service_role/i);
   assert.match(config, /analyticsEnabled: false/);
 });
-test("Vite is configured for eventual root domain, not staging path", () => {
+test("Vite uses relative assets for root domain and GitHub Pages project path", () => {
   const vite = read("vite.config.js");
-  assert.match(vite, /base:\s*[\"']\/[\"']/);
+  assert.ok(vite.includes('base: "./"'));
   assert.doesNotMatch(vite, /CineWave-Test-/);
 });
 test("KinoLab frontend and admin remain distinct entries", () => {
