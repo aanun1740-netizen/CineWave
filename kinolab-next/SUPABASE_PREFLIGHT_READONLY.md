@@ -74,3 +74,25 @@ The source frontend can build, but **production is not ready**: uploading only 4
 5. Only after a production preview (browser, three languages, login, Studio, AI, watch links, media, mobile) passes, approve final GitHub deployment and Cloudflare DNS; enforce HTTPS and verify canonical URLs and SEO.
 
 **This audit must not be treated as production approval.**
+
+## Core migration and external favorites update (2026-11-10)
+
+The owner approved starting production schema setup and importing the saved 47-film catalog, including repair of **My List** for external movies.
+
+**Completed and verified in Supabase**:
+- Applied production migration `kinolab_core_catalog_accounts_security`. Created private `admin_users` registry, authenticated-only admin check, `kinolab_external_catalog` (RLS), `profiles` (self-only RLS), `user_watchlist` (self-only legacy catalog), and revoked `TRUNCATE/TRIGGER/REFERENCES` grants on the existing `movies` table. Existing movie records were not updated.
+- Applied `kinolab_external_favorites_for_members` in **both production and staging**. `user_external_watchlist(user_id, external_movie_id)` references only valid KinoLab external films and has self-only SELECT/INSERT/DELETE policies. Visitors have no SQL access to personal favorites; normal signed-in users cannot see each other's lists.
+- Updated `kinolab-next/src/hooks/useAccount.js` in this draft PR and the staging project's `main` branch: login reads both favorite sources; toggling a `catalog:N` film writes `user_watchlist.movie_id`, toggling an `external:N` film writes `user_external_watchlist.external_movie_id`. Existing guest list remains device-local, and guest import now uses the correct destination for external titles.
+- Directly copied all **47** published `kinolab_external_catalog` entries from staging to production via six carefully checked SQL batches without deleting source records. Set the destination identity sequence to last imported ID **112**, so new imports continue above that ID. The staged catalog row digest exactly matched the production digest: `844360ece63569fff69c7e8d3ce2f62a`.
+- After migration, production has **24** original movie rows, **47** external film rows, **0** admin assignments and **0** newly created user favorites. All 47 have hy/ru/en titles and overviews. Site release and a real signed-in browser acceptance test remain pending.
+
+**Important incomplete tasks before release**:
+1. **Poster storage not migrated**. All 47 imported `poster_path` fields still reference the staging project `zayssiouqexwdicudalc`; the owner has local image backups. Do not disable staging Storage; transfer actual image bytes to production, then safely rewrite only matching verified paths.
+2. No production administrator has been assigned; `auth.users` was empty in the prior preflight. Register a production owner account first, then add only that verified user ID to private `cinewave_private.admin_users` through a reviewed admin-only operation.
+3. Production AI Edge Function implementation and Auth redirect allowlist remain unverified.
+4. The old staging `public.movies` table contains 0 rows, unlike production's 24; the changed signed-in favorite flow must be regression tested with both data sources. Staging test build status should be checked in GitHub Actions.
+5. The production frontend remains in a **draft PR**, not served from the live GitHub Pages domain. Cloudflare DNS and `kinolabmovies.com` were not modified by this migration.
+6. `movie_metadata_public` and optional archive/analytics are not yet deployed into production. The frontend treats catalog fetch failures independently, but those source tables must be reviewed for final correctness and clean error handling.
+
+**Security status**: New tables have RLS, and no anonymous `TRUNCATE` privileges. An advisory warning remains for the intentionally authenticated `SECURITY DEFINER` admin-check RPC; review regularly and never grant anonymous execution.
+
