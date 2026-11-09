@@ -525,7 +525,7 @@ describe("KinoLab AI guest and quota messages", () => {
     await user.click(screen.getByRole("button", { name: "Ուղարկել հաղորդագրությունը" }));
     expect(await screen.findByText(translations.hy.aiDailyLimit)).toBeTruthy();
     expect(mocks.backendFetch).toHaveBeenCalledWith(
-      expect.stringMatching(/\/functions\/v1\/cinewave-ai$/),
+      expect.stringMatching(/\/functions\/v1\/kinolab-ai-v2$/),
       expect.objectContaining({
         headers: expect.objectContaining({ Authorization: "Bearer user-jwt-test" }),
       }),
