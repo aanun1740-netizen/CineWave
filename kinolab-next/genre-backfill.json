@@ -1,0 +1,348 @@
+{
+  "observed_on": "2026-10-24",
+  "observed_rows": 24,
+  "observed_empty_genre_arrays": 24,
+  "source": {
+    "name": "MovieTweetings (IMDb-derived movie genre metadata)",
+    "repository": "https://github.com/sidooms/MovieTweetings",
+    "commit": "44c525d0c766944910686c60697203cda39305d6",
+    "url": "https://raw.githubusercontent.com/sidooms/MovieTweetings/44c525d0c766944910686c60697203cda39305d6/latest/movies.dat",
+    "sha256": "0403d193fe09b41b2f1c5451e526d74c8c4d8629adb66646be51ba785018001f",
+    "provenance": "https://github.com/sidooms/MovieTweetings/blob/44c525d0c766944910686c60697203cda39305d6/README.md",
+    "citation": "Dooms, De Pessemier and Martens (2013). MovieTweetings: a Movie Rating Dataset Collected From Twitter. CrowdRec at RecSys 2013."
+  },
+  "updates": [
+    {
+      "id": 1,
+      "expected_title": "The Matrix",
+      "expected_release_date": "1999-03-31",
+      "genre_names": [
+        "Action",
+        "Sci-Fi"
+      ],
+      "source_title": "The Matrix",
+      "source_year": 1999,
+      "imdb_id": "tt0133093",
+      "source_line_number": 10287,
+      "source_line": "0133093::The Matrix (1999)::Action|Sci-Fi",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 2,
+      "expected_title": "We Live in Public",
+      "expected_release_date": "2009-01-19",
+      "genre_names": [
+        "Documentary"
+      ],
+      "source_title": "We Live in Public",
+      "source_year": 2009,
+      "imdb_id": "tt0498329",
+      "source_line_number": 15670,
+      "source_line": "0498329::We Live in Public (2009)::Documentary",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 3,
+      "expected_title": "A Gang Story",
+      "expected_release_date": "2011-11-10",
+      "genre_names": [
+        "Drama",
+        "Thriller"
+      ],
+      "source_title": "Les Lyonnais",
+      "source_year": 2011,
+      "imdb_id": "tt1741542",
+      "source_line_number": 20997,
+      "source_line": "1741542::Les Lyonnais (2011)::Drama|Thriller",
+      "identity_match": "original-language title alias and matching release year"
+    },
+    {
+      "id": 4,
+      "expected_title": "The Intouchables",
+      "expected_release_date": "2011-01-01",
+      "genre_names": [
+        "Biography",
+        "Comedy",
+        "Drama"
+      ],
+      "source_title": "The Intouchables",
+      "source_year": 2011,
+      "imdb_id": "tt1675434",
+      "source_line_number": 20547,
+      "source_line": "1675434::The Intouchables (2011)::Biography|Comedy|Drama",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 5,
+      "expected_title": "Swept Away",
+      "expected_release_date": "1974-12-19",
+      "genre_names": [
+        "Adventure",
+        "Comedy",
+        "Drama"
+      ],
+      "source_title": "Travolti da un insolito destino nell'azzurro mare d'agosto",
+      "source_year": 1974,
+      "imdb_id": "tt0073817",
+      "source_line_number": 4727,
+      "source_line": "0073817::Travolti da un insolito destino nell'azzurro mare d'agosto (1974)::Adventure|Comedy|Drama",
+      "identity_match": "original-language title alias and matching release year"
+    },
+    {
+      "id": 6,
+      "expected_title": "Kick-Ass",
+      "expected_release_date": "2010-03-12",
+      "genre_names": [
+        "Action",
+        "Comedy"
+      ],
+      "source_title": "Kick-Ass",
+      "source_year": 2010,
+      "imdb_id": "tt1250777",
+      "source_line_number": 18161,
+      "source_line": "1250777::Kick-Ass (2010)::Action|Comedy",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 7,
+      "expected_title": "12 Angry Men",
+      "expected_release_date": "1957-04-10",
+      "genre_names": [
+        "Crime",
+        "Drama"
+      ],
+      "source_title": "12 Angry Men",
+      "source_year": 1957,
+      "imdb_id": "tt0050083",
+      "source_line_number": 2185,
+      "source_line": "0050083::12 Angry Men (1957)::Crime|Drama",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 8,
+      "expected_title": "Gone with the Wind",
+      "expected_release_date": "1939-12-15",
+      "genre_names": [
+        "Drama",
+        "History",
+        "Romance",
+        "War"
+      ],
+      "source_title": "Gone with the Wind",
+      "source_year": 1939,
+      "imdb_id": "tt0031381",
+      "source_line_number": 713,
+      "source_line": "0031381::Gone with the Wind (1939)::Drama|History|Romance|War",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 9,
+      "expected_title": "The Man Between",
+      "expected_release_date": "1953-12-10",
+      "genre_names": [
+        "Drama",
+        "Thriller"
+      ],
+      "source_title": "The Man Between",
+      "source_year": 1953,
+      "imdb_id": "tt0046031",
+      "source_line_number": 1827,
+      "source_line": "0046031::The Man Between (1953)::Drama|Thriller",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 10,
+      "expected_title": "Rough Night in Jericho",
+      "expected_release_date": "1967-01-01",
+      "genre_names": [
+        "Romance",
+        "Western"
+      ],
+      "source_title": "Rough Night in Jericho",
+      "source_year": 1967,
+      "imdb_id": "tt0062218",
+      "source_line_number": 3426,
+      "source_line": "0062218::Rough Night in Jericho (1967)::Romance|Western",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 12,
+      "expected_title": "A Fantastic Fear of Everything",
+      "expected_release_date": "2012-01-01",
+      "genre_names": [
+        "Comedy",
+        "Horror"
+      ],
+      "source_title": "A Fantastic Fear of Everything",
+      "source_year": 2012,
+      "imdb_id": "tt2006040",
+      "source_line_number": 22411,
+      "source_line": "2006040::A Fantastic Fear of Everything (2012)::Comedy|Horror",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 13,
+      "expected_title": "The Manchurian Candidate",
+      "expected_release_date": "2004-01-01",
+      "genre_names": [
+        "Drama",
+        "Mystery",
+        "Sci-Fi",
+        "Thriller"
+      ],
+      "source_title": "The Manchurian Candidate",
+      "source_year": 2004,
+      "imdb_id": "tt0368008",
+      "source_line_number": 13565,
+      "source_line": "0368008::The Manchurian Candidate (2004)::Drama|Mystery|Sci-Fi|Thriller",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 17,
+      "expected_title": "Cleopatra",
+      "expected_release_date": "1963-06-12",
+      "genre_names": [
+        "Biography",
+        "Drama",
+        "History",
+        "Romance"
+      ],
+      "source_title": "Cleopatra",
+      "source_year": 1963,
+      "imdb_id": "tt0056937",
+      "source_line_number": 2855,
+      "source_line": "0056937::Cleopatra (1963)::Biography|Drama|History|Romance",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 18,
+      "expected_title": "Wanted",
+      "expected_release_date": "2008-06-12",
+      "genre_names": [
+        "Action",
+        "Crime",
+        "Fantasy",
+        "Thriller"
+      ],
+      "source_title": "Wanted",
+      "source_year": 2008,
+      "imdb_id": "tt0493464",
+      "source_line_number": 15621,
+      "source_line": "0493464::Wanted (2008)::Action|Crime|Fantasy|Thriller",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 21,
+      "expected_title": "Matchstick Men",
+      "expected_release_date": "2003-01-01",
+      "genre_names": [
+        "Comedy",
+        "Crime",
+        "Drama",
+        "Thriller"
+      ],
+      "source_title": "Matchstick Men",
+      "source_year": 2003,
+      "imdb_id": "tt0325805",
+      "source_line_number": 12972,
+      "source_line": "0325805::Matchstick Men (2003)::Comedy|Crime|Drama|Thriller",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 22,
+      "expected_title": "Masters of the Universe",
+      "expected_release_date": "1987-12-18",
+      "genre_names": [
+        "Action",
+        "Adventure",
+        "Fantasy",
+        "Sci-Fi",
+        "Thriller"
+      ],
+      "source_title": "Masters of the Universe",
+      "source_year": 1987,
+      "imdb_id": "tt0093507",
+      "source_line_number": 6981,
+      "source_line": "0093507::Masters of the Universe (1987)::Action|Adventure|Fantasy|Sci-Fi|Thriller",
+      "identity_match": "exact title and matching release year"
+    },
+    {
+      "id": 23,
+      "expected_title": "Three Worlds",
+      "expected_release_date": "2012-01-01",
+      "genre_names": [
+        "Drama"
+      ],
+      "source_title": "Trois mondes",
+      "source_year": 2012,
+      "imdb_id": "tt2369497",
+      "source_line_number": 24473,
+      "source_line": "2369497::Trois mondes (2012)::Drama",
+      "identity_match": "original-language title alias and matching release year"
+    },
+    {
+      "id": 24,
+      "expected_title": "Places in the Heart",
+      "expected_release_date": "1984-01-01",
+      "genre_names": [
+        "Drama"
+      ],
+      "source_title": "Places in the Heart",
+      "source_year": 1984,
+      "imdb_id": "tt0087921",
+      "source_line_number": 6306,
+      "source_line": "0087921::Places in the Heart (1984)::Drama",
+      "identity_match": "exact title and matching release year"
+    }
+  ],
+  "unresolved": [
+    {
+      "id": 11,
+      "title_en": "Alien Raiders",
+      "release_date": "2008-01-01",
+      "genre_names": [],
+      "tmdb_id": null,
+      "reason": "No unique verified title/year record in the pinned metadata source. No genres proposed."
+    },
+    {
+      "id": 14,
+      "title_en": "Adhisaya Manithan",
+      "release_date": "1990-01-01",
+      "genre_names": [],
+      "tmdb_id": null,
+      "reason": "No unique verified title/year record in the pinned metadata source. No genres proposed."
+    },
+    {
+      "id": 15,
+      "title_en": "Nalai Manithan",
+      "release_date": "1989-01-14",
+      "genre_names": [],
+      "tmdb_id": null,
+      "reason": "No unique verified title/year record in the pinned metadata source. No genres proposed."
+    },
+    {
+      "id": 16,
+      "title_en": "Vaa Arugil Vaa",
+      "release_date": "1991-01-01",
+      "genre_names": [],
+      "tmdb_id": null,
+      "reason": "No unique verified title/year record in the pinned metadata source. No genres proposed."
+    },
+    {
+      "id": 19,
+      "title_en": "Delirious",
+      "release_date": "2006-09-26",
+      "genre_names": [],
+      "tmdb_id": null,
+      "reason": "No unique verified title/year record in the pinned metadata source. No genres proposed."
+    },
+    {
+      "id": 20,
+      "title_en": "Mirageman",
+      "release_date": "2007-01-01",
+      "genre_names": [],
+      "tmdb_id": null,
+      "reason": "No unique verified title/year record in the pinned metadata source. No genres proposed."
+    }
+  ]
+}
