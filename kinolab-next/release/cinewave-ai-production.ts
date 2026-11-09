@@ -165,6 +165,30 @@ export default {
           synopsis: typeof film.overview_en === "string" ? film.overview_en.slice(0, 200) : "",
         })).join("\n").slice(0, 14500);
       }
+      // External-link catalog is separate from the legacy movie table.
+      // Include *published metadata only* so recommendations cover the 47 migrated films.
+      const { data: linkedFilms, error: linkedError } = await catalogClient
+        .from("kinolab_external_catalog")
+        .select("id,title_en,title_ru,title_hy,overview_en,genre_names,release_date,media_type")
+        .eq("is_published", true)
+        .eq("terms_confirmed", true)
+        .order("release_date", { ascending: false })
+        .limit(70);
+      if (!linkedError && Array.isArray(linkedFilms)) {
+        const context = linkedFilms.map((film) => JSON.stringify({
+          id: "external:" + String(film.id).slice(0, 40),
+          titles: [film.title_en, film.title_ru, film.title_hy]
+            .filter((name: unknown) => typeof name === "string" && name.trim())
+            .map((name: string) => name.slice(0, 110)),
+          genres: Array.isArray(film.genre_names)
+            ? film.genre_names.filter((g: unknown) => typeof g === "string").slice(0, 5) : [],
+          year: typeof film.release_date === "string" ? film.release_date.slice(0, 4) : null,
+          kind: film.media_type === "tv" ? "TV" : "Movie",
+          synopsis: typeof film.overview_en === "string" ? film.overview_en.slice(0, 200) : "",
+          availability: "Catalog listing only; external watch destination not verified",
+        })).join("\n");
+        catalogContext = (catalogContext + "\n" + context).slice(0, 14500);
+      }
     } catch (error) {
       console.error("KinoLab AI catalog lookup failed", error instanceof Error ? error.name : "unknown");
     }
