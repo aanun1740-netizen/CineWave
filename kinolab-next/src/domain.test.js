@@ -14,7 +14,7 @@ describe("migrated domain contracts", () => {
     localStorage.setItem("cinewave:language", "ru");
     expect(initialLanguage()).toBe("ru");
     expect(mapCatalogMovie({ id: 1 }).img).toBe(POSTER_FALLBACK);
-    expect(POSTER_FALLBACK).toBe("/CineWave-Test-/assets/poster-fallback.svg");
+    expect(POSTER_FALLBACK).toBe("/assets/poster-fallback.svg");
   });
   it("combines search, genres, content type and saved list", () => {
     const rows = [
