@@ -72,7 +72,7 @@ export default function AI({ open, setOpen, t, movies = [], language = "hy", onO
       }
 
       const response = await backendFetch(
-        `${config.url}/functions/v1/cinewave-ai`,
+        `${config.url}/functions/v1/kinolab-ai-v2`,
         {
           method: "POST",
           headers: {
