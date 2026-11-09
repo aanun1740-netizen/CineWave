@@ -1,0 +1,37 @@
+name: Verify published KinoLab GitHub Pages (read-only)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/kinolab-live-smoke.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate-live:
+    if: github.repository == 'aanun1740-netizen/CineWave'
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: kinolab-next
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kinolab-next/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chrome
+      - name: Check public Pages catalog and protected admin on desktop and mobile
+        run: npx playwright test e2e/live-pages.spec.js --project=desktop --project=mobile
+      - name: Keep diagnostic snapshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinolab-live-pages-diagnostics
+          path: kinolab-next/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
