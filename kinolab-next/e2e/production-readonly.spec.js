@@ -52,3 +52,18 @@ test("production admin entry stays protected and works at root/admin", async ({p
   await expect(page.getByRole("button", {name: "Մուտք գործել"})).toBeVisible({timeout: 20_000});
   expect(errors).toEqual([]);
 });
+
+test("KinoLab AI v2 requires a real signed-in session before any provider request", async ({ request }) => {
+  // No Authorization header: this request cannot reach the AI provider or consume quotas.
+  const response = await request.post(`${prodOrigin}/functions/v1/kinolab-ai-v2`, {
+    headers: {
+      Origin: "https://kinolabmovies.com",
+      apikey: "sb_publishable_aTNkxAKz9OG-JJVO2X48Rw_9vnE_8Mj",
+      "Content-Type": "application/json",
+    },
+    data: { message: "Security preflight: deny unauthenticated requests" },
+  });
+  expect(response.status(), "AI must reject unsigned user requests").toBe(401);
+  const payload = await response.json();
+  expect(payload.error).toBe("sign_in_required");
+});
