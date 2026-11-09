@@ -1,0 +1,48 @@
+name: KinoLab production candidate checks (no deploy)
+on:
+  pull_request:
+    paths:
+      - 'kinolab-next/**'
+      - '.github/workflows/kinolab-candidate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify_candidate:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: kinolab-next
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kinolab-next/package-lock.json
+      - run: npm ci --ignore-scripts
+      - name: Audit production dependencies for high/critical vulnerabilities
+        run: npm audit --omit=dev --audit-level=high
+      - run: npm test
+      - run: npm run build
+      - name: Install Chrome for read-only public production browser smoke tests
+        run: npx playwright install --with-deps chrome
+      - name: Test catalog, real public artwork, language and admin login gate (no credentials)
+        run: npx playwright test e2e/production-readonly.spec.js --project=desktop --project=mobile
+      - name: Preserve browser screenshots only on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinolab-production-browser-diagnostics
+          path: kinolab-next/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Confirm build artifacts without publication
+        run: test -f dist/index.html && test -f dist/admin/index.html
+      - name: Preserve production build for private review (never deploy)
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinolab-production-candidate-build
+          path: kinolab-next/dist/
+          if-no-files-found: error
+          retention-days: 7

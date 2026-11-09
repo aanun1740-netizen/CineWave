@@ -1,67 +1,33 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#111114">
-<meta name="description" content="Discover cinema with CineWave. Explore the catalog, save your next film, and watch approved releases.">
-<title>CineWave — Your next great film</title>
-<link rel="stylesheet" href="storefront.css">
-<link rel="stylesheet" href="player.css">
-</head>
-<body class="cinewave-site">
-<a class="skip-link" href="#catalog">Skip to movies</a>
-<svg class="icon-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
-<symbol id="i-play" viewBox="0 0 24 24"><path d="m9 5 11 7-11 7z" fill="currentColor" stroke="none"/></symbol>
-<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
-<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/></symbol>
-<symbol id="i-heart" viewBox="0 0 24 24"><path d="M20 5c-3-3-6-1-8 1C5-2-4 9 12 21 22 14 24 9 20 5Z"/></symbol>
-<symbol id="i-arrow" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
-<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></symbol>
-</defs></svg>
-<header class="topbar">
- <a class="brand" href="#" aria-label="CineWave home"><span class="brand-wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Cine<span>Wave</span></a>
- <nav class="nav" aria-label="Main navigation"><button class="active" data-nav="Home">Discover</button><button data-nav="Movies">Movies</button><button data-nav="TV Shows">TV Shows</button><button data-nav="My List">My List</button></nav>
- <div class="right">
-  <label class="search"><svg><use href="#i-search"/></svg><input id="search" type="search" placeholder="Search titles..." aria-label="Search titles" autocomplete="off"><button id="clearSearch" aria-label="Clear search" hidden>×</button></label>
-  <select id="language" class="language" aria-label="Choose language"><option value="en">EN</option><option value="ru">RU</option><option value="hy">ՀԱՅ</option></select>
-  <button class="avatar" id="profileButton" aria-haspopup="dialog" aria-label="Your space" aria-expanded="false" aria-controls="profilePanel"><svg><use href="#i-user"/></svg></button>
- </div>
- <section id="profilePanel" class="profile-panel" role="dialog" aria-labelledby="profileTitle" hidden><p class="eyebrow">CINEWAVE</p><h2 id="profileTitle">Your space</h2><p id="profileNote"></p><button class="btn secondary" id="profileList">My List</button></section>
-</header>
-<main>
- <section class="hero" aria-labelledby="heroTitle">
-  <img id="heroBackdrop" class="hero-backdrop" alt="" hidden>
-  <div class="hero-shade"></div><div class="hero-grain" aria-hidden="true"></div>
-  <div class="hero-content"><div class="eyebrow" id="heroEyebrow">THE CINEWAVE COLLECTION</div><h1 id="heroTitle">Your next great film.</h1><div id="heroMeta" class="meta"></div><p id="heroDescription"></p>
-   <div class="actions"><button class="btn primary" id="heroWatch" disabled><svg><use href="#i-info"/></svg><span>View details</span></button><button class="btn secondary" id="heroList" disabled><svg><use href="#i-heart"/></svg><span>My List</span></button></div>
-   <div class="hero-bottom"><span class="hero-line"></span><span id="heroCaption"></span></div>
-  </div>
-  <div class="hero-art" id="heroArt" hidden><div class="hero-art-glow"></div><img id="heroPoster" alt="" width="500" height="750"><span class="art-stamp">CINEWAVE<br><b>◌</b></span></div>
-  <div class="hero-pagination" id="heroPagination" aria-label="Featured movies"></div>
- </section>
- <div class="catalog-shell" id="catalog" tabindex="-1">
-  <section class="genre-section"><div class="section-head"><div><p class="eyebrow" id="genreEyebrow">FOLLOW YOUR MOOD</p><h2 id="genreHeading">Find your kind of cinema</h2></div><button class="text-button" id="allGenres">All genres</button></div><div class="genre-list" id="genres"></div></section>
-  <div class="catalog-status" id="catalogStatus" role="status" aria-live="polite"><span id="catalogStatusText"></span><button class="text-button" id="retryCatalog" hidden>Try again</button></div>
-  <div class="skeletons" id="skeletons" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <section class="section" id="watchableSection" hidden><div class="section-head"><h2 id="watchableHeading">Ready to play</h2><div class="row-controls" data-row="watchableGrid"></div></div><div class="movie-grid" id="watchableGrid" tabindex="0" role="region" aria-labelledby="watchableHeading"></div></section>
-  <section class="section" id="continueSection" hidden><div class="section-head"><h2 id="continueHeading">Continue watching</h2><div class="row-controls" data-row="continueGrid"></div></div><div class="movie-grid" id="continueGrid" tabindex="0" role="region" aria-labelledby="continueHeading"></div></section>
-  <section class="section" id="catalogSection"><div class="section-head"><div><p class="eyebrow" id="catalogEyebrow">A WORLD OF STORIES</p><h2 id="popularHeading">Discover the collection</h2></div><div class="section-actions"><button class="text-button" id="resetFilters">Reset filters</button><div class="row-controls" data-row="movies"></div></div></div><div class="movie-grid" id="movies" tabindex="0" role="region" aria-labelledby="popularHeading"></div><div class="empty" id="empty" hidden></div></section>
-  <section class="section" id="newSection"><div class="section-head"><div><h2 id="newHeading">Through the years</h2><p class="section-subtitle" id="newSubtitle"></p></div><div class="row-controls" data-row="newGrid"></div></div><div class="movie-grid" id="newGrid" tabindex="0" role="region" aria-labelledby="newHeading"></div></section>
-  <section class="discovery-note"><span class="note-orbit" aria-hidden="true">✦</span><div><p class="eyebrow">CINEWAVE AI</p><h2 id="aiPromptTitle"></h2><p id="aiPromptText"></p></div><button class="btn secondary" id="askAI"></button></section>
- </div>
-</main>
-<footer><a class="brand" href="#">Cine<span>Wave</span></a><p id="footerText"></p><span>© CineWave</span></footer>
-<nav class="mobile-nav" aria-label="Mobile navigation"><button data-nav="Home"><span aria-hidden="true">◈</span><b>Discover</b></button><button data-nav="Movies"><span aria-hidden="true">▤</span><b>Movies</b></button><button data-nav="TV Shows"><span aria-hidden="true">▣</span><b>TV Shows</b></button><button data-nav="My List"><span aria-hidden="true">♡</span><b>My List</b></button></nav>
-<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="dialog"><div class="dialog-top"><div><span class="eyebrow">CINEWAVE</span><h2 id="modalTitle"></h2></div><button class="close" id="closeModal" aria-label="Close">×</button></div><div class="video-wrap" id="videoWrap"></div><div class="dialog-info"><div class="meta" id="modalMeta"></div><p id="modalDesc"></p><button class="btn secondary" id="modalList">My List</button></div></div></div>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
-<button id="cw-ai-button" type="button" aria-controls="cw-ai-panel" aria-expanded="false">✦ <span>CineWave AI</span></button>
-<section id="cw-ai-panel" role="dialog" aria-labelledby="cw-ai-title" hidden><header id="cw-ai-head"><div><span class="eyebrow">YOUR CINEMA COMPANION</span><h2 id="cw-ai-title">CineWave AI</h2></div><button id="cw-ai-close" aria-label="Close chat">×</button></header><div id="cw-ai-messages" aria-live="polite"><div class="cw-ai-msg cw-ai-bot" id="aiGreeting"></div></div><form id="cw-ai-form"><input id="cw-ai-input" placeholder="Type your message..." aria-label="Your message" autocomplete="off" required><button id="cw-ai-send" type="submit" aria-label="Send message">↑</button></form></section>
-<script src="vendor/hls.light.min.js"></script>
-<script src="player.js"></script>
-<script src="catalog.js"></script>
-<script src="availability.js"></script>
-<script src="app.js"></script>
-<script src="ai.js"></script>
-</body>
+<html lang="hy">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#20152E" />
+    <!-- Production candidate only; publication is gated by a separate release workflow. -->
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://kinolabmovies.com/" />
+    <meta property="og:url" content="https://kinolabmovies.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="KinoLab" />
+    <meta property="og:title" content="KinoLab — Movies &amp; Series" />
+    <meta property="og:description" content="Բացահայտեք ֆիլմեր և սերիալներ KinoLab-ում՝ հայերեն, ռուսերեն և անգլերեն։" />
+    <meta property="og:locale" content="hy_AM" />
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="description"
+      content="KinoLab — ֆիլմերի և սերիալների կատալոգ հայերեն, ռուսերեն և անգլերեն։ Գտեք նոր պատմություններ և պահպանեք նախընտրածները։"
+    />
+    <title>KinoLab — Movies & Series</title>
+    <script type="module" crossorigin src="./assets/storefront-DEqm6oi1.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/react-X-tRH5j4.js">
+    <link rel="modulepreload" crossorigin href="./assets/supabase-CB7MGzWB.js">
+    <link rel="modulepreload" crossorigin href="./assets/hls-BDwno1FO.js">
+    <link rel="modulepreload" crossorigin href="./assets/player-DK2acxHR.js">
+    <link rel="stylesheet" crossorigin href="./assets/player-CLg4jeS5.css">
+    <link rel="stylesheet" crossorigin href="./assets/storefront-CHUexTPR.css">
+  </head>
+  <body class="cinewave-site">
+    <div id="root"></div>
+  </body>
 </html>

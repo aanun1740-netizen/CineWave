@@ -1,0 +1,66 @@
+name: Prepare KinoLab static release files on PR branch (never deploy)
+on:
+  push:
+    branches:
+      - feature/kinolab-production-preparation
+    paths:
+      - kinolab-next/**
+      - .github/workflows/kinolab-prepare-static.yml
+permissions:
+  contents: write
+concurrency:
+  group: kinolab-static-release-preparation
+  cancel-in-progress: false
+jobs:
+  stage:
+    if: github.repository == 'aanun1740-netizen/CineWave' && github.ref == 'refs/heads/feature/kinolab-production-preparation'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kinolab-next/package-lock.json
+      - name: Install pinned packages
+        working-directory: kinolab-next
+        run: npm ci --ignore-scripts
+      - name: Check production dependencies for high or critical vulnerabilities
+        working-directory: kinolab-next
+        run: npm audit --omit=dev --audit-level=high
+      - name: Unit and account regression tests
+        working-directory: kinolab-next
+        run: npm test
+      - name: Build portable production output
+        working-directory: kinolab-next
+        run: npm run build
+      - name: Browser smoke tests against read-only public production data
+        working-directory: kinolab-next
+        run: |
+          npx playwright install --with-deps chrome
+          npx playwright test e2e/production-readonly.spec.js --project=desktop --project=mobile
+      - name: Stage verified output at Pages branch root without touching main
+        run: |
+          test "$GITHUB_REF" = "refs/heads/feature/kinolab-production-preparation"
+          test -f kinolab-next/dist/index.html
+          test -f kinolab-next/dist/admin/index.html
+          cp -a kinolab-next/dist/. ./
+          touch .nojekyll
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- index.html admin assets data licenses privacy.html robots.txt sitemap.xml .nojekyll
+          if ! git diff --cached --quiet; then
+            git commit -m "build: stage verified KinoLab static site for controlled main merge"
+            git push origin "HEAD:feature/kinolab-production-preparation"
+          fi
+      - name: Keep browser diagnostics if validation fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinolab-release-prep-diagnostics
+          path: kinolab-next/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -1,0 +1,31 @@
+{
+  "name": "kinolab-production-candidate",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "preview": "vite preview --host 0.0.0.0",
+    "build": "vite build",
+    "test": "node --test tests/production-config.test.cjs && vitest run"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.118.0",
+    "hls.js": "1.7.3",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "@testing-library/react": "16.3.2",
+    "@testing-library/user-event": "14.6.1",
+    "@vitejs/plugin-react": "5.1.4",
+    "jsdom": "27.4.0",
+    "prettier": "3.8.1",
+    "vite": "7.3.1",
+    "vitest": "4.0.18"
+  },
+  "type": "module"
+}

@@ -1,0 +1,3 @@
+vendor/supabase.min.js -whitespace
+vendor/supabase-licenses/* -whitespace
+public/licenses/supabase/tslib_LICENSE.txt -whitespace
