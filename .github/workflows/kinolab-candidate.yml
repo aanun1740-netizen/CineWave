@@ -21,6 +21,8 @@ jobs:
           cache: npm
           cache-dependency-path: kinolab-next/package-lock.json
       - run: npm ci --ignore-scripts
+      - name: Audit production dependencies for high/critical vulnerabilities
+        run: npm audit --omit=dev --audit-level=high
       - run: npm test
       - run: npm run build
       - name: Install Chrome for read-only public production browser smoke tests
