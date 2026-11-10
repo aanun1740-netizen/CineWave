@@ -148,12 +148,12 @@ export default function QuickExternalMovie({language,onChange}) {
         setNotice(t.badEpisodes);return;
       }
     } else if(!allowedExternalMovie(url)){
-      setNotice(({hy:"Գրիր վավեր http:// կամ https:// ֆիլմի հղում։",ru:"Укажите действительную ссылку фильма http:// или https://.",en:"Enter a valid http:// or https:// movie link."}[language]));return;
+      setNotice(({hy:"Ֆիլմը հրապարակելու համար օգտագործիր ճիշտ https:// հղում։",ru:"Для публикации фильма укажите действительную ссылку https://.",en:"Use a valid https:// movie link to publish."}[language]));return;
     }
     if(trailer && !allowedTrailer(trailer)) {
       setNotice(({hy:"Թրեյլերի համար օգտագործիր YouTube-ի կամ Vimeo-ի ճիշտ HTTPS հղում։",ru:"Для трейлера укажите корректную HTTPS-ссылку YouTube или Vimeo.",en:"Use a valid HTTPS YouTube or Vimeo trailer link."}[language]));return;
     }
-    if(!allowed(url)){setNotice("Enter an http:// or https:// watch link.");return;}
+    if(!allowed(url)){setNotice(({hy:"Գրիր ճիշտ HTTPS դիտման հղում։",ru:"Укажите правильную HTTPS-ссылку для просмотра.",en:"Enter a valid HTTPS watch link."}[language]));return;}
     if(!form.elements.terms_confirmed.checked){setNotice(t.terms);return;}
     const year=Number(v.year);
     if(!/^\d{4}$/.test(String(v.year||""))||!Number.isInteger(year)||year<1888||year>2100){
