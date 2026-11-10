@@ -1,19 +1,19 @@
-name: Build KinoLab public launch metadata (never deploy)
+name: Stage KinoLab searchable film pages (never deploy)
 on:
   push:
     branches:
-      - fix/kinolab-public-launch-meta-20261110
+      - feature/kinolab-searchable-film-pages-20261110
     paths:
       - kinolab-next/**
       - .github/workflows/kinolab-prepare-static.yml
 permissions:
   contents: write
 concurrency:
-  group: kinolab-launch-metadata-preparation
+  group: kinolab-searchable-films-preparation
   cancel-in-progress: true
 jobs:
   stage:
-    if: github.repository == 'aanun1740-netizen/CineWave' && github.ref == 'refs/heads/fix/kinolab-public-launch-meta-20261110'
+    if: github.repository == 'aanun1740-netizen/CineWave' && github.ref == 'refs/heads/feature/kinolab-searchable-film-pages-20261110'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -41,17 +41,20 @@ jobs:
       # pull-request workflow, which passed for this exact source revision.
       - name: Stage verified output at Pages branch root without touching main
         run: |
-          test "$GITHUB_REF" = "refs/heads/fix/kinolab-public-launch-meta-20261110"
+          test "$GITHUB_REF" = "refs/heads/feature/kinolab-searchable-film-pages-20261110"
           test -f kinolab-next/dist/index.html
           test -f kinolab-next/dist/admin/index.html
+          # Film pages are generated; remove old pages when titles are unpublished.
+          test -f kinolab-next/dist/film/113/index.html
+          rm -rf ./film
           cp -a kinolab-next/dist/. ./
           touch .nojekyll
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -- index.html admin assets data licenses privacy.html robots.txt sitemap.xml .nojekyll
+          git add -A -- index.html admin assets data licenses privacy.html robots.txt sitemap.xml film .nojekyll
           if ! git diff --cached --quiet; then
             git commit -m "build: stage verified KinoLab static site for controlled main merge"
-            git push origin "HEAD:fix/kinolab-public-launch-meta-20261110"
+            git push origin "HEAD:feature/kinolab-searchable-film-pages-20261110"
           fi
       - name: Keep browser diagnostics if validation fails
         if: failure()
