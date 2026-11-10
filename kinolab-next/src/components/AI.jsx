@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { backendFetch, config, client } from "../services/backend";
 import { canonicalGenre, localizedMovie, genreLabel } from "../domain";
+import { guestAIId } from "../guest-ai";
 
 function aiErrorStatus(code, status) {
   if (code === "cooldown") return "aiCooldown";
@@ -62,14 +63,8 @@ export default function AI({ open, setOpen, t, movies = [], language = "hy", onO
 
     try {
       const { data, error } = await client.auth.getSession();
+      if (error) throw error;
       const token = data?.session?.access_token;
-      if (error || !token) {
-        setMessages((prev) => [
-          ...prev.slice(0, -1),
-          { status: "aiSignIn" },
-        ]);
-        return;
-      }
 
       const response = await backendFetch(
         `${config.url}/functions/v1/kinolab-ai-v2`,
@@ -78,9 +73,14 @@ export default function AI({ open, setOpen, t, movies = [], language = "hy", onO
           headers: {
             "Content-Type": "application/json",
             apikey: config.key,
-            Authorization: `Bearer ${token}`,
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ message: value, language, history: history.current.slice(-6) }),
+          body: JSON.stringify({
+            message: value,
+            language,
+            history: history.current.slice(-6),
+            ...(token ? {} : { guest_id: guestAIId() }),
+          }),
         },
       );
       const payload = await response.json();
@@ -95,7 +95,16 @@ export default function AI({ open, setOpen, t, movies = [], language = "hy", onO
       if (typeof payload?.answer === "string" && payload.answer.trim()) {
         history.current = [...history.current, { role: "user", text: value }, { role: "assistant", text: payload.answer.slice(0, 900) }].slice(-6);
       }
-      setSuggestions(findCatalogMatches(value, movies, language));
+      // The service recommends ONLY current published KinoLab catalog IDs.
+      // Resolve them to the latest React catalog so even newly added films
+      // open with the same guest watch checks as all other film cards.
+      const byId = new Map(movies.map(movie => [movie.id, movie]));
+      const fromServer = Array.isArray(payload?.recommendations)
+        ? payload.recommendations.slice(0, 3).map(id => byId.get(String(id))).filter(Boolean)
+        : [];
+      setSuggestions(fromServer.length
+        ? fromServer.map(movie => ({movie, info: localizedMovie(movie, language)}))
+        : findCatalogMatches(value, movies, language));
       setMessages((prev) => [
         ...prev.slice(0, -1),
         typeof payload?.answer === "string" && payload.answer.trim()
