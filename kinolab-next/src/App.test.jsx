@@ -100,6 +100,51 @@ describe("React storefront", () => {
     await waitFor(() => expect(document.documentElement.lang).toBe("ru"));
     expect(screen.getByRole("searchbox").placeholder).toBe("Поиск фильмов...");
   });
+  it("keeps registration, login and password recovery localized as the site language changes", async () => {
+    localStorage.removeItem("cinewave:language");
+    history.replaceState(null, "", "#/register");
+    const user = userEvent.setup();
+    const view = render(<App />);
+    const section = document.querySelector("#accountPages");
+    expect(section).toBeTruthy();
+    expect(document.documentElement.lang).toBe("en");
+    expect(section.getAttribute("lang")).toBe("en");
+    expect(section.getAttribute("translate")).toBe("no");
+    expect(within(section).getByRole("heading", {name: "Create account"})).toBeTruthy();
+    expect(within(section).getByLabelText("Email")).toBeTruthy();
+    expect(within(section).getByRole("combobox", {name: "Site language"}).value).toBe("en");
+
+    // Switching from the main KinoLab header must immediately update the
+    // register form and mobile navigation, not just the movie catalog.
+    await user.selectOptions(screen.getByRole("combobox", {name: "Choose language"}), "ru");
+    expect(within(section).getByRole("heading", {name: "Создать аккаунт"})).toBeTruthy();
+    expect(within(section).getByLabelText("Электронная почта")).toBeTruthy();
+    expect(within(document.querySelector(".mobile-nav")).getByText("Фильмы")).toBeTruthy();
+    expect(within(section).getByRole("combobox", {name: "Язык сайта"}).value).toBe("ru");
+
+    // Switching inside the account form must update the entire site.
+    await user.selectOptions(within(section).getByRole("combobox", {name: "Язык сайта"}), "hy");
+    expect(within(section).getByRole("heading", {name: "Ստեղծել հաշիվ"})).toBeTruthy();
+    expect(within(section).getByLabelText("Էլեկտրոնային հասցե")).toBeTruthy();
+    expect(within(document.querySelector(".mobile-nav")).getByText("Ֆիլմեր")).toBeTruthy();
+    await user.click(within(section.querySelector(".account-links")).getByRole("button", {name: "Մուտք գործել"}));
+    expect(location.hash).toBe("#/login");
+    expect(within(section).getByRole("heading", {name: "Մուտք գործել"})).toBeTruthy();
+    await user.click(within(section.querySelector(".account-links")).getByRole("button", {name: "Մոռացե՞լ եք գաղտնաբառը"}));
+    expect(location.hash).toBe("#/forgot");
+    expect(within(section).getByRole("heading", {name: "Մոռացե՞լ եք գաղտնաբառը"})).toBeTruthy();
+
+    await user.selectOptions(within(section).getByRole("combobox", {name: "Կայքի լեզուն"}), "en");
+    expect(within(section).getByRole("heading", {name: "Forgot password?"})).toBeTruthy();
+    expect(localStorage.getItem("cinewave:language")).toBe("en");
+    await user.click(within(section.querySelector(".account-links")).getByRole("button", {name: "Create account"}));
+    expect(within(section).getByRole("heading", {name: "Create account"})).toBeTruthy();
+    view.unmount();
+    render(<App />);
+    expect(document.documentElement.lang).toBe("en");
+    expect(within(document.querySelector("#accountPages")).getByRole("combobox", {name:"Site language"}).value).toBe("en");
+  });
+
   it("preserves an existing Armenian preference, searches multilingual titles, filters TV and changes language", async () => {
     const user = userEvent.setup();
     render(<App />);
