@@ -68,6 +68,8 @@ const films = [
 ];
 beforeEach(() => {
   vi.clearAllMocks();
+  // Older tests explicitly exercise the Armenian UI; the public default is English.
+  localStorage.setItem("cinewave:language", "hy");
   mocks.getSession.mockResolvedValue({ data: { session: null }, error: null });
   mocks.backendFetch.mockResolvedValue({ ok: true, json: async () => films });
   mocks.role.mockResolvedValue({ data: false, error: null });
@@ -77,7 +79,21 @@ beforeEach(() => {
     .mockResolvedValue({ ok: true, json: async () => ({ films: [] }) });
 });
 describe("React storefront", () => {
-  it("defaults to Armenian, searches multilingual titles, filters TV and changes language", async () => {
+  it("opens in English for new visitors, lets them choose Russian, and remembers it on reload", async () => {
+    localStorage.removeItem("cinewave:language");
+    const user = userEvent.setup();
+    const view = render(<App />);
+    await waitFor(() => expect(document.documentElement.lang).toBe("en"));
+    expect(screen.getByRole("searchbox").placeholder).toBe("Search titles...");
+    expect(localStorage.getItem("cinewave:language")).toBe("en");
+    await user.selectOptions(screen.getByRole("combobox"), "ru");
+    await waitFor(() => expect(localStorage.getItem("cinewave:language")).toBe("ru"));
+    view.unmount();
+    render(<App />);
+    await waitFor(() => expect(document.documentElement.lang).toBe("ru"));
+    expect(screen.getByRole("searchbox").placeholder).toBe("Поиск фильмов...");
+  });
+  it("preserves an existing Armenian preference, searches multilingual titles, filters TV and changes language", async () => {
     const user = userEvent.setup();
     render(<App />);
     await screen.findAllByText("Արևի պատմություն");
@@ -534,6 +550,16 @@ describe("KinoLab AI guest and quota messages", () => {
 });
 
 describe("React admin", () => {
+  it("opens KinoLab Studio in English for new visitors and keeps their language choice", async () => {
+    localStorage.removeItem("cinewave:language");
+    const user = userEvent.setup();
+    render(<Admin />);
+    await waitFor(() => expect(document.documentElement.lang).toBe("en"));
+    expect(screen.getByRole("button", { name: "Sign in securely" })).toBeTruthy();
+    await user.selectOptions(screen.getByLabelText("Language / Язык / Լեզու"), "hy");
+    await waitFor(() => expect(localStorage.getItem("cinewave:language")).toBe("hy"));
+    expect(document.documentElement.lang).toBe("hy");
+  });
   it("denies non-admin sessions without querying movie data", async () => {
     mocks.getSession.mockResolvedValue({
       data: { session: { user: { id: "u1", email: "guest@example.invalid" } } },

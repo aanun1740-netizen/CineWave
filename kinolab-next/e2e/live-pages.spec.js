@@ -7,6 +7,7 @@ test("publicly deployed KinoLab shows the real catalog and languages", async ({p
   const response = await page.goto(live, {waitUntil:"domcontentloaded"});
   expect(response?.ok()).toBe(true);
   await expect(page).toHaveTitle(/KinoLab/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page.locator("#catalogSection .movie").first()).toBeVisible({timeout:30000});
   await expect.poll(() => page.locator("#catalogSection .movie").count(), {timeout:30000}).toBeGreaterThanOrEqual(47);
   const artwork = page.locator(".poster img[src*='ysecowknittmmmbixgtu.supabase.co/storage/']").first();

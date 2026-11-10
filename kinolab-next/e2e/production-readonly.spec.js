@@ -17,7 +17,7 @@ test("production catalog, real posters, language selection and responsive layout
   });
 
   await page.goto("/");
-  await expect(page.locator("html")).toHaveAttribute("lang", "hy");
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
   const cards = page.locator("#catalogSection .movie");
   await expect(cards.first()).toBeVisible({timeout: 30_000});
   await expect.poll(() => cards.count(), {timeout: 15_000}).toBeGreaterThanOrEqual(47);
@@ -36,6 +36,8 @@ test("production catalog, real posters, language selection and responsive layout
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await page.locator("#language").selectOption("ru");
   await expect(page.locator("html")).toHaveAttribute("lang", "ru");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("lang", "ru");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(pageErrors).toEqual([]);
   expect(unexpectedWrites).toEqual([]);
@@ -46,10 +48,10 @@ test("production admin entry stays protected and works at root/admin", async ({p
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/admin/");
-  await expect(page.getByRole("button", {name: "Մուտք գործել"})).toBeVisible({timeout: 20_000});
-  await expect(page.locator("html")).toHaveAttribute("lang", "hy");
+  await expect(page.getByRole("button", {name: "Sign in securely"})).toBeVisible({timeout: 20_000});
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await page.reload();
-  await expect(page.getByRole("button", {name: "Մուտք գործել"})).toBeVisible({timeout: 20_000});
+  await expect(page.getByRole("button", {name: "Sign in securely"})).toBeVisible({timeout: 20_000});
   expect(errors).toEqual([]);
 });
 
