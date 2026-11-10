@@ -22,6 +22,7 @@ vi.mock("../services/backend", () => ({
   },
 }));
 import useAccount from "./useAccount";
+import { filterMovies } from "../domain";
 const session = { user: { id: "user-1", email: "user@example.invalid" } };
 let chain;
 let externalChain;
@@ -152,6 +153,14 @@ it("restores signed-in external favorites after a full hook remount and matches 
   expect(next.result.current.list.has("catalog:external:42")).toBe(true);
   expect(next.result.current.list.has("catalog:external:41")).toBe(true);
   expect(next.result.current.list.has("external:42")).toBe(false);
+  const movies = [{
+    id: "catalog:external:42",
+    titles: { en: "Animals" },
+    descriptions: { en: "External movie" },
+    genres: ["Drama"],
+    kind: "Movie",
+  }];
+  expect(filterMovies(movies, { route: "my-list", list: next.result.current.list })).toEqual(movies);
 });
 
 it("canonicalizes legacy external:id input without breaking guest favorites", async () => {
