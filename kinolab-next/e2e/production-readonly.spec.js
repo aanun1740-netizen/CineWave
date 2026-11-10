@@ -72,17 +72,23 @@ test("production admin entry stays protected and works at root/admin", async ({p
   expect(errors).toEqual([]);
 });
 
-test("KinoLab AI v2 requires a real signed-in session before any provider request", async ({ request }) => {
-  // No Authorization header: this request cannot reach the AI provider or consume quotas.
-  const response = await request.post(`${prodOrigin}/functions/v1/kinolab-ai-v2`, {
+test("KinoLab AI enforces guest identity and origin before provider access", async ({ request }) => {
+  // Guests ARE allowed five questions; an invalid guest identifier must
+  // be refused before incrementing quotas or contacting Gemini.
+  const endpoint = `${prodOrigin}/functions/v1/kinolab-ai-v2`;
+  const response = await request.post(endpoint, {
     headers: {
       Origin: "https://kinolabmovies.com",
       apikey: "sb_publishable_aTNkxAKz9OG-JJVO2X48Rw_9vnE_8Mj",
       "Content-Type": "application/json",
     },
-    data: { message: "Security preflight: deny unauthenticated requests" },
+    data: { message: "Security preflight", guest_id: "not-a-valid-uuid" },
   });
-  expect(response.status(), "AI must reject unsigned user requests").toBe(401);
-  const payload = await response.json();
-  expect(payload.error).toBe("sign_in_required");
+  expect(response.status(), "Malformed guest IDs must be rejected").toBe(400);
+  expect((await response.json()).error).toBe("invalid_guest");
+  const blocked = await request.post(endpoint, {
+    headers: { Origin: "https://untrusted.example.com", "Content-Type": "application/json" },
+    data: { message: "Security preflight" },
+  });
+  expect(blocked.status()).toBe(403);
 });
