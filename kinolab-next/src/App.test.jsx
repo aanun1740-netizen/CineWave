@@ -543,7 +543,7 @@ describe("React storefront", () => {
     const user = userEvent.setup();
     render(<App />);
     await waitFor(() => expect(mocks.from).toHaveBeenCalledWith("profiles"));
-    await user.click(screen.getByRole("button", {name: "Իմ պրոֆիլը"}));
+    await user.click(screen.getByRole("button", {name: "Ձեր անկյունը"}));
     const menu = screen.getByRole("dialog", {name:"Venom"});
     expect(within(menu).getByRole("heading", {name:"Venom"})).toBeTruthy();
     expect(within(menu).getByText("mailbox@example.invalid")).toBeTruthy();
@@ -571,7 +571,7 @@ describe("React storefront", () => {
     const user = userEvent.setup();
     render(<App />);
     await waitFor(() => expect(mocks.from).toHaveBeenCalledWith("profiles"));
-    await user.click(screen.getByRole("button", {name:"Իմ պրոֆիլը"}));
+    await user.click(screen.getByRole("button", {name:"Ձեր անկյունը"}));
     expect(within(screen.getByRole("dialog",{name:"Movie Fan"})).getByText("mailbox@example.invalid")).toBeTruthy();
   });
 
