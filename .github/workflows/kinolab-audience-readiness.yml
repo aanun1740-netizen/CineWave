@@ -1,0 +1,44 @@
+name: Verify KinoLab public viewing journey (read-only)
+
+on:
+  push:
+    branches:
+      - feature/kinolab-audience-readiness-20261110
+    paths:
+      - kinolab-next/e2e/audience-watch.spec.js
+      - kinolab-next/e2e/live-pages.spec.js
+      - .github/workflows/kinolab-audience-readiness.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    if: github.repository == 'aanun1740-netizen/CineWave'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: kinolab-next
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kinolab-next/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npx playwright install --with-deps chrome
+      - name: Verify public catalog and guest watch flow without opening external providers
+        run: npx playwright test e2e/audience-watch.spec.js e2e/live-pages.spec.js --project=desktop --project=mobile
+      - name: Save failure screenshots and traces for diagnosis
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinolab-audience-readiness-diagnostics
+          path: kinolab-next/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

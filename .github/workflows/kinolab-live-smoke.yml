@@ -1,10 +1,13 @@
-name: Verify published KinoLab GitHub Pages (read-only)
+name: Verify KinoLab public viewing on main (read-only)
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
       - .github/workflows/kinolab-live-smoke.yml
+      - kinolab-next/e2e/**
+      - kinolab-next/src/**
 
 permissions:
   contents: read
@@ -27,7 +30,7 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chrome
       - name: Check public Pages catalog and protected admin on desktop and mobile
-        run: npx playwright test e2e/live-pages.spec.js --project=desktop --project=mobile
+        run: npx playwright test e2e/live-pages.spec.js e2e/audience-watch.spec.js --project=desktop --project=mobile
       - name: Keep diagnostic snapshots on failure
         if: failure()
         uses: actions/upload-artifact@v4

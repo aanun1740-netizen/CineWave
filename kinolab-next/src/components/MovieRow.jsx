@@ -135,9 +135,9 @@ export default function MovieRow({
                   alt={info.title}
                 />
                 <span
-                  className={`poster-badge ${available ? "available" : ""}`}
+                  className={`poster-badge ${available ? "available" : official ? "external" : ""}`}
                 >
-                  {t(available ? "available" : "catalogOnly")}
+                  {t(available ? "available" : official ? "externalLink" : "catalogOnly")}
                 </span>
                 {official ? (
                   guestLocked?.(movie) ? (

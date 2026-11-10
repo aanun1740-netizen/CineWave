@@ -277,7 +277,10 @@ describe("React storefront", () => {
     const user=userEvent.setup();
     render(<App />);
     await waitFor(()=>expect(document.querySelector('[data-id="catalog:external:88"]')).toBeTruthy());
-    await user.click(document.querySelector('[data-id="catalog:external:88"]'));
+    // The card must distinguish an external viewing link from catalog-only titles.
+    const card = document.querySelector('[data-id="catalog:external:88"]');
+    expect(card.querySelector(".poster-badge")?.textContent).toBe("Արտաքին հղում");
+    await user.click(card);
     const dialog=await screen.findByRole("dialog",{name:"Արտաքին ֆիլմ"});
     const link=within(dialog).getByRole("link",{name:"Դիտել ֆիլմը"});
     expect(link.getAttribute("href")).toBe(watchUrl);
