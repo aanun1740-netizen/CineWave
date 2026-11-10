@@ -91,9 +91,9 @@ describe("React storefront", () => {
     view.unmount();
     render(<App />);
     await waitFor(() => expect(document.documentElement.lang).toBe("ru"));
-    expect(screen.getByRole("searchbox").placeholder).toBe("Искать фильмы...");
+    expect(screen.getByRole("searchbox").placeholder).toBe("Поиск фильмов...");
   });
-  it("defaults to Armenian, searches multilingual titles, filters TV and changes language", async () => {
+  it("preserves an existing Armenian preference, searches multilingual titles, filters TV and changes language", async () => {
     const user = userEvent.setup();
     render(<App />);
     await screen.findAllByText("Արևի պատմություն");
