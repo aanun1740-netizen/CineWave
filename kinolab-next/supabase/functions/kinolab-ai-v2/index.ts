@@ -1,5 +1,4 @@
-// PRODUCTION CANDIDATE ONLY. Reviewed source; not deployed.\n// Requires verified Auth, production quota RPC and provider secret before deployment.\n// The server verifies each JWT with Supabase Auth; never trust client-supplied user IDs.\n// Never expose the Gemini key or service-role key in browser responses.
-import { createClient } from "npm:@supabase/supabase-js@2.118.0";
+// KinoLab AI: verified members are not subject to guest limits or cooldown.\n// Anonymous requests receive five questions per day (protected server-side).\n// Use only live published KinoLab metadata for film recommendations.\nimport { createClient } from "npm:@supabase/supabase-js@2.118.0";
 
 const allowedOrigins = new Set([
   "https://kinolabmovies.com",
