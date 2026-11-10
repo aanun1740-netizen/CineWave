@@ -367,12 +367,45 @@ export default function App() {
     return true;
   }
   function outboundClick(event, movie) {
+    // A capture-phase guard has already checked this exact outbound click.
+    // Don't count the same film twice or open a second registration prompt.
+    if (event?.nativeEvent?.__kinolabWatchChecked)
+      return event.nativeEvent.__kinolabWatchAllowed;
     if (!openWatch(movie)) {
       event?.preventDefault();
       return false;
     }
     return true;
   }
+  // One automatic gate for every published film's outbound URL, including
+  // future titles and watch links created by other catalog components.
+  // This is a soft registration prompt only: third-party URLs are public.
+  const publicWatchLinks = useMemo(() => {
+    const links = new Map();
+    for (const movie of movies) {
+      const url = externalWatchUrl(movie);
+      if (!url) continue;
+      try { links.set(new URL(url).href, movie); } catch { /* Invalid URL is never a watch target. */ }
+    }
+    return links;
+  }, [movies]);
+  useEffect(() => {
+    const guardOutbound = (event) => {
+      const anchor = event.target?.closest?.("a[href]");
+      if (!anchor) return;
+      const movie = publicWatchLinks.get(anchor.href);
+      if (!movie) return;
+      // Runs before each component's click handler so an unguarded future
+      // movie link cannot skip the registration policy.
+      const allowed = allowWatch(movie);
+      event.__kinolabWatchChecked = true;
+      event.__kinolabWatchAllowed = allowed;
+      if (!allowed) event.preventDefault();
+      else if (mayCount) recordMetric("watch_click", movie.id, language);
+    };
+    document.addEventListener("click", guardOutbound, true);
+    return () => document.removeEventListener("click", guardOutbound, true);
+  }, [publicWatchLinks, account.ready, account.session, guestFilms, language, mayCount, modal]);
   const rowProps = {
     language,
     t,

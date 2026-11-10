@@ -190,6 +190,42 @@ describe("React storefront", () => {
     expect(location.hash).toBe("#/register");
   });
 
+  it("automatically gates a newly published film even from an outbound link with no per-film handler", async () => {
+    localStorage.setItem("kinolab:guest-films-v1", JSON.stringify([
+      "catalog:external:1", "catalog:external:2", "catalog:external:3",
+      "catalog:external:4", "catalog:external:5",
+    ]));
+    // A new entry uses the normal published-catalog feed: no manual setup.
+    const film = {
+      id: 113, title_en: "Newly added film", title_hy: "Նոր ֆիլմ",
+      genre_names: ["Drama"], release_date: "2026-11-10",
+      is_published: true, media_type: "movie",
+      external_watch_url: "https://films.example.org/watch/newly-added",
+    };
+    mocks.backendFetch.mockImplementation(async url => ({
+      ok: true,
+      json: async () => String(url).includes("kinolab_external_catalog") ? [film] : [],
+    }));
+    render(<App />);
+    await waitFor(() => expect(document.querySelector('[data-id="catalog:external:113"] button.play-overlay')).toBeTruthy());
+    // Simulate a future catalog component rendering a plain outbound anchor,
+    // without the onOutbound prop used by older movie cards.
+    const outbound = document.createElement("a");
+    outbound.href = film.external_watch_url;
+    outbound.textContent = "Open external film";
+    document.body.appendChild(outbound);
+    try {
+      const event = new MouseEvent("click", { bubbles: true, cancelable: true });
+      const allowed = outbound.dispatchEvent(event);
+      expect(allowed).toBe(false);
+      expect(event.defaultPrevented).toBe(true);
+      expect(await screen.findByRole("dialog", { name: "Շարունակիր դիտել KinoLab-ում 🎬" })).toBeTruthy();
+      expect(JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))).toHaveLength(5);
+    } finally {
+      outbound.remove();
+    }
+  });
+
   it("blocks a sixth film from its detail view while keeping the title readable", async () => {
     localStorage.setItem("kinolab:guest-films-v1",JSON.stringify([
       "catalog:external:1","catalog:external:2","catalog:external:3",
