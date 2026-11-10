@@ -12,6 +12,15 @@ export function allowedExternalWatch(raw) {
   }
 }
 
-export const allowedExternalMovie = allowedExternalWatch;
+// Public catalog rows are protected by a database CHECK requiring HTTPS.
+// Validate this at the form boundary, before trying to save.
+export function allowedExternalMovie(raw) {
+  if (!allowedExternalWatch(raw)) return false;
+  try {
+    return new URL(raw).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
 export const allowedExternalEpisode = (url) =>
   typeof url === "string" && /^https:\/\/api\.nextembed\.ws\/embed\/tv\/\d+\/[1-9]\d*\/[1-9]\d*\/?$/.test(url);
