@@ -6,7 +6,6 @@ describe("KinoLab outbound web links", () => {
     "https://api.variyt.ws/embed/movie/88585",
     "https://api.nextembed.ws/embed/movie/92733",
     "https://example.com/watch/film?id=123",
-    "http://example.org/cinema/my-movie",
     "https://www.youtube.com/watch?v=abcdefghijk",
   ])("accepts ordinary movie website URLs: %s", (url) => {
     expect(allowedExternalMovie(url)).toBe(true);
@@ -28,5 +27,11 @@ describe("KinoLab outbound web links", () => {
     null,
   ])("rejects unsafe or malformed outbound links: %s", (url) => {
     expect(allowedExternalWatch(url)).toBe(false);
+  });
+  it("requires HTTPS when publishing a movie, matching the production database", () => {
+    expect(allowedExternalMovie("https://example.org/watch/film")).toBe(true);
+    expect(allowedExternalMovie("http://example.org/cinema/my-movie")).toBe(false);
+    expect(allowedExternalWatch("http://example.org/cinema/my-movie")).toBe(true);
+    expect(allowedExternalMovie("https://user:pass@example.org/film")).toBe(false);
   });
 });
