@@ -23,3 +23,19 @@ test("KinoLab frontend and admin remain distinct entries", () => {
   assert.match(read("admin/index.html"), /src\/admin-main\.jsx/);
   assert.match(read("src/components/GuestSignupPrompt.jsx"), /KinoLab AI/);
 });
+
+test("published root and admin HTML never reference missing local assets", () => {
+  const siteRoot = path.resolve(root, "..");
+  for (const documentPath of ["index.html", "admin/index.html"]) {
+    const html = fs.readFileSync(path.join(siteRoot, documentPath), "utf8");
+    const links = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(match => match[1])
+      .filter(ref => /^(?:\.\.\/|\.\/|\/)assets\//.test(ref));
+    assert.ok(links.length >= 4, documentPath + " must reference a compiled build");
+    for (const ref of links) {
+      const publicUrl = new URL(ref, "https://kinolabmovies.com/" + documentPath);
+      const localAsset = path.join(siteRoot, decodeURIComponent(publicUrl.pathname).replace(/^\//, ""));
+      assert.ok(fs.existsSync(localAsset), documentPath + " references missing file: " + ref);
+      assert.ok(fs.statSync(localAsset).size > 100, "Empty published asset: " + ref);
+    }
+  }
+});

@@ -217,26 +217,20 @@ export default function App() {
           return null;
         }
       };
-      const [publishedRows, metadataRows, externalRows] = await Promise.all([
+      const [publishedRows, externalRows] = await Promise.all([
         readRows(`${config.url}/rest/v1/movies?select=*&is_published=eq.true&order=release_date.desc`),
-        readRows(`${config.url}/rest/v1/movie_metadata_public?select=*&order=release_date.desc`),
         readRows(`${config.url}/rest/v1/kinolab_external_catalog?select=*&is_published=eq.true&order=created_at.desc`),
       ]);
-      if (publishedRows === null && metadataRows === null && externalRows === null) {
+      if (publishedRows === null && externalRows === null) {
         throw Error("Catalog sources unavailable.");
       }
       if (id === request.current) {
         const rows = publishedRows || [];
-        const publishedIds = new Set(rows.map(row => String(row.id)));
-        const metadataOnly = (metadataRows || [])
-          .filter(row => !publishedIds.has(String(row.id)))
-          .map(row => ({ ...row, watch_url:null, embed_url:null, trailer_url:null,
-            playback_verification:null, rights_verification_status:"unverified" }));
         const externalPublished = (externalRows || [])
           .filter(row => allowedExternalWatch(row.external_watch_url))
           .map(row => ({ ...row, id: "external:" + row.id, watch_url:null, embed_url:null,
             playback_verification:null, rights_verification_status:"unverified" }));
-        setMovies([...rows, ...metadataOnly, ...externalPublished].map(mapCatalogMovie));
+        setMovies([...rows, ...externalPublished].map(mapCatalogMovie));
         setState("ready");
       }
     } catch {
