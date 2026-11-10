@@ -219,7 +219,7 @@ describe("React storefront", () => {
       const allowed = outbound.dispatchEvent(event);
       expect(allowed).toBe(false);
       expect(event.defaultPrevented).toBe(true);
-      expect(screen.getByRole("dialog", { name: "Շարունակիր դիտել KinoLab-ում 🎬" })).toBeTruthy();
+      expect(await screen.findByRole("dialog", { name: "Շարունակիր դիտել KinoLab-ում 🎬" })).toBeTruthy();
       expect(JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))).toHaveLength(5);
     } finally {
       outbound.remove();
