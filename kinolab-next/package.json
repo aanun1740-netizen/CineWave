@@ -8,8 +8,8 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "preview": "vite preview --host 0.0.0.0",
-    "build": "vite build",
-    "test": "node --test tests/production-config.test.cjs && vitest run"
+    "build": "vite build && node scripts/generate-film-pages.mjs",
+    "test": "node --test tests/production-config.test.cjs tests/seo-pages.test.mjs && vitest run"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
