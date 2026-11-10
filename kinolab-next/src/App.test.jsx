@@ -280,6 +280,10 @@ describe("React storefront", () => {
     // The card must distinguish an external viewing link from catalog-only titles.
     const card = document.querySelector('[data-id="catalog:external:88"]');
     expect(card.querySelector(".poster-badge")?.textContent).toBe("Արտաքին հղում");
+    const filmPage = card.querySelector("a.film-page-link");
+    expect(filmPage?.getAttribute("href")).toMatch(/\/film\/88\/$/);
+    expect(filmPage?.textContent).toContain("Ֆիլմի էջ");
+    // Ordinary movie-card click still opens the original KinoLab modal.
     await user.click(card);
     const dialog=await screen.findByRole("dialog",{name:"Արտաքին ֆիլմ"});
     const link=within(dialog).getByRole("link",{name:"Դիտել ֆիլմը"});
