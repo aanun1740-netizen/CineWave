@@ -44,6 +44,23 @@ test("production catalog, real posters, language selection and responsive layout
   await page.screenshot({path: info.outputPath("kinolab-catalog.png"), fullPage: true});
 });
 
+test("SEO sitemap lists individual crawlable film pages with canonical metadata", async ({page, request}) => {
+  const mapResponse = await request.get("/sitemap.xml");
+  expect(mapResponse.status()).toBe(200);
+  const xml = await mapResponse.text();
+  const filmUrls = [...xml.matchAll(/<loc>(https:\/\/kinolabmovies\.com\/film\/(\d+)\/)\<\/loc\>/g)];
+  expect(filmUrls.length, "Every public film should have an indexable URL").toBeGreaterThanOrEqual(1);
+  const [url, id] = [filmUrls[0][1], filmUrls[0][2]];
+  const response = await page.goto("/film/" + id + "/");
+  expect(response?.status()).toBe(200);
+  await expect(page).toHaveTitle(/KinoLab/);
+  await expect(page.locator("link[rel=canonical]")).toHaveAttribute("href", url);
+  await expect(page.locator("h1")).not.toBeEmpty();
+  await expect(page.locator("script[type='application/ld+json']")).toHaveCount(1);
+  await expect(page.getByRole("link", {name:"View film in KinoLab"}))
+    .toHaveAttribute("href", "/#/movie/catalog%3Aexternal%3A" + id);
+});
+
 test("production admin entry stays protected and works at root/admin", async ({page}) => {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
