@@ -47,10 +47,12 @@ export default function Accounts({
     const query = new URLSearchParams(location.search);
     const fragment = location.hash.startsWith("#error=")
       ? new URLSearchParams(location.hash.slice(1)) : null;
-    const errorCode = query.get("error_code") || fragment?.get("error_code");
+    const errorCode = window.CineWaveAuth?.authRedirectError ||
+      query.get("error_code") || fragment?.get("error_code");
     if (!errorCode && !fragment) return;
     setFeedback(errorCode === "otp_expired" || errorCode === "otp_disabled"
       ? "emailLinkExpired" : "confirmationFailed");
+    if (window.CineWaveAuth) window.CineWaveAuth.authRedirectError = null;
     const clean = new URL(location.href);
     ["error", "error_code", "error_description"].forEach(key => clean.searchParams.delete(key));
     if (fragment) clean.hash = "#/login";
