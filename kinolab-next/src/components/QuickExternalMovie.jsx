@@ -24,7 +24,7 @@ function allowedTrailer(raw) {
   return false;
 }
 
-export default function QuickExternalMovie({language}) {
+export default function QuickExternalMovie({language,onChange}) {
   const t=labels[language] || labels.en;
   const [busy,setBusy]=useState(false),[notice,setNotice]=useState("");
   const [posterUrl,setPosterUrl]=useState("");
@@ -43,6 +43,7 @@ export default function QuickExternalMovie({language}) {
         .order("created_at",{ascending:false}).limit(500);
       if(error)throw error;
       setExternalMovies(data||[]);
+      onChange?.();
     }catch(error){setNotice(error?.message||String(error));}
     finally{setListLoading(false);}
   }
