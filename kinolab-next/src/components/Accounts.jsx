@@ -28,7 +28,7 @@ export default function Accounts({
     [preferred, setPreferred] = useState(language),
     [dirty, setDirty] = useState(false);
   const text = (key) =>
-    accountStrings[language][key] || accountStrings.en[key] || key;
+    accountStrings[language]?.[key] ?? accountStrings.en[key] ?? key;
   useEffect(() => {
     if (!dirty) {
       setName(
@@ -212,9 +212,21 @@ export default function Accounts({
     }
   }
   return (
-    <section className="account-pages" id="accountPages">
+    <section className="account-pages" id="accountPages" lang={language} translate="no" data-language={language}>
       <div className={route === "profile" ? "account-card account-card--profile" : "account-card"}>
-        <p className="eyebrow">KINOLAB</p>
+        <div className="account-language-row">
+          <p className="eyebrow">KINOLAB</p>
+          <label className="account-language-control" htmlFor="accountLanguage">
+            <span>{text("switchLanguage")}</span>
+            <select id="accountLanguage" value={language}
+              onChange={(event) => setLanguage(event.target.value)}
+              aria-label={text("switchLanguage")}>
+              <option value="en">English</option>
+              <option value="ru">Русский</option>
+              <option value="hy">Հայերեն</option>
+            </select>
+          </label>
+        </div>
         <h1>
           {text(
             {
