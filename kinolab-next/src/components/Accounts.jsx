@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { accountStrings } from "../account-translations";
 import { client } from "../services/backend";
+
+function authFeedback(error) {
+  if (error?.code === "email_not_confirmed") return "emailNotConfirmed";
+  if (["over_email_send_rate_limit", "over_request_rate_limit"].includes(error?.code))
+    return "emailRateLimit";
+  if (error?.code === "invalid_credentials") return "invalidCredentials";
+  if (["otp_expired", "otp_disabled", "bad_code_verifier"].includes(error?.code))
+    return "emailLinkExpired";
+  return "failed";
+}
 export default function Accounts({
   route,
   account,
@@ -10,7 +20,9 @@ export default function Accounts({
   movies,
 }) {
   const [feedback, setFeedback] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [confirmationEmail, setConfirmationEmail] = useState(""),
+    [confirmationPending, setConfirmationPending] = useState(false);
   const [name, setName] = useState(""),
     [preferred, setPreferred] = useState(language),
     [dirty, setDirty] = useState(false);
@@ -30,6 +42,21 @@ export default function Accounts({
     setDirty(false);
   }, [account.session?.user.id]);
   useEffect(() => {
+    // Supabase returns single-use or expired email links with an error_code.
+    // Surface that error on the login page instead of silently showing Home.
+    const query = new URLSearchParams(location.search);
+    const fragment = location.hash.startsWith("#error=")
+      ? new URLSearchParams(location.hash.slice(1)) : null;
+    const errorCode = query.get("error_code") || fragment?.get("error_code");
+    if (!errorCode && !fragment) return;
+    setFeedback(errorCode === "otp_expired" || errorCode === "otp_disabled"
+      ? "emailLinkExpired" : "confirmationFailed");
+    const clean = new URL(location.href);
+    ["error", "error_code", "error_description"].forEach(key => clean.searchParams.delete(key));
+    if (fragment) clean.hash = "#/login";
+    history.replaceState(null, "", clean.pathname + clean.search + clean.hash);
+  }, []);
+  useEffect(() => {
     if (!account.ready) return;
     if (["profile", "recover"].includes(route) && !account.session)
       navigate("login", true);
@@ -45,20 +72,31 @@ export default function Accounts({
       values = Object.fromEntries(new FormData(form));
     try {
       if (route === "login") {
+        const email = values.email.trim();
         const { data, error } = await client.auth.signInWithPassword({
-          email: values.email.trim(),
+          email,
           password: values.password,
         });
-        if (error) throw error;
+        if (error) {
+          if (error.code === "email_not_confirmed") {
+            setConfirmationEmail(email);
+            setConfirmationPending(true);
+          }
+          throw error;
+        }
+        if (!data?.session) throw Error("missing_session");
+        setConfirmationPending(false);
         await account.refresh(data.session);
         navigate("profile", true);
       } else if (route === "register") {
+        setConfirmationPending(false);
         if (values.password !== values.confirm) {
           setFeedback("mismatch");
           return;
         }
+        const email = values.email.trim();
         const { data, error } = await client.auth.signUp({
-          email: values.email.trim(),
+          email,
           password: values.password,
           options: {
             emailRedirectTo: new URL(".", location.href).href,
@@ -70,7 +108,10 @@ export default function Accounts({
           await account.refresh(data.session);
           navigate("profile", true);
         } else {
-          navigate("login", true);
+          // Registration is NOT complete until the email is confirmed.
+          // Keep the guidance visible instead of dropping into a login form.
+          setConfirmationEmail(email);
+          setConfirmationPending(true);
           setFeedback("checkEmail");
         }
       } else if (route === "forgot") {
@@ -120,12 +161,30 @@ export default function Accounts({
         setLanguage(preferred);
         setFeedback("saved");
       }
-    } catch {
-      setFeedback("failed");
+    } catch (error) {
+      setFeedback(authFeedback(error));
     } finally {
       form
         .querySelectorAll("input[type=password]")
         .forEach((input) => (input.value = ""));
+      setBusy(false);
+    }
+  }
+  async function resendConfirmation() {
+    if (busy || !confirmationEmail) return;
+    setBusy(true);
+    setFeedback("working");
+    try {
+      const { error } = await client.auth.resend({
+        type: "signup",
+        email: confirmationEmail,
+        options: { emailRedirectTo: new URL(".", location.href).href },
+      });
+      if (error) throw error;
+      setFeedback("confirmationResent");
+    } catch (error) {
+      setFeedback(authFeedback(error));
+    } finally {
       setBusy(false);
     }
   }
@@ -251,6 +310,17 @@ export default function Accounts({
             )}
           </button>
         </form>
+        {confirmationPending && confirmationEmail && ["login", "register"].includes(route) && (
+          <div className="account-confirmation-help">
+            <p>{text("confirmationHelp")}</p>
+            <button className="btn secondary" type="button" disabled={busy}
+              onClick={resendConfirmation}>{text("resendConfirmation")}</button>
+            {route === "register" && (
+              <button className="btn secondary" type="button"
+                onClick={() => navigate("login")}>{text("login")}</button>
+            )}
+          </div>
+        )}
         {route === "profile" && (
           <div className="account-actions">
             {account.guestList().size > 0 && (
