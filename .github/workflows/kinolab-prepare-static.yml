@@ -45,7 +45,8 @@ jobs:
           test -f kinolab-next/dist/index.html
           test -f kinolab-next/dist/admin/index.html
           # Film pages are generated; remove old pages when titles are unpublished.
-          test -f kinolab-next/dist/film/113/index.html
+          test -d kinolab-next/dist/film
+          test "$(find kinolab-next/dist/film -mindepth 2 -maxdepth 2 -name index.html | wc -l)" -gt 0
           rm -rf ./film
           cp -a kinolab-next/dist/. ./
           touch .nojekyll
