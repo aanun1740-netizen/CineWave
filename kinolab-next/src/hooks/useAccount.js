@@ -79,7 +79,7 @@ export default function useAccount() {
       patch({
         profile,
         ...(revision === listRevision.current
-          ? { list: new Set([...list.map((row) => "catalog:" + row.movie_id), ...externalList.map((row) => "external:" + row.external_movie_id)]) }
+          ? { list: new Set([...(list || []).map((row) => "catalog:" + row.movie_id), ...(externalList || []).map((row) => "catalog:external:" + row.external_movie_id)]) }
           : {}),
         cloudReady: true,
         admin: !role.error && role.data === true,
@@ -119,7 +119,10 @@ export default function useAccount() {
     const state = current.current;
     if (!state.ready || pending.current.has(movie.id))
       throw new Error("working");
-    const has = state.list.has(movie.id);
+    const key = movie.id.startsWith("external:")
+      ? "catalog:" + movie.id
+      : movie.id;
+    const has = state.list.has(key);
     if (forceAdd && has) return;
     pending.current.add(movie.id);
     ++listRevision.current;
@@ -127,10 +130,17 @@ export default function useAccount() {
     try {
       if (state.session) {
         if (!state.cloudReady) throw new Error("listFailed");
-        const external = movie.id.startsWith("external:");
-        const prefix = external ? /^external:/ : /^catalog:/;
-        const movieId = movie.id.replace(prefix, "");
-        if (!/^[0-9]+$/.test(movieId)) throw new Error("listFailed");
+        // mapCatalogMovie gives UI entries `catalog:external:<id>` for external
+        // titles. Account favorites must use that exact key on load, toggle and
+        // My List filtering. Accept the old `external:<id>` form as a
+        // compatibility input, but store canonical UI keys.
+        const external = /^(?:catalog:)?external:/.test(movie.id);
+        const movieId = external
+          ? movie.id.replace(/^(?:catalog:)?external:/, "")
+          : movie.id.replace(/^catalog:/, "");
+        if (!/^[1-9][0-9]*$/.test(movieId) ||
+            (!external && !movie.id.startsWith("catalog:")))
+          throw new Error("listFailed");
         const uid = state.session.user.id;
         const table = external ? "user_external_watchlist" : "user_watchlist";
         const idColumn = external ? "external_movie_id" : "movie_id";
@@ -147,8 +157,8 @@ export default function useAccount() {
       }
       if (generation !== epoch.current) return;
       const next = new Set(current.current.list);
-      if (has) next.delete(movie.id);
-      else next.add(movie.id);
+      if (has) next.delete(key);
+      else next.add(key);
       if (!state.session) writeStored("cinewave:my-list", [...next]);
       current.current = { ...current.current, list: next };
       patch({ list: next });

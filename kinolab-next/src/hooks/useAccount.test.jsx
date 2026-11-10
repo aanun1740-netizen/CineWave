@@ -22,6 +22,7 @@ vi.mock("../services/backend", () => ({
   },
 }));
 import useAccount from "./useAccount";
+import { filterMovies } from "../domain";
 const session = { user: { id: "user-1", email: "user@example.invalid" } };
 let chain;
 let externalChain;
@@ -107,17 +108,17 @@ it("loads and saves external film favorites separately from legacy catalog favor
   const { result } = renderHook(() => useAccount());
   await waitFor(() => expect(result.current.cloudReady).toBe(true));
   expect(result.current.list.has("catalog:1")).toBe(true);
-  expect(result.current.list.has("external:41")).toBe(true);
-  await act(() => result.current.toggle({ id: "external:42" }));
+  expect(result.current.list.has("catalog:external:41")).toBe(true);
+  await act(() => result.current.toggle({ id: "catalog:external:42" }));
   expect(mocks.from).toHaveBeenCalledWith("user_external_watchlist");
   expect(externalChain.insert).toHaveBeenCalledWith({
     user_id: "user-1",
     external_movie_id: "42",
   });
-  expect(result.current.list.has("external:42")).toBe(true);
-  await act(() => result.current.toggle({ id: "external:41" }));
+  expect(result.current.list.has("catalog:external:42")).toBe(true);
+  await act(() => result.current.toggle({ id: "catalog:external:41" }));
   expect(externalChain.eq).toHaveBeenCalledWith("external_movie_id", "41");
-  expect(result.current.list.has("external:41")).toBe(false);
+  expect(result.current.list.has("catalog:external:41")).toBe(false);
   expect(chain.insert).not.toHaveBeenCalled();
 });
 it("never adds external favorites to the UI if the member insert is rejected", async () => {
@@ -126,7 +127,46 @@ it("never adds external favorites to the UI if the member insert is rejected", a
   await waitFor(() => expect(result.current.cloudReady).toBe(true));
   externalChain.insert.mockResolvedValue({ error: Error("RLS denied") });
   await act(async () => {
-    await expect(result.current.toggle({ id: "external:45" })).rejects.toThrow("listFailed");
+    await expect(result.current.toggle({ id: "catalog:external:45" })).rejects.toThrow("listFailed");
   });
-  expect(result.current.list.has("external:45")).toBe(false);
+  expect(result.current.list.has("catalog:external:45")).toBe(false);
+});
+
+it("restores signed-in external favorites after a full hook remount and matches My List movie IDs", async () => {
+  const stored = ["41"];
+  mocks.getSession.mockResolvedValue({ data: { session } });
+  externalChain.insert.mockImplementation(async (data) => {
+    stored.push(data.external_movie_id);
+    return { error: null };
+  });
+  externalChain.then = (resolve) =>
+    Promise.resolve({ data: stored.map((external_movie_id) => ({ external_movie_id })) }).then(resolve);
+  const initial = renderHook(() => useAccount());
+  await waitFor(() => expect(initial.result.current.cloudReady).toBe(true));
+  await act(() => initial.result.current.toggle({ id: "catalog:external:42" }));
+  expect(initial.result.current.list.has("catalog:external:42")).toBe(true);
+  initial.unmount();
+
+  // A re-opened browser tab fetches the saved key from the database.
+  const next = renderHook(() => useAccount());
+  await waitFor(() => expect(next.result.current.cloudReady).toBe(true));
+  expect(next.result.current.list.has("catalog:external:42")).toBe(true);
+  expect(next.result.current.list.has("catalog:external:41")).toBe(true);
+  expect(next.result.current.list.has("external:42")).toBe(false);
+  const movies = [{
+    id: "catalog:external:42",
+    titles: { en: "Animals" },
+    descriptions: { en: "External movie" },
+    genres: ["Drama"],
+    kind: "Movie",
+  }];
+  expect(filterMovies(movies, { route: "my-list", list: next.result.current.list })).toEqual(movies);
+});
+
+it("canonicalizes legacy external:id input without breaking guest favorites", async () => {
+  const { result } = renderHook(() => useAccount());
+  await waitFor(() => expect(result.current.ready).toBe(true));
+  await act(() => result.current.toggle({ id: "external:7" }));
+  expect(result.current.list.has("catalog:external:7")).toBe(true);
+  expect(JSON.parse(localStorage.getItem("cinewave:my-list"))).toContain("catalog:external:7");
 });
