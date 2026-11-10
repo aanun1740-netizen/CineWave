@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   getSession: vi.fn(),
   signIn: vi.fn(),
   signUp: vi.fn(),
+  resend: vi.fn(),
   role: vi.fn(),
   from: vi.fn(),
   signOut: vi.fn(),
@@ -31,6 +32,7 @@ vi.mock("./services/backend", () => ({
       },
       signInWithPassword: mocks.signIn,
       signUp: mocks.signUp,
+      resend: mocks.resend,
     },
     rpc: mocks.role,
     from: mocks.from,
@@ -40,6 +42,7 @@ import App from "./App";
 import Admin from "./Admin";
 import AI from "./components/AI";
 import { translations } from "./translations";
+import { accountStrings } from "./account-translations";
 const proof = (url) => ({
   watch_url: url,
   license_verified: true,
@@ -77,6 +80,7 @@ beforeEach(() => {
   mocks.role.mockResolvedValue({ data: false, error: null });
   mocks.signOut.mockResolvedValue({ failed: false });
   mocks.signUp.mockResolvedValue({ data: { session: null }, error: null });
+  mocks.resend.mockResolvedValue({ data: {}, error: null });
   globalThis.fetch = vi
     .fn()
     .mockResolvedValue({ ok: true, json: async () => ({ films: [] }) });
@@ -553,6 +557,59 @@ describe("React storefront", () => {
       email: "viewer@example.invalid", password: "Kino2026",
     })));
   });
+  it("keeps newly registered users on email confirmation instructions and can resend safely", async () => {
+    history.replaceState(null, "", "#/register");
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText("Ցուցադրվող անուն"), "Viewer");
+    await user.type(screen.getByLabelText("Էլեկտրոնային հասցե"), "pending@example.invalid");
+    await user.type(screen.getByLabelText("Նոր գաղտնաբառ (առնվազն 8 նիշ)"), "Kino2026");
+    await user.type(screen.getByLabelText("Կրկնել գաղտնաբառը"), "Kino2026");
+    await user.click(within(document.querySelector(".account-form")).getByRole("button",{name:"Ստեղծել հաշիվ"}));
+    expect(await screen.findByText(accountStrings.hy.checkEmail)).toBeTruthy();
+    expect(location.hash).toBe("#/register");
+    expect(screen.getByText(accountStrings.hy.confirmationHelp)).toBeTruthy();
+    await user.click(screen.getByRole("button",{name:accountStrings.hy.resendConfirmation}));
+    await waitFor(() => expect(mocks.resend).toHaveBeenCalledWith(expect.objectContaining({
+      type: "signup", email: "pending@example.invalid",
+    })));
+    expect(await screen.findByText(accountStrings.hy.confirmationResent)).toBeTruthy();
+  });
+
+  it("explains email_not_confirmed on login and offers a resend button", async () => {
+    mocks.signIn.mockResolvedValue({data:{session:null},error:{code:"email_not_confirmed",message:"Email not confirmed"}});
+    history.replaceState(null, "", "#/login");
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText("Էլեկտրոնային հասցե"), "pending@example.invalid");
+    await user.type(screen.getByLabelText("Գաղտնաբառ"), "Kino2026");
+    await user.click(within(document.querySelector(".account-form")).getByRole("button",{name:"Մուտք գործել"}));
+    expect(await screen.findByText(accountStrings.hy.emailNotConfirmed)).toBeTruthy();
+    expect(screen.getByRole("button",{name:accountStrings.hy.resendConfirmation})).toBeTruthy();
+    expect(location.hash).toBe("#/login");
+  });
+
+  it("reports the actual Supabase confirmation-email rate limit instead of a generic password error", async () => {
+    mocks.signUp.mockResolvedValue({data:null,error:{code:"over_email_send_rate_limit",message:"Email rate limit exceeded"}});
+    history.replaceState(null, "", "#/register");
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText("Ցուցադրվող անուն"), "Viewer");
+    await user.type(screen.getByLabelText("Էլեկտրոնային հասցե"), "new@example.invalid");
+    await user.type(screen.getByLabelText("Նոր գաղտնաբառ (առնվազն 8 նիշ)"), "Kino2026");
+    await user.type(screen.getByLabelText("Կրկնել գաղտնաբառը"), "Kino2026");
+    await user.click(within(document.querySelector(".account-form")).getByRole("button",{name:"Ստեղծել հաշիվ"}));
+    expect(await screen.findByText(accountStrings.hy.emailRateLimit)).toBeTruthy();
+    expect(mocks.resend).not.toHaveBeenCalled();
+  });
+
+  it("shows recovery guidance when the one-time confirmation link has expired", async () => {
+    history.replaceState(null, "", "#error=access_denied&error_code=otp_expired");
+    render(<App />);
+    expect(await screen.findByText(accountStrings.hy.emailLinkExpired)).toBeTruthy();
+    expect(location.hash).toBe("#/login");
+  });
+
   it("submits sign-in through existing Supabase auth and handles failure", async () => {
     mocks.signIn.mockResolvedValue({ error: Error("bad credentials") });
     history.replaceState(null, "", "#/login");
