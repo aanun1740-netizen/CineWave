@@ -582,3 +582,7 @@ body.cinewave-site .brand img{min-width:160px;width:180px!important;max-width:10
     max-height: calc(100dvh - 24px);
   }
 }
+
+/* Human-readable, crawlable film detail links stay separate from Watch actions. */
+.cinewave-site .film-page-link{display:inline-flex;align-items:center;gap:5px;color:#d4f458;font-size:11px;line-height:1.5;font-weight:650;margin:0 0 7px;text-decoration:underline;text-underline-offset:3px}
+.cinewave-site .film-page-link:hover,.cinewave-site .film-page-link:focus-visible{color:#f7f5f0}
