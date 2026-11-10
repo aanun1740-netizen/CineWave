@@ -1,0 +1,46 @@
+name: Stage KinoLab audit build only on review branch
+on:
+  push:
+    branches: [feature/kinolab-audit-20261110]
+    paths: [.github/workflows/kinolab-audit-build.yml]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: true}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kinolab-next/package-lock.json
+      - name: Verify production dependencies and unit tests
+        working-directory: kinolab-next
+        run: |
+          npm ci --ignore-scripts
+          npm test
+      - name: Build from current source (includes film SEO pages)
+        working-directory: kinolab-next
+        run: npm run build
+      - name: Stage full storefront build, never partial chunks
+        run: |
+          set -euo pipefail
+          cp kinolab-next/dist/index.html index.html
+          cp kinolab-next/dist/assets/* assets/
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html','utf8');
+          for(const m of html.matchAll(/(?:src|href)="\.\/(assets\/[^"]+)"/g)){
+            if(!fs.existsSync(m[1])) throw Error('Missing asset: '+m[1]);
+          }
+          console.log('All production index assets accounted for.');
+          NODE
+          git add index.html assets
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m 'build(audit): stage tested KinoLab homepage with all required assets'
+            git push origin HEAD:feature/kinolab-audit-20261110
+          fi
