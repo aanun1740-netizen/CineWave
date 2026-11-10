@@ -1,0 +1,53 @@
+name: Stage KinoLab account language release
+on:
+  push:
+    branches: [feature/kinolab-auth-language-sync-20261110]
+    paths: [.github/workflows/kinolab-i18n-stage.yml]
+permissions:
+  contents: write
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kinolab-next/package-lock.json
+      - name: Install and test locale switching on all auth pages
+        working-directory: kinolab-next
+        run: |
+          npm ci --ignore-scripts
+          npm test
+      - name: Build production KinoLab
+        working-directory: kinolab-next
+        run: npm run build
+      - name: Stage complete compiled storefront on branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp kinolab-next/dist/index.html index.html
+          cp kinolab-next/dist/assets/* assets/
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const html=fs.readFileSync('index.html','utf8');
+          if(!html.includes('lang="en" translate="no"')) throw Error('Wrong default UI language');
+          if(!html.includes('name="google" content="notranslate"')) throw Error('Browser auto-translation not guarded');
+          const assets=[...html.matchAll(/(?:src|href)="\.\/(assets\/[^"]+)"/g)].map(x=>x[1]);
+          if(assets.length<5) throw Error('Incomplete build');
+          for(const file of assets) if(!fs.existsSync(file)) throw Error('Missing asset '+file);
+          const js=fs.readFileSync(assets.find(x=>x.includes('storefront-') && x.endsWith('.js')),'utf8');
+          if(!js.includes('accountLanguage'))throw Error('Missing live account language selector');
+          console.log('Verified native en/ru/hy UI and ',assets.length,' production assets');
+          NODE
+          git add index.html assets/
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "build: publish-ready KinoLab native language signup/login UI"
+            git push origin HEAD:feature/kinolab-auth-language-sync-20261110
+          fi
