@@ -48,7 +48,7 @@ export default {
 
     // Browser guests receive five daily questions; signed-in members have
     // no KinoLab-imposed question count or twenty-second cooldown.
-    const jwt = req.headers.get("Authorization")?.match(/^Bearer (\\S+)$/i)?.[1] || "";
+    const jwt = req.headers.get("Authorization")?.match(/^Bearer ([^ ]+)$/i)?.[1] || "";
     const url = Deno.env.get("SUPABASE_URL");
     const publishableKey = Deno.env.get("SUPABASE_ANON_KEY") ||
       JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}").default;
@@ -103,33 +103,44 @@ export default {
       return reply({ error: "provider_unavailable" }, 503);
     }
 
-    // Atomic quota: five requests/account/day, 40 requests/project/day,
-    // and a 20-second per-account cooldown. RPC can be called ONLY using
-    // the server-only secret client; browsers have no EXECUTE privilege.
-    let remainingToday = 0;
-    try {
-      const serviceClient = createClient(url, secretKey, {
-        auth: { persistSession: false, autoRefreshToken: false },
-      });
-      const { data, error } = await serviceClient.rpc("cinewave_ai_claim_quota", {
-        p_user_id: userId,
-      });
-      if (error || !data || data.allowed !== true) {
+
+    const serviceClient = createClient(url, secretKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    let remainingToday: number | null = null;
+    if (!userId) {
+      // Only guests use the existing 5/day quota, keyed by a server-side HMAC.
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(guestId))
+        return reply({ error: "invalid_guest" }, 400);
+      try {
+        const encoder = new TextEncoder();
+        const signingKey = await crypto.subtle.importKey("raw", encoder.encode(secretKey),
+          { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+        const digest = new Uint8Array(await crypto.subtle.sign("HMAC", signingKey,
+          encoder.encode("kinolab-ai-guest:" + guestId.toLowerCase())));
+        const hex = Array.from(digest.slice(0, 16), x => x.toString(16).padStart(2, "0")).join("");
+        const guestQuotaUuid = [hex.slice(0, 8),hex.slice(8, 12),hex.slice(12, 16),hex.slice(16, 20),hex.slice(20)].join("-");
+        const { data, error } = await serviceClient.rpc("cinewave_ai_claim_quota", {
+          p_user_id: guestQuotaUuid,
+        });
         if (error) {
-          console.error("KinoLab AI quota RPC failed", error.code || "unknown");
+          console.error("KinoLab AI guest quota failed", error.code || "unknown");
           return reply({ error: "quota_unavailable" }, 503);
         }
-        const reason = typeof data?.reason === "string" ? data.reason : "quota_unavailable";
-        if (reason === "cooldown" || reason === "daily_limit" || reason === "global_limit") {
-          return reply({ error: reason }, 429);
+        if (data?.allowed !== true) {
+          const reason = typeof data?.reason === "string" ? data.reason : "quota_unavailable";
+          if (["cooldown", "daily_limit", "global_limit"].includes(reason))
+            return reply({ error: reason }, 429);
+          return reply({ error: "quota_unavailable" }, 503);
         }
+        remainingToday = Number(data.remaining_today ?? 0);
+      } catch {
+        console.error("KinoLab AI guest quota connection failed");
         return reply({ error: "quota_unavailable" }, 503);
       }
-      remainingToday = Number(data.remaining_today ?? 0);
-    } catch {
-      console.error("KinoLab AI quota connection failed");
-      return reply({ error: "quota_unavailable" }, 503);
     }
+    // Authenticated accounts skip all KinoLab per-user quotas and cooldowns.
+    // Gemini's upstream availability and rate limits still apply.
 
     // Catalog context comes from the trusted server database, never the browser.
     // Only published rows are considered. Cap size to keep model costs bounded.
