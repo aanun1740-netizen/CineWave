@@ -158,8 +158,8 @@ export default {
       const all: Film[] = [];
       for (const [table, external] of [["movies", false], ["kinolab_external_catalog", true]] as const) {
         for (let offset = 0; offset < 20000; offset += 250) {
-          const columns = "id,title_en,title_ru,title_hy,overview_en,overview_ru,overview_hy,genre_names,release_date,media_type" +
-            (external ? ",external_watch_url" : "");
+          const columns = "id,title_en,title_ru,title_hy,overview_en,overview_ru,overview_hy,genre_names,release_date" +
+            (external ? ",media_type,external_watch_url" : "");
           const { data, error } = await serviceClient.from(table).select(columns)
             .eq("is_published", true).order("id", { ascending: false })
             .range(offset, offset + 249);
@@ -227,7 +227,7 @@ export default {
         summary: String(film.overview_en || film.overview_ru || film.overview_hy || "").slice(0, 170),
       })).join("\n").slice(0, 16000);
     } catch (error) {
-      console.error("KinoLab AI catalog lookup failed", error instanceof Error ? error.name : "unknown");
+      console.error("KinoLab AI catalog lookup failed", typeof error === "object" && error !== null && "code" in error ? String(error.code) : (error instanceof Error ? error.name : "unknown"));
       return reply({ error: "catalog_unavailable" }, 503);
     }
 
