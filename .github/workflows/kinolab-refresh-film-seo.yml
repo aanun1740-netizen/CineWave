@@ -1,0 +1,45 @@
+name: Refresh KinoLab public film SEO pages
+
+# The Studio publishes films in Supabase immediately. Static searchable pages
+# mirror that PUBLIC catalog daily; no movie table or Auth records are changed.
+on:
+  schedule:
+    - cron: '23 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kinolab-public-film-seo-sync
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.repository == 'aanun1740-netizen/CineWave' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Refresh static film pages from published public Supabase data
+        run: node kinolab-next/scripts/generate-film-pages.mjs .
+      - name: Check public film sitemap and published detail pages
+        run: |
+          test -s sitemap.xml
+          test -d film
+          test "$(find film -mindepth 2 -maxdepth 2 -name index.html | wc -l)" -gt 0
+      - name: Commit changed generated pages only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- film sitemap.xml
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(seo): refresh published KinoLab film pages and sitemap"
+            git push origin HEAD:main
+          fi
