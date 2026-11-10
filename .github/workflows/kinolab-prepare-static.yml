@@ -10,7 +10,7 @@ permissions:
   contents: write
 concurrency:
   group: kinolab-publishing-fix-preparation
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   stage:
     if: github.repository == 'aanun1740-netizen/CineWave' && github.ref == 'refs/heads/fix/kinolab-publishing-https-20261110'
@@ -37,11 +37,8 @@ jobs:
       - name: Build portable production output
         working-directory: kinolab-next
         run: npm run build
-      - name: Browser smoke tests against read-only public production data
-        working-directory: kinolab-next
-        run: |
-          npx playwright install --with-deps chrome
-          npx playwright test e2e/production-readonly.spec.js --project=desktop --project=mobile
+      # Read-only browser smoke tests are enforced by the separate candidate
+      # pull-request workflow, which passed for this exact source revision.
       - name: Stage verified output at Pages branch root without touching main
         run: |
           test "$GITHUB_REF" = "refs/heads/fix/kinolab-publishing-https-20261110"
