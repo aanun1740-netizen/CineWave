@@ -64,7 +64,10 @@ export function initialLanguage() {
   }
 }
 export function routeFromHash(hash = location.hash) {
-  if (/^#(?:access_token|refresh_token|error)=/.test(hash)) return "home";
+  if (/^#(?:access_token|refresh_token)=/.test(hash)) return "home";
+  // Expired email links should show guidance instead of silently opening Home.
+  if (/^#error=/.test(hash) || (!hash && (window.CineWaveAuth?.authRedirectError ||
+      new URLSearchParams(location.search).has("error_code")))) return "login";
   const route = hash.replace(/^#\/?/, "") || "home";
   return /^(home|movies|tv|my-list|login|register|profile|forgot|recover|movie\/.+|watch\/.+)$/.test(
     route,
