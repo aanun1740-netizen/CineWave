@@ -21,7 +21,7 @@ OUT = ROOT / "kinolab-backup"
 URL = "https://ysecowknittmmmbixgtu.supabase.co"
 EXPECTED_PROJECT = "ysecowknittmmmbixgtu"
 config = (ROOT / "kinolab-next" / "config.js").read_text(encoding="utf-8")
-key_match = re.search(r'key:\\s*"(sb_publishable_[A-Za-z0-9_-]+)"', config)
+key_match = re.search(r'key:\s*"(sb_publishable_[A-Za-z0-9_-]+)"', config)
 if not key_match:
     raise SystemExit("No browser-safe publishable key found in production config")
 API_KEY = key_match.group(1)
@@ -81,7 +81,7 @@ if table_counts["kinolab_external_catalog"] < 48:
 media = []
 for i, obj in enumerate(storage["objects"], start=1):
     name = obj["name"]
-    if name.startswith("/") or ".." in Path(name).parts or not re.fullmatch(r"[A-Za-z0-9_.\\/-]+", name):
+    if name.startswith("/") or ".." in Path(name).parts or not re.fullmatch(r"[A-Za-z0-9_./-]+", name):
         raise ValueError("Unsafe Storage filename")
     public_url = f"{URL}/storage/v1/object/public/{storage['bucket']}/{urllib.parse.quote(name, safe='/')}"
     data = get_bytes(public_url)
