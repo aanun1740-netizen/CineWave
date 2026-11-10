@@ -5,7 +5,7 @@ on:
       - feature/kinolab-auth-confirmation-fix-20261110
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   build-review:
     runs-on: ubuntu-latest
@@ -24,6 +24,18 @@ jobs:
       - name: Build static KinoLab site
         working-directory: kinolab-next
         run: npm run build
+      - name: Stage the reviewed storefront build on this feature branch only
+        if: github.ref == 'refs/heads/feature/kinolab-auth-confirmation-fix-20261110'
+        run: |
+          cp kinolab-next/dist/index.html index.html
+          cp kinolab-next/dist/assets/storefront-*.js assets/
+          git add index.html assets/storefront-*.js
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "build: stage tested KinoLab email confirmation fix"
+            git push origin HEAD:feature/kinolab-auth-confirmation-fix-20261110
+          fi
       - name: Preserve reviewed build files (no deploy)
         uses: actions/upload-artifact@v4
         with:
