@@ -468,7 +468,7 @@ describe("React storefront", () => {
     mocks.backendFetch.mockResolvedValue({ ok: true, json: async () => films });
     await user.click(screen.getByRole("button", { name: "Փորձել կրկին" }));
     await screen.findAllByText("Արևի պատմություն");
-    expect(mocks.backendFetch).toHaveBeenCalledTimes(6);
+    expect(mocks.backendFetch).toHaveBeenCalledTimes(4);
     expect(mocks.backendFetch).toHaveBeenCalledWith(
       expect.stringContaining("/kinolab_external_catalog?"),
       expect.any(Object),
