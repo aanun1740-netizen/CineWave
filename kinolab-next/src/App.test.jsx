@@ -580,10 +580,30 @@ describe("React admin", () => {
         ],
       })),
     };
-    mocks.from.mockReturnValue(chain);
+    const externalChain = {
+      select: vi.fn(() => externalChain),
+      order: vi.fn(() => externalChain),
+      range: vi.fn(async () => ({
+        data: [{
+          id: 123,
+          title_en: "External Feature",
+          is_published: true,
+          created_at: "2026-11-10T01:00:00Z",
+        }],
+        error: null,
+      })),
+    };
+    mocks.from.mockImplementation((name) =>
+      name === "kinolab_external_catalog" ? externalChain : chain,
+    );
     const user = userEvent.setup();
     render(<Admin />);
     await screen.findByText("Solar Story");
+    await waitFor(() => {
+      expect(document.querySelector(".stats strong")?.textContent).toBe("2");
+    });
+    expect(screen.getByText("Սովորական ֆիլմեր՝ 1 · Արտաքին հղումով՝ 1")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Կառավարել արտաքին ֆիլմերը" })).toBeTruthy();
     expect(screen.getByText("KINOLAB ԿԱՌԱՎԱՐՈՒՄ")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "▤ Ֆիլմադարան" }));
     await user.click(screen.getByRole("button", { name: "Ջնջել" }));
@@ -595,5 +615,41 @@ describe("React admin", () => {
     await user.click(screen.getByRole("button", { name: "Խմբագրել" }));
     expect(screen.getByDisplayValue("Solar Story")).toBeTruthy();
     expect(screen.getByText("Հիմնական MP4, WebM կամ HLS URL")).toBeTruthy();
+  });
+  it("combines all published legacy and external-link films in admin statistics", async () => {
+    mocks.getSession.mockResolvedValue({
+      data: { session: { user: { id: "u1", email: "admin@example.invalid" } } },
+    });
+    mocks.role.mockResolvedValue({ data: true });
+    const movieRows = Array.from({length:24}, (_,i) => ({
+      id: i + 1, title_en: "Regular Film "+(i+1), is_published: true,
+    }));
+    const externalRows = Array.from({length:47}, (_,i) => ({
+      id: i + 101, title_en: "External Film "+(i+1), is_published: true,
+    }));
+    const fakeQuery = (rows) => {
+      const query = {
+        select: vi.fn(() => query),
+        order: vi.fn(() => query),
+        range: vi.fn(async () => ({ data: rows, error: null })),
+      };
+      return query;
+    };
+    const oldTable = fakeQuery(movieRows);
+    const newTable = fakeQuery(externalRows);
+    mocks.from.mockImplementation((table) =>
+      table === "kinolab_external_catalog" ? newTable : oldTable,
+    );
+    render(<Admin />);
+    await waitFor(() => {
+      expect(document.querySelector(".stats strong")?.textContent).toBe("71");
+    });
+    expect(screen.getByText("Սովորական ֆիլմեր՝ 24 · Արտաքին հղումով՝ 47")).toBeTruthy();
+    const metrics = Array.from(document.querySelectorAll(".stats strong")).map(el => el.textContent);
+    expect(metrics.slice(0,3)).toEqual(["71","71","0"]);
+    expect(mocks.from).toHaveBeenCalledWith("movies");
+    expect(mocks.from).toHaveBeenCalledWith("kinolab_external_catalog");
+    expect(oldTable.range).toHaveBeenCalledTimes(1);
+    expect(newTable.range).toHaveBeenCalledTimes(1);
   });
 });

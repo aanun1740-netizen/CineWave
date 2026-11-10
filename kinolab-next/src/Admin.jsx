@@ -24,6 +24,7 @@ export default function Admin() {
   const [session, setSession] = useState(null),
     [authorized, setAuthorized] = useState(false),
     [rows, setRows] = useState([]),
+    [externalRows, setExternalRows] = useState([]),
     [view, setView] = useState("overview"),
     [notice, setNotice] = useState("Sign in to continue."),
     [busy, setBusy] = useState(false),
@@ -50,6 +51,7 @@ export default function Admin() {
     setAuthorized(false);
     state.current.authorized = false;
     setRows([]);
+    setExternalRows([]);
     setEditing(null);
     setDirty(false);
     setValues(empty());
@@ -90,7 +92,23 @@ export default function Admin() {
         result.push(...data);
         if (data.length < 100) break;
       }
+      // Include external-link movies in dashboard totals while keeping their
+      // editing workflow in the separate Quick Add section.
+      const external = [];
+      for (let start = 0; ; start += 100) {
+        const { data, error } = await client
+          .from("kinolab_external_catalog")
+          .select("id,title_en,is_published,created_at")
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
+          .range(start, start + 99);
+        if (id !== generation.current || !state.current.authorized) return;
+        if (error) throw error;
+        external.push(...(data || []));
+        if (!data || data.length < 100) break;
+      }
       setRows(result);
+      setExternalRows(external);
       setNotice("");
     } catch (error) {
       if (id === generation.current) fail(error);
@@ -636,12 +654,17 @@ export default function Admin() {
               <section>
                 <div className="stats">
                   {[
-                    ["Total movies", rows.length],
+                    ["Total movies", rows.length + externalRows.length],
                     [
                       "Published",
-                      rows.filter((row) => row.is_published).length,
+                      rows.filter((row) => row.is_published).length +
+                        externalRows.filter((row) => row.is_published).length,
                     ],
-                    ["Drafts", rows.filter((row) => !row.is_published).length],
+                    [
+                      "Drafts",
+                      rows.filter((row) => !row.is_published).length +
+                        externalRows.filter((row) => !row.is_published).length,
+                    ],
                     ["Approved playback", rows.filter(model.ready).length],
                   ].map(([label, count]) => (
                     <article key={label}>
@@ -649,6 +672,20 @@ export default function Admin() {
                       <strong>{count}</strong>
                     </article>
                   ))}
+                </div>
+                <div className="panel" role="status">
+                  <div className="panel-head">
+                    <p>
+                      {({
+                        hy: `Սովորական ֆիլմեր՝ ${rows.length} · Արտաքին հղումով՝ ${externalRows.length}`,
+                        ru: `Обычные фильмы: ${rows.length} · По внешней ссылке: ${externalRows.length}`,
+                        en: `Regular movies: ${rows.length} · External-link titles: ${externalRows.length}`,
+                      })[language]}
+                    </p>
+                    <button className="text-button" type="button" onClick={() => setView("external")}>
+                      {({hy:"Կառավարել արտաքին ֆիլմերը",ru:"Управлять внешними фильмами",en:"Manage external titles"})[language]}
+                    </button>
+                  </div>
                 </div>
                 <div className="panel">
                   <div className="panel-head">
@@ -685,7 +722,7 @@ export default function Admin() {
             )}
             {view === "archive" && <ArchiveImporter language={language} />}
             {view === "analytics" && <AnalyticsDashboard language={language} />}
-            {view === "external" && <QuickExternalMovie language={language} />}
+            {view === "external" && <QuickExternalMovie language={language} onChange={() => loadMovies()} />}
             {view === "movies" && (
               <section>
                 <div className="toolbar">
