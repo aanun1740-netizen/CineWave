@@ -42,6 +42,7 @@ export const translations = {
     loadError: "The collection could not be loaded. Please try again.",
     retry: "Try again",
     catalogOnly: "Catalog",
+    externalLink: "External link",
     available: "Watch now",
     browseOnly:
       "This film is available to explore. Playback is not currently available.",
@@ -121,6 +122,7 @@ aiWelcome: "Hello! I’m KinoLab’s movie assistant. What would you like to wat
     loadError: "Не удалось загрузить коллекцию. Попробуйте ещё раз.",
     retry: "Повторить",
     catalogOnly: "Каталог",
+    externalLink: "Внешняя ссылка",
     available: "Смотреть",
     browseOnly:
       "Вы можете узнать об этом фильме и сохранить его. Просмотр пока недоступен.",
@@ -200,6 +202,7 @@ aiWelcome: "Здравствуйте! Я кинопомощник KinoLab. Чт�
     loadError: "Չհաջողվեց բեռնել հավաքածուն։ Փորձեք կրկին։",
     retry: "Փորձել կրկին",
     catalogOnly: "Հավաքածու",
+    externalLink: "Արտաքին հղում",
     available: "Դիտել հիմա",
     browseOnly:
       "Կարող եք ծանոթանալ այս ֆիլմին և պահպանել այն։ Դիտումը դեռ հասանելի չէ։",
