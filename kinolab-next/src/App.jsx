@@ -515,22 +515,38 @@ export default function App() {
           hidden={!profile}
         >
           <p className="eyebrow">MY ACCOUNT</p>
-          <h2 id="profileTitle">{t("profile")}</h2>
-          <p>
-            {account.session?.user.email ||
-              t("profileNote", { count: account.list.size })}
-          </p>
-          <button className="btn secondary" onClick={() => navigate("my-list")}>
-            {t("list")}
-          </button>
+          <div className="profile-identity">
+            <span className="profile-person-icon" aria-hidden="true"><Icon name="user" /></span>
+            <div className="profile-person-details">
+              <h2 id="profileTitle">
+                {account.session
+                  ? (account.profile?.display_name?.trim() ||
+                     account.session.user.user_metadata?.display_name?.trim() ||
+                     account.session.user.user_metadata?.full_name?.trim() ||
+                     t("profile"))
+                  : t("profile")}
+              </h2>
+              <p className="profile-email">
+                {account.session?.user.email ||
+                  t("profileNote", { count: account.list.size })}
+              </p>
+            </div>
+          </div>
           <div className="account-menu">
+            <button className="btn secondary profile-menu-link" onClick={() => navigate("my-list")}>
+              <Icon name="bookmark" />
+              <span>{t("list")}</span>
+            </button>
             {(account.session ? ["profile"] : ["login", "register"]).map(
               (page) => (
                 <button
                   key={page}
-                  className="btn secondary"
+                  className={`btn secondary profile-menu-link${route === page ? " profile-menu-current" : ""}`}
+                  aria-current={route === page ? "page" : undefined}
                   onClick={() => navigate(page)}
                 >
+                  <Icon name="user" />
+                  <span>
                   {
                     {
                       hy: {
@@ -550,18 +566,22 @@ export default function App() {
                       },
                     }[language][page]
                   }
+                  </span>
                 </button>
               ),
             )}
             {account.admin && (
-              <a className="btn secondary" href={`${base}admin/`}>
-                {
+              <a className="btn secondary profile-menu-link" href={`${base}admin/`}>
+                <Icon name="settings" />
+                <span>
                   {
-                    hy: "Ադմինիստրատորի վահանակ",
-                    ru: "Панель администратора",
-                    en: "Admin Panel",
-                  }[language]
-                }
+                    {
+                      hy: "Ադմինիստրատորի վահանակ",
+                      ru: "Панель администратора",
+                      en: "Admin Panel",
+                    }[language]
+                  }
+                </span>
               </a>
             )}
           </div>

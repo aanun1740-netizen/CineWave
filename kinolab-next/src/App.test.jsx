@@ -520,6 +520,61 @@ describe("React storefront", () => {
     expect(document.documentElement.lang).toBe("hy");
     expect(screen.getByRole("searchbox").placeholder).toBe("Որոնել ֆիլմ...");
   });
+  it("shows the saved registered display name in the account dropdown, not the email prefix", async () => {
+    const session = {
+      user: {
+        id: "profile-user", email: "mailbox@example.invalid",
+        user_metadata: {display_name: "Initial Signup Name"},
+      },
+    };
+    mocks.getSession.mockResolvedValue({data:{session}, error:null});
+    const profileQuery = {
+      select: vi.fn(() => profileQuery),
+      eq: vi.fn(() => profileQuery),
+      maybeSingle: vi.fn(async () => ({
+        data: { display_name: "Venom", preferred_language: "hy" }, error: null,
+      })),
+    };
+    const listQuery = {
+      select: vi.fn(() => listQuery),
+      eq: vi.fn(async () => ({data:[],error:null})),
+    };
+    mocks.from.mockImplementation((table) => table === "profiles" ? profileQuery : listQuery);
+    const user = userEvent.setup();
+    render(<App />);
+    await waitFor(() => expect(mocks.from).toHaveBeenCalledWith("profiles"));
+    await user.click(screen.getByRole("button", {name: "Ձեր անկյունը"}));
+    const menu = screen.getByRole("dialog", {name:"Venom"});
+    expect(within(menu).getByRole("heading", {name:"Venom"})).toBeTruthy();
+    expect(within(menu).getByText("mailbox@example.invalid")).toBeTruthy();
+    expect(within(menu).queryByText("mailbox")).toBeNull();
+    expect(within(menu).getByRole("button", {name:"Ձեր պրոֆիլը"})).toBeTruthy();
+    expect(within(menu).getByRole("button", {name:"Իմ ցանկը"})).toBeTruthy();
+  });
+
+  it("falls back to the signup name when the profile row has no display name", async () => {
+    const session = {user: {
+      id:"no-profile-row", email:"mailbox@example.invalid",
+      user_metadata: {display_name:"Movie Fan"},
+    }};
+    mocks.getSession.mockResolvedValue({data:{session},error:null});
+    const profileQuery = {
+      select: vi.fn(() => profileQuery),
+      eq: vi.fn(() => profileQuery),
+      maybeSingle: vi.fn(async () => ({data:null,error:null})),
+    };
+    const listQuery = {
+      select: vi.fn(() => listQuery),
+      eq: vi.fn(async () => ({data:[],error:null})),
+    };
+    mocks.from.mockImplementation(table => table === "profiles" ? profileQuery : listQuery);
+    const user = userEvent.setup();
+    render(<App />);
+    await waitFor(() => expect(mocks.from).toHaveBeenCalledWith("profiles"));
+    await user.click(screen.getByRole("button", {name:"Ձեր անկյունը"}));
+    expect(within(screen.getByRole("dialog",{name:"Movie Fan"})).getByText("mailbox@example.invalid")).toBeTruthy();
+  });
+
   it("places the AI entry after account forms without duplicate floating actions", async () => {
     history.replaceState(null, "", "#/register");
     render(<App />);
