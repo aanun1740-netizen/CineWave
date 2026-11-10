@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   backendFetch: vi.fn(),
   getSession: vi.fn(),
   signIn: vi.fn(),
+  signUp: vi.fn(),
   role: vi.fn(),
   from: vi.fn(),
   signOut: vi.fn(),
@@ -29,6 +30,7 @@ vi.mock("./services/backend", () => ({
         return { data: { subscription: { unsubscribe: vi.fn() } } };
       },
       signInWithPassword: mocks.signIn,
+      signUp: mocks.signUp,
     },
     rpc: mocks.role,
     from: mocks.from,
@@ -74,6 +76,7 @@ beforeEach(() => {
   mocks.backendFetch.mockResolvedValue({ ok: true, json: async () => films });
   mocks.role.mockResolvedValue({ data: false, error: null });
   mocks.signOut.mockResolvedValue({ failed: false });
+  mocks.signUp.mockResolvedValue({ data: { session: null }, error: null });
   globalThis.fetch = vi
     .fn()
     .mockResolvedValue({ ok: true, json: async () => ({ films: [] }) });
@@ -524,6 +527,29 @@ describe("React storefront", () => {
     expect(aiSlot?.querySelector("#cw-ai-button")).toBeTruthy();
     expect(document.querySelectorAll("#cw-ai-button")).toHaveLength(1);
     expect(document.querySelectorAll(".account-links button")).toHaveLength(4);
+  });
+  it("accepts an eight-character registration password, while rejecting seven", async () => {
+    history.replaceState(null, "", "#/register");
+    const user = userEvent.setup();
+    render(<App />);
+    const pass = await screen.findByLabelText("Նոր գաղտնաբառ (առնվազն 8 նիշ)");
+    const repeat = screen.getByLabelText("Կրկնել գաղտնաբառը");
+    expect(pass.minLength).toBe(8);
+    expect(repeat.minLength).toBe(8);
+    await user.type(pass, "Kino202");
+    await user.type(repeat, "Kino202");
+    expect(pass.checkValidity()).toBe(false);
+    expect(repeat.checkValidity()).toBe(false);
+    await user.type(pass, "6");
+    await user.type(repeat, "6");
+    expect(pass.checkValidity()).toBe(true);
+    expect(repeat.checkValidity()).toBe(true);
+    await user.type(screen.getByLabelText("Էլեկտրոնային հասցե"), "viewer@example.invalid");
+    await user.type(screen.getByLabelText("Ցուցադրվող անուն"), "Viewer");
+    await user.click(within(document.querySelector(".account-form")).getByRole("button", {name:"Ստեղծել հաշիվ"}));
+    await waitFor(() => expect(mocks.signUp).toHaveBeenCalledWith(expect.objectContaining({
+      email: "viewer@example.invalid", password: "Kino2026",
+    })));
   });
   it("submits sign-in through existing Supabase auth and handles failure", async () => {
     mocks.signIn.mockResolvedValue({ error: Error("bad credentials") });
