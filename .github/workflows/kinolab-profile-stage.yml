@@ -1,0 +1,54 @@
+name: Stage KinoLab approved profile and logo build
+on:
+  push:
+    branches: [feature/kinolab-profile-logo-polish-20261110]
+    paths: [.github/workflows/kinolab-profile-stage.yml]
+permissions:
+  contents: write
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kinolab-next/package-lock.json
+      - name: Install and run all tests
+        working-directory: kinolab-next
+        run: |
+          npm ci --ignore-scripts
+          npm test
+      - name: Build complete storefront
+        working-directory: kinolab-next
+        run: npm run build
+      - name: Stage built storefront and all assets on review branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp kinolab-next/dist/index.html index.html
+          cp kinolab-next/dist/assets/* assets/
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const text = fs.readFileSync('index.html','utf8');
+          const refs = [...text.matchAll(/(?:src|href)="\.\/(assets\/[^"]+)"/g)].map(x=>x[1]);
+          if(refs.length < 5) throw Error('Expected complete storefront bundle');
+          for(const p of refs) {
+            if (!fs.existsSync(p)) throw Error('Missing '+p);
+          }
+          const logo = fs.readFileSync('assets/kinolab-logo.svg','utf8');
+          if(!logo.includes('font-weight="600"')) throw Error('Old bold logo');
+          if (!text.includes('storefront-')) throw Error('Missing new storefront');
+          console.log('Profile release assets staged:',refs.length);
+          NODE
+          git add index.html assets/
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m "build: stage approved KinoLab profile and wordmark release"
+            git push origin HEAD:feature/kinolab-profile-logo-polish-20261110
+          fi
