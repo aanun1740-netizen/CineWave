@@ -43,6 +43,7 @@ export const translations = {
     retry: "Try again",
     catalogOnly: "Catalog",
     externalLink: "External link",
+    filmPage: "Film details",
     available: "Watch now",
     browseOnly:
       "This film is available to explore. Playback is not currently available.",
@@ -123,6 +124,7 @@ aiWelcome: "Hello! I’m KinoLab’s movie assistant. What would you like to wat
     retry: "Повторить",
     catalogOnly: "Каталог",
     externalLink: "Внешняя ссылка",
+    filmPage: "О фильме",
     available: "Смотреть",
     browseOnly:
       "Вы можете узнать об этом фильме и сохранить его. Просмотр пока недоступен.",
@@ -203,6 +205,7 @@ aiWelcome: "Здравствуйте! Я кинопомощник KinoLab. Чт�
     retry: "Փորձել կրկին",
     catalogOnly: "Հավաքածու",
     externalLink: "Արտաքին հղում",
+    filmPage: "Ֆիլմի էջ",
     available: "Դիտել հիմա",
     browseOnly:
       "Կարող եք ծանոթանալ այս ֆիլմին և պահպանել այն։ Դիտումը դեռ հասանելի չէ։",
