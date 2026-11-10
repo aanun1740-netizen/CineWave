@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { localizedMovie, genreLabel, POSTER_FALLBACK } from "../domain";
 import { playback } from "./Player";
+import { siteBase } from "../site-base";
 import { Icon } from "./Icons";
 export function Artwork({ src, alt, ...props }) {
   const [failed, setFailed] = useState(false);
@@ -167,6 +168,15 @@ export default function MovieRow({
               <div className="movie-title">
                 {info.title || t("titleUnknown")}
               </div>
+              {/^catalog:external:[1-9][0-9]*$/.test(movie.id) && (
+                <a className="film-page-link"
+                  href={`${siteBase()}film/${movie.id.slice("catalog:external:".length)}/`}
+                  aria-label={`${info.title} — ${t("filmPage")}`}
+                  onClick={(event) => event.stopPropagation()}
+                  onKeyDown={(event) => event.stopPropagation()}>
+                  {t("filmPage")} <span aria-hidden="true">↗</span>
+                </a>
+              )}
               <div className="movie-meta">
                 {[
                   movie.year,
