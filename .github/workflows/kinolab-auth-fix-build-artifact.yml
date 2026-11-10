@@ -1,0 +1,33 @@
+name: KinoLab auth-fix review build (no deploy)
+on:
+  push:
+    branches:
+      - feature/kinolab-auth-confirmation-fix-20261110
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kinolab-next/package-lock.json
+      - name: Install and unit-test
+        working-directory: kinolab-next
+        run: |
+          npm ci --ignore-scripts
+          npm test
+      - name: Build static KinoLab site
+        working-directory: kinolab-next
+        run: npm run build
+      - name: Preserve reviewed build files (no deploy)
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinolab-auth-fix-static-build
+          path: kinolab-next/dist/
+          retention-days: 2
+          if-no-files-found: error
