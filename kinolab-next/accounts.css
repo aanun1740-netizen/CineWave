@@ -59,3 +59,54 @@ body.cinewave-site.account-view .hero,body.cinewave-site.account-view .catalog-s
     text-align: center;
   }
 }
+
+/* Account and signup locale selector: follows the same en/ru/hy state as the header.
+   Native KinoLab translations avoid browser auto-translation mismatches. */
+body.cinewave-site .account-language-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+body.cinewave-site .account-language-row .eyebrow { margin: 0; }
+body.cinewave-site .account-language-control {
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+  color: #c3b6cb;
+  font-size: 11px;
+  white-space: nowrap;
+}
+body.cinewave-site .account-language-control select {
+  padding: 9px 26px 9px 11px;
+  min-height: 37px;
+  max-width: 130px;
+  border-radius: 9px;
+  border: 1px solid rgba(212,244,88,.33);
+  background: #272038;
+  color: #f7f5f0;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+body.cinewave-site .account-language-control select:focus-visible {
+  outline: 2px solid #d4f458;
+  outline-offset: 2px;
+}
+body.cinewave-site[data-theme="light"] .account-language-control { color: #655b6c; }
+body.cinewave-site[data-theme="light"] .account-language-control select {
+  background: #fff;
+  color: #20152e;
+  border-color: #20152e46;
+}
+@media(max-width:480px) {
+  body.cinewave-site .account-language-row { gap: 8px; }
+  body.cinewave-site .account-language-control { gap: 6px; font-size: 10px; }
+  body.cinewave-site .account-language-control select {
+    max-width: 112px;
+    min-height: 36px;
+    padding: 8px;
+  }
+}
