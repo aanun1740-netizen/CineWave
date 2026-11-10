@@ -227,14 +227,14 @@ export default function Accounts({
                   "password",
                   "password",
                   {
-                    minLength: route === "login" ? undefined : 12,
+                    minLength: route === "login" ? undefined : 8,
                     autoComplete:
                       route === "login" ? "current-password" : "new-password",
                   },
                 )}
               {["register", "recover"].includes(route) &&
                 input("repeat", "password", "confirm", {
-                  minLength: 12,
+                  minLength: 8,
                   autoComplete: "new-password",
                 })}
             </>
