@@ -14,6 +14,6 @@ export function useLanguage() {
       translations[language]?.[key] ?? translations.en[key] ?? key,
     ).replace(/\{(\w+)\}/g, (_, name) => String(params[name] ?? ""));
   const setLanguage = (value) =>
-    updateLanguage(["hy", "ru", "en"].includes(value) ? value : "hy");
+    updateLanguage(["hy", "ru", "en"].includes(value) ? value : "en");
   return { language, setLanguage, t };
 }
