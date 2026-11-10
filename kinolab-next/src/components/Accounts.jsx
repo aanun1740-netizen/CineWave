@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { accountStrings } from "../account-translations";
 import { client } from "../services/backend";
+import { Icon } from "./Icons";
 
 function authFeedback(error) {
   if (error?.code === "email_not_confirmed") return "emailNotConfirmed";
@@ -212,7 +213,7 @@ export default function Accounts({
   }
   return (
     <section className="account-pages" id="accountPages">
-      <div className="account-card">
+      <div className={route === "profile" ? "account-card account-card--profile" : "account-card"}>
         <p className="eyebrow">KINOLAB</p>
         <h1>
           {text(
@@ -236,7 +237,7 @@ export default function Accounts({
                   : "intro",
           )}
         </p>
-        <p className="account-feedback" role="status">
+        <p className={`account-feedback${feedback === "saved" ? " account-feedback--saved" : ""}`} role="status">
           {text(feedback || account.error || "")}
         </p>
         {route === "profile" && (
@@ -331,6 +332,7 @@ export default function Accounts({
                 disabled={busy || !account.cloudReady}
                 onClick={importList}
               >
+                <Icon name="bookmark" />
                 {text("importList")}
               </button>
             )}
@@ -338,12 +340,14 @@ export default function Accounts({
               className="btn secondary"
               onClick={() => navigate("my-list")}
             >
+              <Icon name="bookmark" />
               {text("myList")}
             </button>
             <button
               className="btn secondary"
               onClick={() => navigate("recover")}
             >
+              <Icon name="settings" />
               {text("changePassword")}
             </button>
             <button
@@ -353,6 +357,7 @@ export default function Accounts({
                 navigate("login", true);
               }}
             >
+              <span aria-hidden="true">↪</span>
               {text("logout")}
             </button>
           </div>
