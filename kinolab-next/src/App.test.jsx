@@ -582,22 +582,30 @@ describe("React storefront", () => {
 describe("KinoLab AI guest and quota messages", () => {
   const t = (key) => translations.hy[key] || key;
 
-  it("requires an actual session before contacting the function", async () => {
+  it("lets an unsigned guest ask a question with a stable anonymous quota ID", async () => {
+    mocks.backendFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({answer: "Try a KinoLab film", recommendations: []}),
+    });
     const user = userEvent.setup();
     render(<AI open={true} setOpen={vi.fn()} t={t} />);
     const field = screen.getByRole("textbox", { name: "Ձեր հաղորդագրությունը" });
     expect(field.maxLength).toBe(400);
     await user.type(field, "Բարև");
     await user.click(screen.getByRole("button", { name: "Ուղարկել հաղորդագրությունը" }));
-    expect(await screen.findByText(translations.hy.aiSignIn)).toBeTruthy();
-    expect(mocks.backendFetch).not.toHaveBeenCalled();
+    expect(await screen.findByText("Try a KinoLab film")).toBeTruthy();
+    expect(mocks.backendFetch).toHaveBeenCalledWith(
+      expect.stringMatching(/\/functions\/v1\/kinolab-ai-v2$/),
+      expect.objectContaining({
+        headers: expect.not.objectContaining({ Authorization: expect.any(String) }),
+        body: expect.stringContaining('"guest_id"'),
+      }),
+    );
+    const body = JSON.parse(mocks.backendFetch.mock.calls[0][1].body);
+    expect(body.guest_id).toMatch(/^[0-9a-f-]{36}$/);
   });
 
-  it("shows a meaningful daily quota message instead of a generic error", async () => {
-    mocks.getSession.mockResolvedValue({
-      data: { session: { access_token: "user-jwt-test" } },
-      error: null,
-    });
+  it("shows the guest five-per-day quota message", async () => {
     mocks.backendFetch.mockResolvedValue({
       ok: false,
       status: 429,
@@ -605,18 +613,51 @@ describe("KinoLab AI guest and quota messages", () => {
     });
     const user = userEvent.setup();
     render(<AI open={true} setOpen={vi.fn()} t={t} />);
-    await user.type(
-      screen.getByRole("textbox", { name: "Ձեր հաղորդագրությունը" }),
-      "Պատմական ֆիլմ",
-    );
+    await user.type(screen.getByRole("textbox", { name: "Ձեր հաղորդագրությունը" }), "Պատմական ֆիլմ");
     await user.click(screen.getByRole("button", { name: "Ուղարկել հաղորդագրությունը" }));
     expect(await screen.findByText(translations.hy.aiDailyLimit)).toBeTruthy();
-    expect(mocks.backendFetch).toHaveBeenCalledWith(
-      expect.stringMatching(/\/functions\/v1\/kinolab-ai-v2$/),
-      expect.objectContaining({
-        headers: expect.objectContaining({ Authorization: "Bearer user-jwt-test" }),
-      }),
-    );
+    expect(mocks.backendFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("sends two consecutive signed-in member requests without frontend cooldown or daily limit", async () => {
+    mocks.getSession.mockResolvedValue({
+      data: {session: {access_token: "member-jwt-test"}}, error: null,
+    });
+    mocks.backendFetch.mockResolvedValue({
+      ok: true, json: async () => ({answer: "A KinoLab movie", recommendations: []}),
+    });
+    const user = userEvent.setup();
+    render(<AI open={true} setOpen={vi.fn()} t={t} />);
+    for (const q of ["Կատակերգություն", "Պատմական ֆիլմ"]) {
+      await user.type(screen.getByRole("textbox", { name: "Ձեր հաղորդագրությունը" }), q);
+      await user.click(screen.getByRole("button", { name: "Ուղարկել հաղորդագրությունը" }));
+      await waitFor(() => expect(mocks.backendFetch).toHaveBeenCalledTimes(
+        q === "Կատակերգություն" ? 1 : 2
+      ));
+      await waitFor(() => expect(screen.getByRole("textbox", { name: "Ձեր հաղորդագրությունը" }).disabled).toBe(false));
+    }
+    expect(mocks.backendFetch.mock.calls.every(([,opts]) =>
+      opts.headers.Authorization === "Bearer member-jwt-test" && !JSON.parse(opts.body).guest_id
+    )).toBe(true);
+    expect(screen.queryByText(translations.hy.aiCooldown)).toBeNull();
+  });
+
+  it("links new server-recommended film IDs to live catalog movie details", async () => {
+    mocks.backendFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({answer: "A fresh KinoLab movie", recommendations: ["catalog:external:113"]}),
+    });
+    const movie = {id: "catalog:external:113", source: "supabase",
+      titles: {en: "Brand New KinoLab", hy: "Նոր KinoLab ֆիլմ"},
+      descriptions: {hy: "Նոր ֆիլմ"}, genres: ["Drama"], year: 2026,
+      img: "/poster.svg"};
+    const openMovie = vi.fn();
+    const user = userEvent.setup();
+    render(<AI open={true} setOpen={vi.fn()} t={t} movies={[movie]} language="hy" onOpenMovie={openMovie} />);
+    await user.type(screen.getByRole("textbox", { name: "Ձեր հաղորդագրությունը" }), "Առաջարկիր ֆիլմ");
+    await user.click(screen.getByRole("button", { name: "Ուղարկել հաղորդագրությունը" }));
+    await user.click(await screen.findByRole("button", { name: /Նոր KinoLab ֆիլմ/ }));
+    expect(openMovie).toHaveBeenCalledWith(movie);
   });
 });
 
