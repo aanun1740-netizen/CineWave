@@ -1,19 +1,19 @@
-name: Stage KinoLab audience-ready static release (never deploy)
+name: Build KinoLab public launch metadata (never deploy)
 on:
   push:
     branches:
-      - feature/kinolab-audience-readiness-20261110
+      - fix/kinolab-public-launch-meta-20261110
     paths:
       - kinolab-next/**
       - .github/workflows/kinolab-prepare-static.yml
 permissions:
   contents: write
 concurrency:
-  group: kinolab-audience-release-preparation
+  group: kinolab-launch-metadata-preparation
   cancel-in-progress: true
 jobs:
   stage:
-    if: github.repository == 'aanun1740-netizen/CineWave' && github.ref == 'refs/heads/feature/kinolab-audience-readiness-20261110'
+    if: github.repository == 'aanun1740-netizen/CineWave' && github.ref == 'refs/heads/fix/kinolab-public-launch-meta-20261110'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
       # pull-request workflow, which passed for this exact source revision.
       - name: Stage verified output at Pages branch root without touching main
         run: |
-          test "$GITHUB_REF" = "refs/heads/feature/kinolab-audience-readiness-20261110"
+          test "$GITHUB_REF" = "refs/heads/fix/kinolab-public-launch-meta-20261110"
           test -f kinolab-next/dist/index.html
           test -f kinolab-next/dist/admin/index.html
           cp -a kinolab-next/dist/. ./
@@ -51,7 +51,7 @@ jobs:
           git add -A -- index.html admin assets data licenses privacy.html robots.txt sitemap.xml .nojekyll
           if ! git diff --cached --quiet; then
             git commit -m "build: stage verified KinoLab static site for controlled main merge"
-            git push origin "HEAD:feature/kinolab-audience-readiness-20261110"
+            git push origin "HEAD:fix/kinolab-public-launch-meta-20261110"
           fi
       - name: Keep browser diagnostics if validation fails
         if: failure()
