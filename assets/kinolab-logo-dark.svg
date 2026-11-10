@@ -5,5 +5,5 @@
 <path d="M48 51L88 10H131L76 61Z"/>
 <path d="M48 69L76 61L131 110H88Z"/>
 </g>
-<text x="150" y="89" fill="#20152E" font-family="Inter,Arial,Helvetica,sans-serif" font-size="76" font-weight="800" letter-spacing="-3.8">KinoLab</text>
+<text x="150" y="89" fill="#20152E" font-family="Inter,Arial,Helvetica,sans-serif" font-size="76" font-weight="600" letter-spacing="-2.3">KinoLab</text>
 </svg>
