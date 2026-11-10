@@ -1,0 +1,44 @@
+name: Restore missing KinoLab player chunk
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/kinolab-recover-missing-player.yml]
+permissions:
+  contents: write
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kinolab-next/package-lock.json
+      - name: Build reviewed production assets from the current main source
+        working-directory: kinolab-next
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+      - name: Restore every player JS chunk referenced by the live index
+        run: |
+          set -euo pipefail
+          cp kinolab-next/dist/assets/player-*.js assets/
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          for (const match of html.matchAll(/(?:\.\/)?assets\/([A-Za-z0-9_-]+)\.js/g)) {
+            const asset = match[0].replace(/^\.\//, '');
+            if (!fs.existsSync(asset)) throw Error('Still missing: ' + asset);
+          }
+          console.log('Every referenced JavaScript asset exists');
+          NODE
+          git add assets/player-*.js
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'fix(pages): restore missing KinoLab player JavaScript chunk'
+            git push origin HEAD:main
+          fi
