@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-const live = "https://aanun1740-netizen.github.io/CineWave/";
+const live = "https://kinolabmovies.com/";
 
 test("publicly deployed KinoLab shows the real catalog and languages", async ({page}, info) => {
   const errors = [];
@@ -26,6 +26,6 @@ test("publicly deployed admin panel is available but locked until login", async 
   page.on("pageerror", error => errors.push(error.message));
   const response = await page.goto(live+"admin/",{waitUntil:"domcontentloaded"});
   expect(response?.ok()).toBe(true);
-  await expect(page.getByRole("button",{name:"Մուտք գործել"})).toBeVisible({timeout:20000});
+  await expect(page.getByRole("button",{name:"Sign in securely"})).toBeVisible({timeout:20000});
   expect(errors).toEqual([]);
 });
