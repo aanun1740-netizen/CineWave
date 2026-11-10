@@ -46,43 +46,36 @@ export default {
       return reply({ error: "message_too_long" }, 413);
     }
 
-    // A user-supplied ID must never determine quota ownership. Verify the
-    // signed-in user's JWT with Supabase Auth and obtain user.id from there.
-    const jwt = req.headers.get("Authorization")?.match(/^Bearer (\S+)$/i)?.[1];
-    if (!jwt) {
-      return reply({ error: "sign_in_required" }, 401);
-    }
-
+    // Browser guests receive five daily questions; signed-in members have
+    // no KinoLab-imposed question count or twenty-second cooldown.
+    const jwt = req.headers.get("Authorization")?.match(/^Bearer (\\S+)$/i)?.[1] || "";
     const url = Deno.env.get("SUPABASE_URL");
-    const publishableKey =
-      Deno.env.get("SUPABASE_ANON_KEY") ||
+    const publishableKey = Deno.env.get("SUPABASE_ANON_KEY") ||
       JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}").default;
-    const secretKey =
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
+    const secretKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
       JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default;
     if (!url || !publishableKey || !secretKey) {
-      console.error("KinoLab AI Supabase configuration unavailable");
+      console.error("KinoLab AI configuration unavailable");
       return reply({ error: "server_unavailable" }, 503);
     }
-
-    const userClient = createClient(url, publishableKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-    let userId: string;
-    try {
-      const { data: { user }, error } = await userClient.auth.getUser(jwt);
-      if (error || !user?.id) {
-        return reply({ error: "sign_in_required" }, 401);
+    let userId: string | null = null;
+    if (jwt) {
+      const authClient = createClient(url, publishableKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      try {
+        const { data: { user }, error } = await authClient.auth.getUser(jwt);
+        if (error || !user?.id) return reply({ error: "sign_in_required" }, 401);
+        userId = user.id;
+      } catch {
+        return reply({ error: "auth_unavailable" }, 503);
       }
-      userId = user.id;
-    } catch {
-      console.error("KinoLab AI authentication service unavailable");
-      return reply({ error: "auth_unavailable" }, 503);
     }
 
     let message: string;
     let language = "hy";
     let history: {role: string; text: string}[] = [];
+    let guestId = "";
     try {
       const raw = await req.text();
       if (raw.length > MAX_BODY_CHARS) {
@@ -90,6 +83,7 @@ export default {
       }
       const body = JSON.parse(raw);
       message = body?.message;
+      if (typeof body?.guest_id === "string") guestId = body.guest_id;
       if (["hy", "ru", "en"].includes(body?.language)) language = body.language;
       if (Array.isArray(body?.history)) history = body.history.slice(-4).filter((h: any) => (h?.role === "user" || h?.role === "assistant") && typeof h.text === "string").map((h: any) => ({role: h.role, text: h.text.slice(0, 250)}));
     } catch {
