@@ -1,19 +1,19 @@
-name: Build KinoLab Studio dashboard fix on PR branch (never deploy)
+name: Build KinoLab My List fix on PR branch (never deploy)
 on:
   push:
     branches:
-      - fix/kinolab-admin-summary-20261110
+      - fix/kinolab-external-mylist-20261110
     paths:
       - kinolab-next/**
       - .github/workflows/kinolab-prepare-static.yml
 permissions:
   contents: write
 concurrency:
-  group: kinolab-studio-fix-preparation
+  group: kinolab-mylist-fix-preparation
   cancel-in-progress: false
 jobs:
   stage:
-    if: github.repository == 'aanun1740-netizen/CineWave' && github.ref == 'refs/heads/fix/kinolab-admin-summary-20261110'
+    if: github.repository == 'aanun1740-netizen/CineWave' && github.ref == 'refs/heads/fix/kinolab-external-mylist-20261110'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
           npx playwright test e2e/production-readonly.spec.js --project=desktop --project=mobile
       - name: Stage verified output at Pages branch root without touching main
         run: |
-          test "$GITHUB_REF" = "refs/heads/fix/kinolab-admin-summary-20261110"
+          test "$GITHUB_REF" = "refs/heads/fix/kinolab-external-mylist-20261110"
           test -f kinolab-next/dist/index.html
           test -f kinolab-next/dist/admin/index.html
           cp -a kinolab-next/dist/. ./
@@ -54,7 +54,7 @@ jobs:
           git add -A -- index.html admin assets data licenses privacy.html robots.txt sitemap.xml .nojekyll
           if ! git diff --cached --quiet; then
             git commit -m "build: stage verified KinoLab static site for controlled main merge"
-            git push origin "HEAD:fix/kinolab-admin-summary-20261110"
+            git push origin "HEAD:fix/kinolab-external-mylist-20261110"
           fi
       - name: Keep browser diagnostics if validation fails
         if: failure()
