@@ -9,10 +9,12 @@ import {
   approvedPlayback,
 } from "./domain";
 describe("migrated domain contracts", () => {
-  it("uses Pages-safe fallback and Armenian default with persisted language", () => {
-    expect(initialLanguage()).toBe("hy");
+  it("uses Pages-safe fallback and English default with persisted language", () => {
+    expect(initialLanguage()).toBe("en");
     localStorage.setItem("cinewave:language", "ru");
     expect(initialLanguage()).toBe("ru");
+    localStorage.setItem("cinewave:language", "invalid");
+    expect(initialLanguage()).toBe("en");
     expect(mapCatalogMovie({ id: 1 }).img).toBe(POSTER_FALLBACK);
     expect(POSTER_FALLBACK).toBe("/assets/poster-fallback.svg");
   });
