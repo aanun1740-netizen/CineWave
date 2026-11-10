@@ -24,7 +24,7 @@ export function filterMovies(
     genre = "All",
     route = "home",
     list = new Set(),
-    language = "hy",
+    language = "en",
   } = {},
 ) {
   const normalize = (value) => String(value ?? "").normalize("NFC").toLocaleLowerCase();
@@ -58,9 +58,9 @@ export function writeStored(key, value) {
 export function initialLanguage() {
   try {
     const value = localStorage.getItem("cinewave:language");
-    return ["hy", "ru", "en"].includes(value) ? value : "hy";
+    return ["hy", "ru", "en"].includes(value) ? value : "en";
   } catch {
-    return "hy";
+    return "en";
   }
 }
 export function routeFromHash(hash = location.hash) {
