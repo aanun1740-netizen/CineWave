@@ -1,0 +1,36 @@
+name: Export verified KinoLab public catalog and Storage backup
+
+on:
+  push:
+    branches:
+      - backup/kinolab-public-snapshot-2026-11-10
+    paths:
+      - .github/workflows/kinolab-export-backup.yml
+      - backup_tools/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: github.repository == 'aanun1740-netizen/CineWave'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Export public film data and download/verify all 64 public pictures
+        run: python backup_tools/export_public_backup.py
+      - name: Upload verified public content snapshot (not a private DB backup)
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinolab-public-content-backup-2026-11-10
+          path: kinolab-backup/
+          if-no-files-found: error
+          retention-days: 30
