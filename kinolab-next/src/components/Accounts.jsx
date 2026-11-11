@@ -64,7 +64,7 @@ export default function Accounts({
     if (["profile", "recover"].includes(route) && !account.session)
       navigate("login", true);
     if (["login", "register"].includes(route) && account.session)
-      navigate("profile", true);
+      navigate("home", true);
   }, [route, account.ready, account.session]);
   async function submit(event) {
     event.preventDefault();
@@ -89,8 +89,11 @@ export default function Accounts({
         }
         if (!data?.session) throw Error("missing_session");
         setConfirmationPending(false);
-        await account.refresh(data.session);
-        navigate("profile", true);
+        // A successful sign-in should return to the cinema immediately.
+        // Refresh member details in parallel; loading favorites is not a
+        // prerequisite to leave the sign-in form.
+        void account.refresh(data.session);
+        navigate("home", true);
       } else if (route === "register") {
         setConfirmationPending(false);
         if (values.password !== values.confirm) {
@@ -108,8 +111,9 @@ export default function Accounts({
         });
         if (error) throw error;
         if (data.session) {
-          await account.refresh(data.session);
-          navigate("profile", true);
+          // Projects that allow immediate signup sessions should also open Home.
+          void account.refresh(data.session);
+          navigate("home", true);
         } else {
           // Registration is NOT complete until the email is confirmed.
           // Keep the guidance visible instead of dropping into a login form.

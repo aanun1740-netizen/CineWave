@@ -710,6 +710,82 @@ describe("React storefront", () => {
     expect(location.hash).toBe("#/login");
   });
 
+  it("automatically closes the login page and opens Home after successful sign-in", async () => {
+    history.replaceState(null, "", "#/login");
+    const signedInSession = {
+      access_token: "test-session",
+      user: {id: "viewer-login", email: "viewer@example.invalid", user_metadata:{display_name:"Venom"}},
+    };
+    mocks.signIn.mockResolvedValue({data:{session:signedInSession},error:null});
+    const profileQuery = {
+      select: vi.fn(() => profileQuery),
+      eq: vi.fn(() => profileQuery),
+      maybeSingle: vi.fn(async () => ({data:{display_name:"Venom",preferred_language:"hy"},error:null})),
+    };
+    const listQuery = {
+      select: vi.fn(() => listQuery),
+      eq: vi.fn(async () => ({data:[],error:null})),
+    };
+    mocks.from.mockImplementation(table => table === "profiles" ? profileQuery : listQuery);
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText("Էլեկտրոնային հասցե"),"viewer@example.invalid");
+    await user.type(screen.getByLabelText("Գաղտնաբառ"),"ValidPass2026");
+    await user.click(within(document.querySelector(".account-form")).getByRole("button",{name:"Մուտք գործել"}));
+    await waitFor(() => expect(location.hash).toBe("#/home"));
+    expect(document.querySelector("#accountPages")).toBeNull();
+    expect(screen.getByRole("navigation",{name:"Գլխավոր նավարկում"})).toBeTruthy();
+    expect(mocks.signIn).toHaveBeenCalledWith({email:"viewer@example.invalid",password:"ValidPass2026"});
+    // Explicitly opening the member profile later must still work.
+    await user.click(screen.getByRole("button",{name:"Ձեր անկյունը"}));
+    await user.click(within(screen.getByRole("dialog")).getByRole("button",{name:"Ձեր պրոֆիլը"}));
+    expect(location.hash).toBe("#/profile");
+    expect(await screen.findByRole("heading",{name:"Ձեր պրոֆիլը"})).toBeTruthy();
+  });
+
+  it("redirects an already authenticated visitor away from login, but preserves explicit profile access", async () => {
+    history.replaceState(null, "", "#/login");
+    const session={access_token:"test-token",user:{id:"returning-viewer",email:"returning@example.invalid"}};
+    mocks.getSession.mockResolvedValue({data:{session},error:null});
+    const profileQuery={
+      select:vi.fn(()=>profileQuery),
+      eq:vi.fn(()=>profileQuery),
+      maybeSingle:vi.fn(async()=>({data:{display_name:"Returning Viewer",preferred_language:"hy"},error:null})),
+    };
+    const listQuery={select:vi.fn(()=>listQuery),eq:vi.fn(async()=>({data:[],error:null}))};
+    mocks.from.mockImplementation(table=>table==="profiles"?profileQuery:listQuery);
+    const user=userEvent.setup();
+    render(<App />);
+    await waitFor(()=>expect(location.hash).toBe("#/home"));
+    expect(document.querySelector("#accountPages")).toBeNull();
+    await user.click(screen.getByRole("button",{name:"Ձեր անկյունը"}));
+    await user.click(within(screen.getByRole("dialog")).getByRole("button",{name:"Ձեր պրոֆիլը"}));
+    expect(location.hash).toBe("#/profile");
+    expect(await screen.findByRole("heading",{name:"Ձեր պրոֆիլը"})).toBeTruthy();
+  });
+
+  it("opens Home when signup returns an immediate confirmed session", async () => {
+    history.replaceState(null, "", "#/register");
+    const session={access_token:"test-token",user:{id:"new-viewer",email:"new@example.invalid"}};
+    mocks.signUp.mockResolvedValue({data:{session},error:null});
+    const profileQuery={
+      select:vi.fn(()=>profileQuery),
+      eq:vi.fn(()=>profileQuery),
+      maybeSingle:vi.fn(async()=>({data:null,error:null})),
+    };
+    const listQuery={select:vi.fn(()=>listQuery),eq:vi.fn(async()=>({data:[],error:null}))};
+    mocks.from.mockImplementation(table=>table==="profiles"?profileQuery:listQuery);
+    const user=userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText("Ցուցադրվող անուն"),"New Viewer");
+    await user.type(screen.getByLabelText("Էլեկտրոնային հասցե"),"new@example.invalid");
+    await user.type(screen.getByLabelText("Նոր գաղտնաբառ (առնվազն 8 նիշ)"),"ValidPass2026");
+    await user.type(screen.getByLabelText("Կրկնել գաղտնաբառը"),"ValidPass2026");
+    await user.click(within(document.querySelector(".account-form")).getByRole("button",{name:"Ստեղծել հաշիվ"}));
+    await waitFor(()=>expect(location.hash).toBe("#/home"));
+    expect(document.querySelector("#accountPages")).toBeNull();
+  });
+
   it("submits sign-in through existing Supabase auth and handles failure", async () => {
     mocks.signIn.mockResolvedValue({ error: Error("bad credentials") });
     history.replaceState(null, "", "#/login");
