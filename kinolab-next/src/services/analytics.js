@@ -15,8 +15,8 @@ export function recordMetric(event, movieKey = "", language = "hy") {
   const device = window.innerWidth <= 767 ? "mobile" : "desktop";
   // Supabase client sends a valid session (or anonymous) bearer token.
   // This is non-blocking and must never interrupt film playback.
-  void client.rpc("kinolab_record_event", {
+  void Promise.resolve(client.rpc("kinolab_record_event", {
     p_event: event, p_movie_key: movieKey,
     p_language: lang, p_device: device,
-  }).catch(() => {});
+  })).catch(() => {});
 }
