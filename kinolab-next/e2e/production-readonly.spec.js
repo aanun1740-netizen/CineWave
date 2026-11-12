@@ -8,10 +8,18 @@ test.setTimeout(60_000);
 test("production catalog, real posters, language selection and responsive layout", async ({page, request}, info) => {
   const pageErrors = [];
   const unexpectedWrites = [];
+  const aggregateEvents = [];
+  // Verify tracking payloads without writing test traffic into the real
+  // Supabase project (the candidate is only a preview).
+  await page.route("**/rest/v1/rpc/kinolab_record_event", async route => {
+    aggregateEvents.push(route.request().postDataJSON());
+    await route.fulfill({status: 204});
+  });
   page.on("pageerror", (error) => pageErrors.push(error.message));
   page.on("request", (req) => {
     if (req.url().startsWith(prodOrigin + "/") &&
-        !["GET", "HEAD", "OPTIONS"].includes(req.method())) {
+        !["GET", "HEAD", "OPTIONS"].includes(req.method()) &&
+        new URL(req.url()).pathname !== "/rest/v1/rpc/kinolab_record_event") {
       unexpectedWrites.push({method: req.method(), path: new URL(req.url()).pathname});
     }
   });
@@ -41,6 +49,12 @@ test("production catalog, real posters, language selection and responsive layout
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(pageErrors).toEqual([]);
   expect(unexpectedWrites).toEqual([]);
+  expect(aggregateEvents.length).toBeGreaterThanOrEqual(1);
+  for (const event of aggregateEvents) {
+    expect(Object.keys(event).sort()).toEqual(["p_device","p_event","p_language","p_movie_key"]);
+    expect(event.p_event).toBe("page_view");
+    expect(event.p_movie_key).toBe("");
+  }
   await page.screenshot({path: info.outputPath("kinolab-catalog.png"), fullPage: true});
 });
 
