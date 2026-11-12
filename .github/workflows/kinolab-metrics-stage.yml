@@ -1,0 +1,70 @@
+name: Stage KinoLab admin analytics build
+on:
+  push:
+    branches: [feature/kinolab-admin-members-traffic-20261112]
+    paths: [.github/workflows/kinolab-metrics-stage.yml]
+permissions:
+  contents: write
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: true}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: kinolab-next/package-lock.json
+      - name: Run KinoLab tests and check production dependencies
+        working-directory: kinolab-next
+        run: |
+          npm ci --ignore-scripts
+          npm audit --omit=dev --audit-level=high
+          npm test
+      - name: Build KinoLab public and admin bundles
+        working-directory: kinolab-next
+        run: npm run build
+      - name: Stage complete production assets; keep admin CSP
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const existing=fs.readFileSync('admin/index.html','utf8');
+          const csp=existing.match(/<meta http-equiv="Content-Security-Policy"[^>]*>/)?.[0];
+          if(!csp)throw Error('Existing admin content security policy is missing');
+          let admin=fs.readFileSync('kinolab-next/dist/admin/index.html','utf8');
+          if(!admin.includes('Content-Security-Policy'))admin=admin.replace('<head>', '<head>\n    '+csp);
+          if(!admin.includes('Content-Security-Policy'))throw Error('Admin CSP lost');
+          fs.writeFileSync('admin/index.html',admin);
+          NODE
+          cp kinolab-next/dist/index.html index.html
+          cp kinolab-next/dist/assets/* assets/
+          cp kinolab-next/dist/privacy.html privacy.html
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const siteRoot='https://kinolabmovies.com/';
+          for(const p of ['index.html','admin/index.html']){
+            const html=fs.readFileSync(p,'utf8');
+            const assets=[...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(x=>x[1])
+              .filter(x=>/^(?:\.\.\/|\.\/|\/)assets\//.test(x));
+            if(assets.length < 4)throw Error('Incomplete '+p+' bundle');
+            for(const a of assets){
+              const name=new URL(a,siteRoot+p).pathname.replace(/^\//,'');
+              if(!fs.existsSync(name)||fs.statSync(name).size<100)throw Error('Missing '+name);
+            }
+          }
+          const source=fs.readFileSync('kinolab-next/config.js','utf8');
+          if(!source.includes('analyticsEnabled: true'))throw Error('Analytics disabled in release');
+          if(!fs.readFileSync('privacy.html','utf8').includes('aggregate counts'))throw Error('Privacy disclosure missing');
+          console.log('KinoLab admin & public deployment assets validated');
+          NODE
+          git add index.html admin/index.html privacy.html assets/
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(metrics): stage verified admin members and traffic release'
+            git push origin HEAD:feature/kinolab-admin-members-traffic-20261112
+          fi
