@@ -757,7 +757,9 @@ export default function App() {
                     aria-label={t("releaseYear")}
                     onChange={(event) => {
                       setYear(event.target.value);
-                      search(query);
+                      // Keep Movies, TV Shows and My List in their current sections.
+                      // From Discover, open the movie results view.
+                      if (listing === "home") search(query);
                     }}
                   >
                     <option value="All">{t("allYears")}</option>
