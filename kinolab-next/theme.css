@@ -921,3 +921,55 @@ body.cinewave-site[data-theme="light"] .account-card--profile .account-feedback-
   }
   body.cinewave-site .account-card--profile { padding: 24px 20px; }
 }
+
+/* KinoLab catalog release year filter: subtle lime, compact on phones. */
+body.cinewave-site .genre-year-filter {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin: -5px 0 13px;
+  color: #cfc7d8;
+  font-size: 12px;
+}
+body.cinewave-site .genre-year-filter label {
+  font-weight: 600;
+  cursor: pointer;
+}
+body.cinewave-site .genre-year-filter select {
+  min-width: 152px;
+  min-height: 41px;
+  padding: 9px 31px 9px 12px;
+  color: #f7f5f0;
+  background: #251c33;
+  border: 1px solid rgba(212,244,88,.34);
+  border-radius: 9px;
+  font: inherit;
+  cursor: pointer;
+  color-scheme: dark;
+}
+body.cinewave-site .genre-year-filter select:hover {
+  border-color: rgba(212,244,88,.6);
+}
+body.cinewave-site .genre-year-filter select:focus-visible {
+  outline: 2px solid #d4f458;
+  outline-offset: 2px;
+}
+body.cinewave-site[data-theme="light"] .genre-year-filter { color: #20152e; }
+body.cinewave-site[data-theme="light"] .genre-year-filter select {
+  color: #20152e;
+  color-scheme: light;
+  background: #fff;
+  border-color: rgba(32,21,46,.28);
+}
+@media (max-width: 600px) {
+  body.cinewave-site .genre-year-filter {
+    justify-content: space-between;
+    margin: 0 0 12px;
+    font-size: 11px;
+  }
+  body.cinewave-site .genre-year-filter select {
+    min-width: 135px;
+    min-height: 44px;
+  }
+}
