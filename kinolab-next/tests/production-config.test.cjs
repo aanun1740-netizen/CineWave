@@ -11,7 +11,7 @@ test("production candidate points only at the existing public production Supabas
   assert.doesNotMatch(config, /zayssiouqexwdicudalc/);
   assert.match(config, /sb_publishable_/);
   assert.doesNotMatch(config, /sb_secret_|service_role/i);
-  assert.match(config, /analyticsEnabled: false/);
+  assert.match(config, /analyticsEnabled: true/);
 });
 test("Vite uses relative assets for root domain and GitHub Pages project path", () => {
   const vite = read("vite.config.js");
