@@ -34,6 +34,7 @@ export default function App() {
     [proofs, setProofs] = useState([]),
     [query, setQuery] = useState(""),
     [genre, setGenre] = useState("All"),
+    [year, setYear] = useState("All"),
     [heroIndex, setHeroIndex] = useState(0),
     [profile, setProfile] = useState(false),
     [ai, setAI] = useState(false),
@@ -120,6 +121,7 @@ export default function App() {
       underlay.current = next;
       setQuery("");
       setGenre("All");
+      setYear("All");
     }
     setProfile(false);
     history[replace ? "replaceState" : "pushState"](null, "", `#/${next}`);
@@ -134,6 +136,7 @@ export default function App() {
         underlay.current = next;
         setQuery("");
         setGenre("All");
+        setYear("All");
       }
       setRoute(next);
     }
@@ -175,9 +178,9 @@ export default function App() {
     document.body.classList.toggle("account-view", accountPage);
     document.body.classList.toggle(
       "is-browsing",
-      Boolean(query || genre !== "All" || listing !== "home"),
+      Boolean(query || genre !== "All" || year !== "All" || listing !== "home"),
     );
-  }, [accountPage, query, genre, listing]);
+  }, [accountPage, query, genre, year, listing]);
   useEffect(() => {
     function key(e) {
       if (e.key === "Escape") {
@@ -263,25 +266,26 @@ export default function App() {
     .slice(0, 5), [movies, watchable]);
   // Rotate featured movies every six seconds; preserve manual dot selection.
   useEffect(() => {
-    if (choices.length < 2 || route !== "home" || query || genre !== "All") return;
+    if (choices.length < 2 || route !== "home" || query || genre !== "All" || year !== "All") return;
     const timer = window.setInterval(() => setHeroIndex(index => (index + 1) % choices.length), 6000);
     return () => window.clearInterval(timer);
-  }, [choices.length, route, query, genre]);
+  }, [choices.length, route, query, genre, year]);
   const featured = choices[heroIndex % Math.max(choices.length, 1)],
     info = featured ? localizedMovie(featured, language) : null;
   const filtered = useMemo(() => filterMovies(movies, {
     query,
     genre,
+    year,
     route: listing,
     list: account.list,
     language,
-  }), [movies, query, genre, listing, account.list, language]);
+  }), [movies, query, genre, year, listing, account.list, language]);
   let movieId = "";
   try {
     movieId = decodeURIComponent(route.split("/").slice(1).join("/"));
   } catch {}
   const current = movies.find((movie) => movie.id === movieId),
-    home = listing === "home" && !query && genre === "All";
+    home = listing === "home" && !query && genre === "All" && year === "All";
   // A pasted /watch hash must not bypass the same 5-film guest allowance.
   // An existing choice is replayable; a new choice consumes one slot.
   useEffect(() => {
@@ -294,7 +298,10 @@ export default function App() {
       const p = playback.progressFor(movie.id);
       return p > 0 && p < 99;
     });
-  const years = movies.map((movie) => movie.year).filter(Boolean);
+  const years = useMemo(() => [...new Set(movies
+    .map((movie) => Number(movie.year))
+    .filter((value) => Number.isInteger(value) && value >= 1888 && value <= 2100))]
+    .sort((a, b) => b - a), [movies]);
   function notice(message) {
     setToast(message);
     clearTimeout(toastTimer.current);
@@ -741,6 +748,23 @@ export default function App() {
                   >
                     {t("allGenres")}
                   </button>
+                </div>
+                <div className="genre-year-filter">
+                  <label htmlFor="yearFilter">{t("releaseYear")}</label>
+                  <select
+                    id="yearFilter"
+                    value={year}
+                    aria-label={t("releaseYear")}
+                    onChange={(event) => {
+                      setYear(event.target.value);
+                      search(query);
+                    }}
+                  >
+                    <option value="All">{t("allYears")}</option>
+                    {years.map((value) => (
+                      <option value={String(value)} key={value}>{value}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="genre-list">
                   {["All", ...availableGenres(movies)].map((value, i) => (
