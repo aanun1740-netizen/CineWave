@@ -10,9 +10,9 @@ const words = {
     languages:"Ըստ լեզվի",devices:"Ըստ սարքի",daily:"Օրական վիճակագրություն",
     movie:"Ֆիլմ",count:"Բացումներ",date:"Օր",mobile:"Հեռախոս",desktop:"Համակարգիչ",
     loading:"Բեռնում ենք հաշվարկները…",empty:"Դեռ գրանցված տվյալներ չկան",
-    missing:"Հաշվիչը դեռ ակտիվ չէ․ նախ կիրառեք թեստային SQL փոփոխությունը և միացրեք հաշվարկը",
+    missing:"Վիճակագրության ծառայությունը հասանելի չէ։ Ստուգեք ադմինի իրավունքը և կապը։",
     info:"Միայն ընդհանուր քանակներ՝ առանց այցելուների ինքնության, IP-ի կամ որոնման բառերի։ Մեկ մարդը կարող է մի քանի բացում կատարել։ Սրանք եզակի այցելուներ չեն։ Ժամերը՝ UTC։",
-    limits:"Արդյունքները մոտավոր են․ ավտոմատացված այցերը կարող են ազդել հաշվիչի վրա։",
+    limits:"Հաշվարկները սկսվում են վիճակագրությունը միացնելու պահից։ Նախորդ այցելությունները հետադարձ չեն հաշվարկվում։ Ավտոմատացված այցերն էլ կարող են ազդել թվերի վրա։",
   },
   ru: {
     title:"Статистика посещений",period:"Период",days7:"За 7 дней",days30:"За 30 дней",refresh:"Обновить",
@@ -20,9 +20,9 @@ const words = {
     top:"Самые открываемые фильмы",languages:"По языкам",devices:"По устройствам",daily:"По дням",
     movie:"Фильм",count:"Открытия",date:"Дата",mobile:"Телефон",desktop:"Компьютер",
     loading:"Загрузка статистики…",empty:"Данных пока нет",
-    missing:"Счётчик пока не включён: сначала примените SQL в тестовой базе и включите сбор данных",
+    missing:"Статистика сейчас недоступна. Проверьте доступ администратора и соединение.",
     info:"Только суммарные счётчики, без персональных данных, IP или текста поиска. Повторные открытия учитываются. Это не уникальные посетители. Время UTC.",
-    limits:"Данные приблизительные: автоматические запросы могут повлиять на счётчики.",
+    limits:"Сбор ведётся только с момента включения статистики. Прошлые посещения не восстановятся. Автоматические запросы могут влиять на счётчики.",
   },
   en: {
     title:"Traffic analytics",period:"Period",days7:"Last 7 days",days30:"Last 30 days",refresh:"Refresh",
@@ -30,9 +30,9 @@ const words = {
     top:"Most opened films",languages:"By language",devices:"By device",daily:"Daily activity",
     movie:"Film",count:"Opens",date:"Date",mobile:"Mobile",desktop:"Desktop",
     loading:"Loading aggregates…",empty:"No events recorded yet",
-    missing:"Metrics are not active yet: apply the staging SQL migration, then enable collection",
+    missing:"Metrics are unavailable. Check the administrator session and connection.",
     info:"Aggregate counts only; no visitor identities, IPs or search text. One person may contribute several events. These are not unique visitors. Dates use UTC.",
-    limits:"Approximate: automated traffic may affect totals.",
+    limits:"Counting starts when analytics is enabled; previous visits cannot be reconstructed. Automated traffic may affect totals.",
   }
 };
 
