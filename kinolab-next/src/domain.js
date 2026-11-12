@@ -22,6 +22,7 @@ export function filterMovies(
   {
     query = "",
     genre = "All",
+    year = "All",
     route = "home",
     list = new Set(),
     language = "en",
@@ -32,6 +33,7 @@ export function filterMovies(
   return movies.filter(
     (movie) =>
       (genre === "All" || movie.genres.includes(genre)) &&
+      (year === "All" || String(movie.year ?? "") === String(year)) &&
       (!q ||
         [
           ...Object.values(movie.titles || {}),
