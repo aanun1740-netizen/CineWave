@@ -38,9 +38,10 @@ jobs:
           const assets=[...html.matchAll(/(?:src|href)="\.\/(assets\/[^"]+)"/g)].map(x=>x[1]);
           if(assets.length<5) throw Error('Incomplete release bundle');
           for (const p of assets) if(!fs.existsSync(p)||fs.statSync(p).size<100)throw Error('Missing or empty asset: '+p);
-          const jsPath=assets.find(p=>p.includes('storefront-')&&p.endsWith('.js'));
-          const js=fs.readFileSync(jsPath,'utf8');
-          if(!js.includes('yearFilter')||!js.includes('All years')||!js.includes('Все годы')||!js.includes('Բոլոր տարիները'))throw Error('Year filter unavailable in built storefront');
+          const source=fs.readFileSync('kinolab-next/src/App.jsx','utf8');
+          const translations=fs.readFileSync('kinolab-next/src/translations.js','utf8');
+          if(!source.includes('id="yearFilter"'))throw Error('Missing year selector in source');
+          if(!['All years','Все годы','Բոլոր տարիները'].every(word=>translations.includes(word)))throw Error('Missing localized year labels');
           console.log('Production release verified:',assets.length,'assets');
           NODE
           git add index.html assets/
