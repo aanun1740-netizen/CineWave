@@ -4,7 +4,7 @@
 window.CINEWAVE_CONFIG = Object.freeze({
   url: "https://ysecowknittmmmbixgtu.supabase.co",
   key: "sb_publishable_aTNkxAKz9OG-JJVO2X48Rw_9vnE_8Mj",
-  analyticsEnabled: false
+  analyticsEnabled: true
 });
 // Retain compatibility with the existing React Auth and backend clients.
 window.CineWaveStaging = Object.freeze({

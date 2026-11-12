@@ -25,6 +25,8 @@ export default function Admin() {
     [authorized, setAuthorized] = useState(false),
     [rows, setRows] = useState([]),
     [externalRows, setExternalRows] = useState([]),
+    [memberCounts, setMemberCounts] = useState(null),
+    [membersRefresh, setMembersRefresh] = useState(0),
     [view, setView] = useState("overview"),
     [notice, setNotice] = useState("Sign in to continue."),
     [busy, setBusy] = useState(false),
@@ -52,6 +54,7 @@ export default function Admin() {
     state.current.authorized = false;
     setRows([]);
     setExternalRows([]);
+    setMemberCounts(null);
     setEditing(null);
     setDirty(false);
     setValues(empty());
@@ -182,6 +185,19 @@ export default function Admin() {
       window.removeEventListener("focus", focus);
     };
   }, []);
+  useEffect(() => {
+    if (!authorized || !session?.user?.id) return;
+    let active = true;
+    void Promise.resolve(client.rpc("kinolab_admin_user_counts"))
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (!error && data && Number.isFinite(Number(data.registered_viewers)))
+          setMemberCounts(data);
+        else setMemberCounts(null);
+      })
+      .catch(() => { if (active) setMemberCounts(null); });
+    return () => { active = false; };
+  }, [authorized, session?.user?.id, membersRefresh]);
   useEffect(() => {
     const before = (e) => {
       if (dirty) {
@@ -637,7 +653,7 @@ export default function Admin() {
                       ? setNotice(
                           "Save or cancel local edits before refreshing.",
                         )
-                      : loadMovies()
+                      : (setMembersRefresh(x => x+1), loadMovies())
                   }
                 >
                   {t("Refresh")}
@@ -666,6 +682,9 @@ export default function Admin() {
                         externalRows.filter((row) => !row.is_published).length,
                     ],
                     ["Approved playback", rows.filter(model.ready).length],
+                    [({hy:"Գրանցված օգտատերեր",ru:"Зарегистрированные пользователи",en:"Registered members"})[language], memberCounts ? Number(memberCounts.registered_viewers || 0) : "—"],
+                    [({hy:"Հաստատված էլ․ հասցեներ",ru:"Подтверждённые аккаунты",en:"Confirmed members"})[language], memberCounts ? Number(memberCounts.confirmed_viewers || 0) : "—"],
+                    [({hy:"Նոր օգտատերեր՝ 7 օրում",ru:"Новые за 7 дней",en:"New members (7 days)"})[language], memberCounts ? Number(memberCounts.new_viewers_7d || 0) : "—"],
                   ].map(([label, count]) => (
                     <article key={label}>
                       <span>{t(label)}</span>
