@@ -93,13 +93,51 @@ describe("React storefront", () => {
     await waitFor(() => expect(document.documentElement.lang).toBe("en"));
     expect(screen.getByRole("searchbox").placeholder).toBe("Search titles...");
     expect(localStorage.getItem("cinewave:language")).toBe("en");
-    await user.selectOptions(screen.getByRole("combobox"), "ru");
+    await user.selectOptions(screen.getByRole("combobox", {name: /Choose language|Выбрать язык|Ընտրել լեզուն/}), "ru");
     await waitFor(() => expect(localStorage.getItem("cinewave:language")).toBe("ru"));
     view.unmount();
     render(<App />);
     await waitFor(() => expect(document.documentElement.lang).toBe("ru"));
     expect(screen.getByRole("searchbox").placeholder).toBe("Поиск фильмов...");
   });
+  it("offers only release years in the live catalog, newest first, and filters movies by year", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findAllByText("Արևի պատմություն");
+    const picker = screen.getByRole("combobox",{name:"Թողարկման տարեթիվ"});
+    expect([...picker.options].map(option=>option.value)).toEqual(["All","2024","2023"]);
+    expect(picker.options[0].textContent).toBe("Բոլոր տարիները");
+    await user.selectOptions(picker,"2024");
+    await waitFor(()=>expect(location.hash).toBe("#/movies"));
+    const catalog = document.querySelector("#catalogSection");
+    expect(within(catalog).getByText("Արևի պատմություն")).toBeTruthy();
+    expect(within(catalog).queryByText("Լուսնի սերիալ")).toBeNull();
+    await user.click(within(catalog).getByRole("button",{name:"Մաքրել զտիչները"}));
+    expect(picker.value).toBe("All");
+  });
+
+  it("keeps the selected TV section when a year is picked, and translates year filter labels", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findAllByText("Արևի պատմություն");
+    await user.click(within(screen.getByRole("navigation",{name:"Գլխավոր նավարկում"})).getByText("Սերիալներ"));
+    const catalog = document.querySelector("#catalogSection");
+    expect(within(catalog).getByText("Լուսնի սերիալ")).toBeTruthy();
+    await user.selectOptions(screen.getByRole("combobox",{name:"Թողարկման տարեթիվ"}),"2024");
+    expect(location.hash).toBe("#/tv");
+    expect(within(catalog).queryByText("Լուսնի սերիալ")).toBeNull();
+    await user.selectOptions(screen.getByRole("combobox",{name:"Թողարկման տարեթիվ"}),"2023");
+    expect(within(catalog).getByText("Լուսնի սերիալ")).toBeTruthy();
+    await user.selectOptions(screen.getByRole("combobox",{name:"Ընտրել լեզուն"}),"ru");
+    expect(screen.getByRole("combobox",{name:"Год выпуска"}).value).toBe("2023");
+    expect(screen.getByRole("option",{name:"Все годы"})).toBeTruthy();
+    await user.selectOptions(screen.getByRole("combobox",{name:"Выбрать язык"}),"en");
+    expect(screen.getByRole("combobox",{name:"Release year"}).value).toBe("2023");
+    expect(screen.getByRole("option",{name:"All years"})).toBeTruthy();
+    await user.click(within(catalog).getByRole("button",{name:"Reset filters"}));
+    expect(screen.getByRole("combobox",{name:"Release year"}).value).toBe("All");
+  });
+
   it("keeps registration, login and password recovery localized as the site language changes", async () => {
     localStorage.removeItem("cinewave:language");
     history.replaceState(null, "", "#/register");
@@ -169,7 +207,7 @@ describe("React storefront", () => {
         "Արևի պատմություն",
       ),
     ).toBeNull();
-    await user.selectOptions(screen.getByRole("combobox"), "en");
+    await user.selectOptions(screen.getByRole("combobox", {name: /Choose language|Выбрать язык|Ընտրել լեզուն/}), "en");
     expect(document.documentElement.lang).toBe("en");
     expect(screen.getByRole("searchbox").placeholder).toBe("Search titles...");
     expect(
@@ -177,13 +215,13 @@ describe("React storefront", () => {
         name: "Ask KinoLab AI",
       }),
     ).toBeTruthy();
-    await user.selectOptions(screen.getByRole("combobox"), "ru");
+    await user.selectOptions(screen.getByRole("combobox", {name: /Choose language|Выбрать язык|Ընտրել լեզուն/}), "ru");
     expect(
       within(document.querySelector(".discovery-note")).getByRole("button", {
         name: "Спросить KinoLab AI",
       }),
     ).toBeTruthy();
-    await user.selectOptions(screen.getByRole("combobox"), "hy");
+    await user.selectOptions(screen.getByRole("combobox", {name: /Choose language|Выбрать язык|Ընտրել լեզուն/}), "hy");
     expect(
       within(document.querySelector(".discovery-note")).getByRole("button", {
         name: "Հարցնել KinoLab AI-ին",
@@ -196,9 +234,9 @@ describe("React storefront", () => {
     await screen.findAllByText("Արևի պատմություն");
     const link = screen.getByRole("link", { name: "Գաղտնիություն և այցելությունների հաշվառում" });
     expect(link.getAttribute("href")).toBe("/CineWave-Test-/privacy.html");
-    await user.selectOptions(screen.getByRole("combobox"), "ru");
+    await user.selectOptions(screen.getByRole("combobox", {name: /Choose language|Выбрать язык|Ընտրել լեզուն/}), "ru");
     expect(screen.getByRole("link", { name: "Конфиденциальность и статистика" })).toBeTruthy();
-    await user.selectOptions(screen.getByRole("combobox"), "en");
+    await user.selectOptions(screen.getByRole("combobox", {name: /Choose language|Выбрать язык|Ընտրել լեզուն/}), "en");
     expect(screen.getByRole("link", { name: "Privacy & usage analytics" })).toBeTruthy();
   });
   it("allows exactly five distinct external films for guests and prompts on a sixth", async () => {
@@ -451,7 +489,7 @@ describe("React storefront", () => {
     expect(document.body.dataset.theme).toBe("light");
     expect(localStorage.getItem("kinolab:theme")).toBe("light");
     expect(document.documentElement.style.colorScheme).toBe("light");
-    await user.selectOptions(screen.getByRole("combobox"), "en");
+    await user.selectOptions(screen.getByRole("combobox", {name: /Choose language|Выбрать язык|Ընտրել լեզուն/}), "en");
     expect(screen.getByRole("button", { name: "Switch to dark mode" })).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Switch to dark mode" }));
     expect(document.body.dataset.theme).toBe("dark");
