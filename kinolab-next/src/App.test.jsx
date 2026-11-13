@@ -120,7 +120,7 @@ describe("React storefront", () => {
     await user.click(screen.getByRole("button",{name:/Թողարկման տարեթիվ/}));
     const years = screen.getByRole("group",{name:"Թողարկման տարեթիվ"});
     expect(within(years).getAllByRole("checkbox").map(checkbox=>checkbox.getAttribute("aria-label")))
-      .toEqual(["2024","2023"]);
+      .toEqual(["Ընտրել բոլորը","2024","2023"]);
     await user.click(within(years).getByRole("checkbox",{name:"2023"}));
     await user.click(within(years).getByRole("button",{name:"Կիրառել"}));
     expect(within(catalog).queryByText("Արևի պատմություն")).toBeNull();
