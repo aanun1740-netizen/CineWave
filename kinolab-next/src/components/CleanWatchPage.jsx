@@ -5,13 +5,13 @@ import { localizedMovie } from "../domain";
 const strings = {
   hy: { unavailable: "Այս ֆիլմի փլեյերը հասանելի չէ։", loading: "Բեռնվում է…", closed: "Վերադառնալ KinoLab",
         locked: "Քո 5 անվճար ֆիլմերի սահմանաչափը լրացել է։ Գրանցվիր անվճար՝ դիտումը շարունակելու համար։",
-        login: "Գրանցվել կամ մուտք գործել", external: "Բացել սկզբնական փլեյերը" },
+        login: "Գրանցվել կամ մուտք գործել" },
   ru: { unavailable: "Плеер недоступен.", loading: "Загрузка…", closed: "Вернуться в KinoLab",
         locked: "Лимит 5 бесплатных фильмов достигнут. Зарегистрируйтесь бесплатно для продолжения.",
-        login: "Войти или зарегистрироваться", external: "Открыть исходный плеер" },
+        login: "Войти или зарегистрироваться" },
   en: { unavailable: "This movie player is unavailable.", loading: "Loading…", closed: "Back to KinoLab",
         locked: "Your five free movie choices have been used. Register free to keep watching.",
-        login: "Log in or register", external: "Open original player" },
+        login: "Log in or register" },
 };
 
 export default function CleanWatchPage({ movie, language, ready, access, locked, onBack }) {
@@ -40,8 +40,6 @@ export default function CleanWatchPage({ movie, language, ready, access, locked,
             allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
             referrerPolicy="strict-origin-when-cross-origin"
             style={{display:"block",width:"100%",height:"100%",border:0,background:"#000"}} />
-          <a href={src} target="_blank" rel="noopener noreferrer" title={t.external}
-            style={{position:"absolute",bottom:12,right:12,background:"#20152ecc",color:"#F7F5F0",fontSize:12,padding:"5px 8px",borderRadius:5}}>{t.external}</a>
         </div>}
     </main>
   );

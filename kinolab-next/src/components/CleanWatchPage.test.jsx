@@ -22,6 +22,8 @@ describe("CleanWatchPage", () => {
     expect(screen.getByTitle("Արշալույս").getAttribute("src"))
       .toBe("https://vkvideo.ru/video_ext.php?oid=-1&id=2");
     expect(screen.queryByText(/Watch movie/i)).toBeNull();
+    expect(screen.queryByText(/Open original player|Открыть исходный плеер|Բացել սկզբնական փլեյերը/i)).toBeNull();
+    expect(document.querySelector('a[target="_blank"]')).toBeNull();
   });
   it("shows the access limit and never loads the iframe before access", () => {
     render(<CleanWatchPage movie={movie} language="en" ready access={false} locked onBack={()=>{}} />);
