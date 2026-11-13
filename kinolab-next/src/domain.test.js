@@ -38,6 +38,19 @@ describe("migrated domain contracts", () => {
         .length,
     ).toBe(1);
   });
+  it("combines multiple genre OR choices, multiple year OR choices and the two groups with AND", () => {
+    const rows = [
+      mapCatalogMovie({ id: 11, title_en: "A", release_date:"2023-01-01", genre_names:["Drama","Adventure"] }),
+      mapCatalogMovie({ id: 12, title_en: "B", release_date:"2024-01-01", genre_names:["Comedy"] }),
+      mapCatalogMovie({ id: 13, title_en: "C", release_date:"2025-01-01", genre_names:["Horror"] }),
+      mapCatalogMovie({ id: 14, title_en: "D", release_date:"2024-01-01", genre_names:["Drama"] }),
+    ];
+    expect(filterMovies(rows, {genre:["Drama","Comedy"],year:["2023","2024"]}).map(item=>item.id))
+      .toEqual(["catalog:11","catalog:12","catalog:14"]);
+    expect(filterMovies(rows, {genre:["Drama"],year:["2024"]}).map(item=>item.id))
+      .toEqual(["catalog:14"]);
+    expect(filterMovies(rows, {genre:[],year:[]}).length).toBe(4);
+  });
   it("finds films by Armenian, Russian, and English descriptions across UI languages", () => {
     const rows = [
       mapCatalogMovie({
