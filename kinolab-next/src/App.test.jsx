@@ -100,89 +100,91 @@ describe("React storefront", () => {
     await waitFor(() => expect(document.documentElement.lang).toBe("ru"));
     expect(screen.getByRole("searchbox").placeholder).toBe("Поиск фильмов...");
   });
-  it("offers a genre dropdown like the year dropdown and combines both filters", async () => {
+  it("opens searchable checkbox grids for genre and year, applies combined multi-select filters", async () => {
     const user = userEvent.setup();
     render(<App />);
     await screen.findAllByText("Արևի պատմություն");
-    const genrePicker = screen.getByRole("combobox", {name:"Ժանր"});
-    const yearPicker = screen.getByRole("combobox", {name:"Թողարկման տարեթիվ"});
-    expect([...genrePicker.options].map(option=>option.value)).toEqual(["All","Drama","Comedy"]);
-    expect(genrePicker.options[0].textContent).toBe("Բոլոր ժանրերը");
-    expect(genrePicker.options[1].textContent).toBe("Դրամա");
-    await user.selectOptions(genrePicker,"Drama");
-    await waitFor(()=>expect(location.hash).toBe("#/movies"));
     const catalog = document.querySelector("#catalogSection");
+    await user.click(screen.getByRole("button", {name:"Ժանր"}));
+    expect(screen.getByRole("group",{name:"Ժանր"})).toBeTruthy();
+    expect(screen.getByRole("checkbox",{name:"Դրամա"})).toBeTruthy();
+    expect(screen.getByRole("checkbox",{name:"Կատակերգություն"})).toBeTruthy();
+    await user.click(screen.getByRole("checkbox",{name:"Դրամա"}));
+    // No changes to catalog until Apply.
+    expect(within(catalog).getByText("Լուսնի սերիալ")).toBeTruthy();
+    await user.click(screen.getByRole("button",{name:"Կիրառել"}));
+    await waitFor(()=>expect(location.hash).toBe("#/movies"));
     expect(within(catalog).getByText("Արևի պատմություն")).toBeTruthy();
     expect(within(catalog).queryByText("Լուսնի սերիալ")).toBeNull();
-    await user.selectOptions(yearPicker,"2023");
+
+    await user.click(screen.getByRole("button",{name:/Թողարկման տարեթիվ/}));
+    const years = screen.getByRole("group",{name:"Թողարկման տարեթիվ"});
+    expect(within(years).getAllByRole("checkbox").map(checkbox=>checkbox.getAttribute("aria-label")))
+      .toEqual(["2024","2023"]);
+    await user.click(within(years).getByRole("checkbox",{name:"2023"}));
+    await user.click(within(years).getByRole("button",{name:"Կիրառել"}));
     expect(within(catalog).queryByText("Արևի պատմություն")).toBeNull();
-    await user.selectOptions(yearPicker,"2024");
+
+    await user.click(screen.getByRole("button",{name:/Թողարկման տարեթիվ/}));
+    await user.click(within(screen.getByRole("group",{name:"Թողարկման տարեթիվ"})).getByRole("checkbox",{name:"2024"}));
+    await user.click(within(screen.getByRole("group",{name:"Թողարկման տարեթիվ"})).getByRole("button",{name:"Կիրառել"}));
     expect(within(catalog).getByText("Արևի պատմություն")).toBeTruthy();
-    await user.click(within(catalog).getByRole("button",{name:"Մաքրել զտիչները"}));
-    expect(genrePicker.value).toBe("All");
-    expect(yearPicker.value).toBe("All");
+
+    // Explicit clear keeps the current section but removes both categories.
+    await user.click(document.querySelector(".multi-filter-reset"));
+    expect(within(catalog).getByText("Արևի պատմություն")).toBeTruthy();
+    expect(location.hash).toBe("#/movies");
+    expect(screen.getByRole("button",{name:"Ժանր"})).toHaveAttribute("aria-expanded","false");
   });
 
-  it("keeps the TV section while selecting genres and translates dropdown options", async () => {
+  it("does not apply a draft when cancelled and keeps TV/My List navigation", async () => {
     const user = userEvent.setup();
     render(<App />);
     await screen.findAllByText("Արևի պատմություն");
     await user.click(within(screen.getByRole("navigation",{name:"Գլխավոր նավարկում"})).getByText("Սերիալներ"));
     const catalog = document.querySelector("#catalogSection");
+    await user.click(screen.getByRole("button",{name:"Ժանր"}));
+    await user.click(screen.getByRole("checkbox",{name:"Դրամա"}));
+    await user.click(screen.getByRole("button",{name:"Չեղարկել"}));
     expect(within(catalog).getByText("Լուսնի սերիալ")).toBeTruthy();
-    await user.selectOptions(screen.getByRole("combobox",{name:"Ժանր"}),"Drama");
+    await user.click(screen.getByRole("button",{name:"Ժանր"}));
+    await user.click(screen.getByRole("checkbox",{name:"Կատակերգություն"}));
+    await user.click(screen.getByRole("button",{name:"Կիրառել"}));
     expect(location.hash).toBe("#/tv");
-    expect(within(catalog).queryByText("Լուսնի սերիալ")).toBeNull();
-    await user.selectOptions(screen.getByRole("combobox",{name:"Ժանր"}),"Comedy");
     expect(within(catalog).getByText("Լուսնի սերիալ")).toBeTruthy();
+
     await user.selectOptions(screen.getByRole("combobox",{name:"Ընտրել լեզուն"}),"ru");
-    const ru = screen.getByRole("combobox",{name:"Жанр"});
-    expect(ru.value).toBe("Comedy");
-    expect(within(ru).getByRole("option",{name:"Все жанры"})).toBeTruthy();
-    expect(within(ru).getByRole("option",{name:"Комедия"})).toBeTruthy();
+    await user.click(screen.getByRole("button",{name:/Жанр/}));
+    expect(screen.getByRole("checkbox",{name:"Комедия"}).checked).toBe(true);
+    expect(screen.getByRole("button",{name:"Применить"})).toBeTruthy();
+    await user.click(screen.getByRole("button",{name:"Отмена"}));
     await user.selectOptions(screen.getByRole("combobox",{name:"Выбрать язык"}),"en");
-    const en = screen.getByRole("combobox",{name:"Genre"});
-    expect(en.value).toBe("Comedy");
-    expect(within(en).getByRole("option",{name:"All genres"})).toBeTruthy();
-    expect(within(en).getByRole("option",{name:"Comedy"})).toBeTruthy();
+    await user.click(screen.getByRole("button",{name:/Genre/}));
+    expect(screen.getByRole("checkbox",{name:"Comedy"}).checked).toBe(true);
+    await user.click(screen.getByRole("button",{name:"Cancel"}));
   });
 
-  it("offers only release years in the live catalog, newest first, and filters movies by year", async () => {
+  it("searches dropdown values, and Clear removes the draft only after Apply", async () => {
     const user = userEvent.setup();
     render(<App />);
     await screen.findAllByText("Արևի պատմություն");
-    const picker = screen.getByRole("combobox",{name:"Թողարկման տարեթիվ"});
-    expect([...picker.options].map(option=>option.value)).toEqual(["All","2024","2023"]);
-    expect(picker.options[0].textContent).toBe("Բոլոր տարիները");
-    await user.selectOptions(picker,"2024");
-    await waitFor(()=>expect(location.hash).toBe("#/movies"));
-    const catalog = document.querySelector("#catalogSection");
-    expect(within(catalog).getByText("Արևի պատմություն")).toBeTruthy();
-    expect(within(catalog).queryByText("Լուսնի սերիալ")).toBeNull();
-    await user.click(within(catalog).getByRole("button",{name:"Մաքրել զտիչները"}));
-    expect(picker.value).toBe("All");
-  });
-
-  it("keeps the selected TV section when a year is picked, and translates year filter labels", async () => {
-    const user = userEvent.setup();
-    render(<App />);
-    await screen.findAllByText("Արևի պատմություն");
-    await user.click(within(screen.getByRole("navigation",{name:"Գլխավոր նավարկում"})).getByText("Սերիալներ"));
-    const catalog = document.querySelector("#catalogSection");
-    expect(within(catalog).getByText("Լուսնի սերիալ")).toBeTruthy();
-    await user.selectOptions(screen.getByRole("combobox",{name:"Թողարկման տարեթիվ"}),"2024");
-    expect(location.hash).toBe("#/tv");
-    expect(within(catalog).queryByText("Լուսնի սերիալ")).toBeNull();
-    await user.selectOptions(screen.getByRole("combobox",{name:"Թողարկման տարեթիվ"}),"2023");
-    expect(within(catalog).getByText("Լուսնի սերիալ")).toBeTruthy();
-    await user.selectOptions(screen.getByRole("combobox",{name:"Ընտրել լեզուն"}),"ru");
-    expect(screen.getByRole("combobox",{name:"Год выпуска"}).value).toBe("2023");
-    expect(screen.getByRole("option",{name:"Все годы"})).toBeTruthy();
-    await user.selectOptions(screen.getByRole("combobox",{name:"Выбрать язык"}),"en");
-    expect(screen.getByRole("combobox",{name:"Release year"}).value).toBe("2023");
-    expect(screen.getByRole("option",{name:"All years"})).toBeTruthy();
-    await user.click(within(catalog).getByRole("button",{name:"Reset filters"}));
-    expect(screen.getByRole("combobox",{name:"Release year"}).value).toBe("All");
+    await user.click(screen.getByRole("button",{name:"Ժանր"}));
+    const group=screen.getByRole("group",{name:"Ժանր"});
+    await user.type(within(group).getByRole("searchbox"),"Դրամ");
+    expect(within(group).getByRole("checkbox",{name:"Դրամա"})).toBeTruthy();
+    expect(within(group).queryByRole("checkbox",{name:"Կատակերգություն"})).toBeNull();
+    await user.clear(within(group).getByRole("searchbox"));
+    await user.click(within(group).getByRole("checkbox",{name:"Դրամա"}));
+    await user.click(within(group).getByRole("button",{name:"Կիրառել"}));
+    expect(screen.getByRole("button",{name:/Ժանր/}).textContent).toContain("1");
+    await user.click(screen.getByRole("button",{name:/Ժանր/}));
+    await user.click(screen.getByRole("button",{name:"Մաքրել"}));
+    await user.click(screen.getByRole("button",{name:"Չեղարկել"}));
+    await user.click(screen.getByRole("button",{name:/Ժանր/}));
+    expect(screen.getByRole("checkbox",{name:"Դրամա"}).checked).toBe(true);
+    await user.click(screen.getByRole("button",{name:"Մաքրել"}));
+    await user.click(screen.getByRole("button",{name:"Կիրառել"}));
+    expect(screen.getByRole("button",{name:"Ժանր"})).toBeTruthy();
   });
 
   it("keeps registration, login and password recovery localized as the site language changes", async () => {
