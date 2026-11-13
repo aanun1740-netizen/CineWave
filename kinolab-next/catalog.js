@@ -52,22 +52,31 @@ const GENRE_LABELS = {
  'Thriller':['Thriller','Триллер','Թրիլլեր'],
  'TV Movie':['TV Movie','Телефильм','Հեռուստաֆիլմ'],
  'War':['War','Военный','Պատերազմական'],
- 'Western':['Western','Вестерн','Վեսթերն']
+ 'Western':['Western','Вестерн','Վեսթերն'],
+ 'Mysticism':['Mysticism','Мистика','Միստիկա']
 };
 function genreToken(value) { return cleanText(value).normalize('NFC').toLowerCase().replace(/[\s_-]+/g,' '); }
 const GENRE_ALIASES = new Map();
 for (const [canonical, labels] of Object.entries(GENRE_LABELS)) {
  for (const label of [canonical,...labels]) GENRE_ALIASES.set(genreToken(label),canonical);
 }
-for (const [alias, canonical] of Object.entries({'Science Fiction':'Sci-Fi','Science-Fiction':'Sci-Fi','SciFi':'Sci-Fi','Historical':'History','Documentary Film':'Documentary','Научная фантастика':'Sci-Fi','Գիտական ֆանտաստիկա':'Sci-Fi'})) GENRE_ALIASES.set(genreToken(alias),canonical);
+for (const [alias, canonical] of Object.entries({'Science Fiction':'Sci-Fi','Science-Fiction':'Sci-Fi','SciFi':'Sci-Fi','Historical':'History','Documentary Film':'Documentary','Научная фантастика':'Sci-Fi','Գիտական ֆանտաստիկա':'Sci-Fi',
+'Action movie':'Action','Adventures':'Adventure','Horrors':'Horror','Detective':'Mystery',
+'Melodrama':'Romance','Films':'Movies','Film':'Movies'})) GENRE_ALIASES.set(genreToken(alias),canonical);
 function canonicalGenre(value) {
  const name=cleanText(value);
  return GENRE_ALIASES.get(genreToken(name)) || name;
 }
+// Some existing catalog rows store several genres joined by slash in one
+// text[] entry. Normalize them at render time without rewriting any film data.
+// Ignore navigation tags that are not movie genres.
+const NON_GENRE_TAGS = new Set(['movies', 'film', 'films', 'new items', 'foreign']);
 function movieGenres(row) {
- // PostgREST serializes PostgreSQL text[] as JSON arrays. Do not guess or
- // split arbitrary strings: unsupported shapes must remain visibly unknown.
- const names=Array.isArray(row.genre_names) ? row.genre_names.map(canonicalGenre).filter(Boolean) : [];
+ const names=Array.isArray(row.genre_names)
+   ? row.genre_names.flatMap(value => cleanText(value).split(/\s*\/\s*/))
+       .map(canonicalGenre)
+       .filter(value => value && !NON_GENRE_TAGS.has(genreToken(value)))
+   : [];
  const ids=Array.isArray(row.genre_ids) ? row.genre_ids.map(id=>TMDB_GENRES[id]).filter(Boolean) : [];
  return [...new Set([...names,...ids])];
 }
