@@ -134,7 +134,7 @@ describe("React storefront", () => {
     await user.click(document.querySelector(".multi-filter-reset"));
     expect(within(catalog).getByText("Արևի պատմություն")).toBeTruthy();
     expect(location.hash).toBe("#/movies");
-    expect(screen.getByRole("button",{name:"Ժանր"})).toHaveAttribute("aria-expanded","false");
+    expect(screen.getByRole("button",{name:"Ժանր"}).getAttribute("aria-expanded")).toBe("false");
   });
 
   it("does not apply a draft when cancelled and keeps TV/My List navigation", async () => {
