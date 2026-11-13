@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { client } from "../services/backend";
 import { allowedExternalMovie, allowedExternalWatch } from "../services/external-links";
+import { cleanEmbedUrl } from "../services/clean-player";
 
 const labels = {
   hy: {heading:"Ավելացնել ֆիլմ կամ սերիալ՝ արտաքին հղումով",type:"Տեսակ",movie:"Ֆիլմ",series:"Սերիալ",episodes:"Լրացուցիչ սերիաների հղումներ (յուրաքանչյուր տողում՝ մեկ հղում)",seriesHint:"Առաջին սերիայի հղումը գրիր դիտման դաշտում, իսկ մյուսները՝ այստեղ։ Օգտագործիր նույն սերիալի համար NextEmbed-ի /tv/ID/սեզոն/սերիա հասցեները։",badEpisodes:"Սերիաների հղումները պետք է լինեն նույն սերիալի ճիշտ HTTPS հասցեներ՝ առանց կրկնության (առավելագույնը 200)։", title:"Ֆիլմի անուն", titleRu:"Ռուսերեն անուն (ըստ ցանկության)",titleHy:"Հայերեն անուն (ըստ ցանկության)",genre:"Ժանրեր (ստորակետերով)",year:"Թողարկման տարեթիվ",trailer:"Թրեյլերի հղում (YouTube կամ Vimeo, ըստ ցանկության)",poster:"Նկարի HTTPS հղում",choose:"Ընտրել նկար համակարգչից",uploading:"Նկարը վերբեռնվում է…",uploaded:"Նկարը վերբեռնվեց։ Այժմ կարող ես պահպանել ֆիլմը։",preview:"Ընտրված պաստառ",descriptionEn:"Նկարագրություն՝ անգլերեն (EN)",descriptionRu:"Նկարագրություն՝ ռուսերեն (RU)",descriptionHy:"Նկարագրություն՝ հայերեն (HY)",url:"Դիտման արտաքին հղում",terms:"Հաստատում եմ, որ ստուգել եմ արտաքին կայքի հղումների տարածման պայմանները և այս հղումը թույլատրված է հրապարակել",submit:"Պահպանել և հրապարակել",saving:"Պահպանվում է…",success:"Ֆիլմը պահպանվեց և հրապարակվեց արտաքին հղումով։ Թարմացրու գլխավոր էջը՝ ստուգելու համար։",duplicate:"Այս արտաքին հղումով ֆիլմն արդեն գոյություն ունի։",intro:"Մուտքագրիր ֆիլմի տվյալներն ու արտաքին էջի հասցեն։ «Դիտել» կոճակը նոր ներդիրում կբացի արտաքին կայքը․ KinoLab-ը ֆիլմը չի վերահեռարձակում։", list:"Արտաքին հղումով ավելացված ֆիլմեր", refresh:"Թարմացնել ցանկը", remove:"Ջնջել", hide:"Հեռացնել կայքից", show:"Հրապարակել", confirmDelete:"Վերջնական ջնջե՞լ այս ֆիլմը։", empty:"Արտաքին հղումով ավելացված ֆիլմեր չկան։", deleted:"Ֆիլմը ջնջվեց արտաքին կատալոգից։", hidden:"Ֆիլմը հեռացվեց հանրային կայքից։", shown:"Ֆիլմը կրկին հրապարակվեց։",edit:"Խմբագրել",cancel:"Չեղարկել",saveEdit:"Պահպանել փոփոխությունները",updated:"Ֆիլմի փոփոխությունները պահպանվեցին։",editing:"Խմբագրվում է՝ "},
@@ -24,8 +25,14 @@ function allowedTrailer(raw) {
   return false;
 }
 
-export default function QuickExternalMovie({language,onChange}) {
+export default function QuickExternalMovie({language,onChange,mode="external"}) {
   const t=labels[language] || labels.en;
+  const clean = mode === "clean";
+  const words = ({
+    hy: {heading:"Ավելացնել ֆիլմ՝ մաքուր փլեյերով",intro:"Լրացրու ֆիլմի վերնագիրը, նկարները, նկարագրությունները՝ երեք լեզվով, ժանրը, տարեթիվը, թրեյլերը և ֆիլմի դիտման հղումը։ Նոր դիտման էջում բրաուզերի ներդիրը ցույց կտա միայն ֆիլմի անունը, բայց փլեյերի ներսում հնարավոր է մնա հարթակի լոգոն։",list:"Մաքուր փլեյերով ֆիլմեր",url:"Փլեյերի հղում կամ iframe"},
+    ru: {heading:"Добавить фильм с отдельным плеером",intro:"Введите название, постер, описания на трёх языках, жанры, год, трейлер и ссылку. Вкладка просмотра называется только именем фильма; внутри стороннего плеера логотип может остаться.",list:"Фильмы с отдельным плеером",url:"Ссылка на плеер или iframe"},
+    en: {heading:"Add a movie with a clean player",intro:"Enter film titles, poster, EN/RU/HY descriptions, genres, year, trailer and a permitted player link. The viewing tab shows the film title; provider branding inside the player may remain.",list:"Clean-player movies",url:"Player URL or iframe"}
+  }[language] || {});
   const [busy,setBusy]=useState(false),[notice,setNotice]=useState("");
   const [posterUrl,setPosterUrl]=useState("");
   const [uploading,setUploading]=useState(false);
@@ -42,7 +49,7 @@ export default function QuickExternalMovie({language,onChange}) {
         .select("*")
         .order("created_at",{ascending:false}).limit(500);
       if(error)throw error;
-      setExternalMovies(data||[]);
+      setExternalMovies((data||[]).filter(row => (row.playback_mode === "clean") === clean));
       onChange?.();
     }catch(error){setNotice(error?.message||String(error));}
     finally{setListLoading(false);}
@@ -128,9 +135,14 @@ export default function QuickExternalMovie({language,onChange}) {
     if(busy || uploading) return;
     const form=event.currentTarget;
     const v=Object.fromEntries(new FormData(form).entries());
-    const url=String(v.external_watch_url||"").trim();
+    const rawUrl=String(v.external_watch_url||"").trim();
+    const url=clean ? cleanEmbedUrl(rawUrl) : rawUrl;
+    if (clean && !url) {
+      setNotice(({hy:"Ներդրվող փլեյերի հասցեն չի ճանաչվել։ Օգտագործիր պաշտոնական embed հղում կամ iframe կոդ։",ru:"Не удалось распознать встроенный плеер. Используйте корректный embed URL или iframe.",en:"Unsupported embed link. Paste an official player URL or iframe."}[language]));
+      return;
+    }
     const trailer=String(v.trailer_url||"").trim();
-    const type=v.media_type==="tv" ? "tv" : "movie";
+    const type=clean ? "movie" : (v.media_type==="tv" ? "tv" : "movie");
     let episodeLinks=[];
     if(type==="tv") {
       const extra=String(v.episode_urls||"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
@@ -179,6 +191,7 @@ export default function QuickExternalMovie({language,onChange}) {
         poster_path:posterUrl.trim()||null,
         trailer_url:trailer||null,
         external_watch_url:url,
+        playback_mode:clean ? "clean" : "external",
         terms_confirmed:true,
         is_published:editingRow ? editingRow.is_published : true
       };
@@ -206,7 +219,7 @@ export default function QuickExternalMovie({language,onChange}) {
     finally {setBusy(false);}
   }
   return <section className="panel quick-external">
-    <h2>{t.heading}</h2><p className="hint">{t.intro}</p>
+    <h2>{clean ? words.heading : t.heading}</h2><p className="hint">{clean ? words.intro : t.intro}</p>
     {editingRow && <p className="hint" role="status">{t.editing} ID {editingRow.id}</p>}
     {notice && <p className="hint" role="alert" aria-live="polite" style={{color:"#f4b77e",padding:"10px 0"}}>{notice}</p>}
     {duplicateRow && !editingRow && <div className="panel" role="status" style={{padding:14,marginBottom:12}}>
@@ -220,7 +233,7 @@ export default function QuickExternalMovie({language,onChange}) {
     <form ref={formRef} onSubmit={submit} onInvalidCapture={(e)=>{const name=e.target.closest("label")?.innerText?.trim()||e.target.name||"field";setNotice(({hy:"Լրացրու կամ ուղղիր պարտադիր դաշտը՝ ",ru:"Заполните или исправьте поле: ",en:"Complete or correct this field: "}[language])+name.slice(0,85));}}>
       <div className="form-grid">
         <label>{t.type}
-          <select name="media_type" value={mediaType} onChange={e=>setMediaType(e.target.value)}>
+          <select name="media_type" value={clean ? "movie" : mediaType} disabled={clean} onChange={e=>setMediaType(e.target.value)}>
             <option value="movie">{t.movie}</option>
             <option value="tv">{t.series}</option>
           </select>
@@ -241,7 +254,9 @@ export default function QuickExternalMovie({language,onChange}) {
         <label>{t.descriptionEn}<textarea name="overview_en" rows="4" lang="en" placeholder="English"/></label>
         <label>{t.descriptionRu}<textarea name="overview_ru" rows="4" lang="ru" placeholder="Русский"/></label>
         <label>{t.descriptionHy}<textarea name="overview_hy" rows="4" lang="hy" placeholder="Հայերեն"/></label>
-        <label>{t.url}<input name="external_watch_url" type="url" required placeholder={mediaType==="tv"?"https://api.nextembed.ws/embed/tv/12345/1/1":"https://example.com/watch/film"}/></label>
+        <label>{clean ? words.url : t.url}<input name="external_watch_url" type={clean ? "text" : "url"} required maxLength={clean ? 4096 : 2048} placeholder={clean ? "https://vkvideo.ru/video-123_456" : mediaType==="tv"?"https://api.nextembed.ws/embed/tv/12345/1/1":"https://example.com/watch/film"}/>
+          {clean && <small className="hint">{({hy:"Կարող ես տեղադրել VK Video, RUTUBE, OK, YouTube, Vimeo, Dailymotion, Internet Archive կամ NextEmbed-ի հղումը/iframe-ը։ Փլեյերի ներսի ապրանքանշանները մնում են աղբյուրի վերահսկողության տակ։",ru:"Поддерживаются VK Video, RUTUBE, OK, YouTube, Vimeo, Dailymotion, Internet Archive и NextEmbed (ссылка или iframe). Логотип внутри плеера контролируется провайдером.",en:"Supports VK Video, RUTUBE, OK, YouTube, Vimeo, Dailymotion, Internet Archive, NextEmbed URLs or iframe snippets. Provider player branding cannot be hidden."}[language])}</small>}
+        </label>
         <label hidden={mediaType!=="tv"}>{t.episodes}
           <textarea name="episode_urls" rows="5" placeholder={"https://api.nextembed.ws/embed/tv/12345/1/2\nhttps://api.nextembed.ws/embed/tv/12345/1/3"} disabled={mediaType!=="tv"}/>
           <small className="hint">{t.seriesHint}</small>
@@ -252,11 +267,11 @@ export default function QuickExternalMovie({language,onChange}) {
       <div className="form-actions">
         <button type="submit" className="primary" disabled={busy||uploading}>{busy?t.saving:uploading?t.uploading:editingRow?t.saveEdit:t.submit}</button>
         {editingRow && <button type="button" className="secondary" onClick={resetEditor} disabled={busy||uploading}>{t.cancel}</button>}
-        <button type="button" className="secondary" onClick={()=>{const url=document.querySelector('.quick-external input[name="external_watch_url"]')?.value?.trim();if(allowed(url))window.open(url,"_blank","noopener,noreferrer");else setNotice("Enter an http:// or https:// web link first.");}}>{({hy:"Փորձարկել հղումը",ru:"Проверить ссылку",en:"Test link"}[language])}</button>
+        <button type="button" className="secondary" onClick={()=>{const raw=formRef.current?.elements.namedItem("external_watch_url")?.value?.trim();const url=clean ? cleanEmbedUrl(raw) : raw;if(allowed(url))window.open(url,"_blank","noopener,noreferrer");else setNotice("Enter a valid supported player link first.");}}>{({hy:"Փորձարկել հղումը",ru:"Проверить ссылку",en:"Test link"}[language])}</button>
       </div>
     </form>
     <div style={{marginTop:28,borderTop:"1px solid #ffffff22",paddingTop:20}}>
-      <div className="panel-head"><h2>{t.list} ({externalMovies.length})</h2>
+      <div className="panel-head"><h2>{clean ? words.list : t.list} ({externalMovies.length})</h2>
       <button type="button" className="secondary" onClick={refreshList} disabled={listLoading||busy}>{t.refresh}</button></div>
       {externalMovies.length===0 && !listLoading && <p className="hint">{t.empty}</p>}
       <div className="table-wrap"><table style={{minWidth:550}}><thead><tr><th>ID</th><th>{t.title}</th><th>{t.type}</th><th>URL</th><th>Status</th><th>Actions</th></tr></thead><tbody>
