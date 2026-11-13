@@ -30,10 +30,14 @@ export function filterMovies(
 ) {
   const normalize = (value) => String(value ?? "").normalize("NFC").toLocaleLowerCase();
   const q = normalize(query.trim());
+  // A selected set matches ANY entry within its own group, and BOTH groups
+  // must match. Keep the previous single-value API for older callers.
+  const chosenGenres = Array.isArray(genre) ? genre : genre === "All" ? [] : [genre];
+  const chosenYears = Array.isArray(year) ? year : year === "All" ? [] : [year];
   return movies.filter(
     (movie) =>
-      (genre === "All" || movie.genres.includes(genre)) &&
-      (year === "All" || String(movie.year ?? "") === String(year)) &&
+      (!chosenGenres.length || chosenGenres.some(item => movie.genres.includes(item))) &&
+      (!chosenYears.length || chosenYears.some(item => String(movie.year ?? "") === String(item))) &&
       (!q ||
         [
           ...Object.values(movie.titles || {}),

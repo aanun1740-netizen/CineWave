@@ -18,6 +18,7 @@ import useAccount from "./hooks/useAccount";
 import Accounts from "./components/Accounts";
 import MovieRow, { Artwork } from "./components/MovieRow";
 import MovieDialog from "./components/MovieDialog";
+import MultiSelectFilter from "./components/MultiSelectFilter";
 import CleanWatchPage from "./components/CleanWatchPage";
 import { playback } from "./components/Player";
 import { Brand, Icon, Icons } from "./components/Icons";
@@ -35,8 +36,8 @@ export default function App() {
     [state, setState] = useState("loading"),
     [proofs, setProofs] = useState([]),
     [query, setQuery] = useState(""),
-    [genre, setGenre] = useState("All"),
-    [year, setYear] = useState("All"),
+    [genre, setGenre] = useState([]),
+    [year, setYear] = useState([]),
     [heroIndex, setHeroIndex] = useState(0),
     [profile, setProfile] = useState(false),
     [ai, setAI] = useState(false),
@@ -123,8 +124,8 @@ export default function App() {
     if (next in navs) {
       underlay.current = next;
       setQuery("");
-      setGenre("All");
-      setYear("All");
+      setGenre([]);
+      setYear([]);
     }
     setProfile(false);
     history[replace ? "replaceState" : "pushState"](null, "", `#/${next}`);
@@ -138,8 +139,8 @@ export default function App() {
       if (next in navs) {
         underlay.current = next;
         setQuery("");
-        setGenre("All");
-        setYear("All");
+        setGenre([]);
+        setYear([]);
       }
       setRoute(next);
     }
@@ -181,7 +182,7 @@ export default function App() {
     document.body.classList.toggle("account-view", accountPage);
     document.body.classList.toggle(
       "is-browsing",
-      Boolean(query || genre !== "All" || year !== "All" || listing !== "home"),
+      Boolean(query || genre.length > 0 || year.length > 0 || listing !== "home"),
     );
   }, [accountPage, query, genre, year, listing]);
   useEffect(() => {
@@ -269,7 +270,7 @@ export default function App() {
     .slice(0, 5), [movies, watchable]);
   // Rotate featured movies every six seconds; preserve manual dot selection.
   useEffect(() => {
-    if (choices.length < 2 || route !== "home" || query || genre !== "All" || year !== "All") return;
+    if (choices.length < 2 || route !== "home" || query || genre.length > 0 || year.length > 0) return;
     const timer = window.setInterval(() => setHeroIndex(index => (index + 1) % choices.length), 6000);
     return () => window.clearInterval(timer);
   }, [choices.length, route, query, genre, year]);
@@ -288,7 +289,7 @@ export default function App() {
     movieId = decodeURIComponent(route.split("/").slice(1).join("/"));
   } catch {}
   const current = movies.find((movie) => movie.id === movieId),
-    home = listing === "home" && !query && genre === "All" && year === "All";
+    home = listing === "home" && !query && !genre.length && !year.length;
   // A pasted /watch hash must not bypass the same 5-film guest allowance.
   // An existing choice is replayable; a new choice consumes one slot.
   useEffect(() => {
@@ -759,43 +760,39 @@ export default function App() {
                   </div>
                 </div>
                 <div className="genre-year-filters">
-                  <div className="genre-year-filter">
-                    <label htmlFor="genreFilter">{t("genreFilter")}</label>
-                    <select
-                      id="genreFilter"
-                      value={genre}
-                      aria-label={t("genreFilter")}
-                      onChange={(event) => {
-                        setGenre(event.target.value);
-                        // Keep TV and My List active; Discover opens catalog results.
-                        if (listing === "home") search(query);
-                      }}
-                    >
-                      <option value="All">{t("allGenres")}</option>
-                      {availableGenres(movies).map((value) => (
-                        <option value={value} key={value}>{genreLabel(value, language)}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="genre-year-filter">
-                    <label htmlFor="yearFilter">{t("releaseYear")}</label>
-                    <select
-                      id="yearFilter"
-                      value={year}
-                      aria-label={t("releaseYear")}
-                      onChange={(event) => {
-                        setYear(event.target.value);
-                        // Keep Movies, TV Shows and My List in their current sections.
-                        // From Discover, open the movie results view.
-                        if (listing === "home") search(query);
-                      }}
-                    >
-                      <option value="All">{t("allYears")}</option>
-                      {years.map((value) => (
-                        <option value={String(value)} key={value}>{value}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <MultiSelectFilter
+                    id="genreFilter"
+                    title={t("genreFilter")}
+                    allLabel={t("allGenres")}
+                    options={availableGenres(movies).map(value => ({
+                      value, label: genreLabel(value, language)
+                    }))}
+                    value={genre}
+                    language={language}
+                    onApply={values => {
+                      setGenre(values);
+                      // Discover opens the film results while TV/My List stay put.
+                      if (listing === "home") search(query);
+                    }}
+                  />
+                  <MultiSelectFilter
+                    id="yearFilter"
+                    title={t("releaseYear")}
+                    allLabel={t("allYears")}
+                    options={years.map(value => ({value:String(value), label:String(value)}))}
+                    value={year}
+                    language={language}
+                    onApply={values => {
+                      setYear(values);
+                      if (listing === "home") search(query);
+                    }}
+                  />
+                  {(genre.length > 0 || year.length > 0) && (
+                    <button type="button" className="multi-filter-reset"
+                      onClick={() => { setGenre([]); setYear([]); }}>
+                      {({hy:"Մաքրել զտիչները",ru:"Сбросить фильтры",en:"Clear filters"})[language]}
+                    </button>
+                  )}
                 </div>
               </section>
               {state !== "ready" && (
@@ -837,8 +834,8 @@ export default function App() {
                 {...rowProps}
                 id="catalogSection"
                 title={
-                  genre !== "All"
-                    ? genreLabel(genre, language) + " • KinoLab"
+                  genre.length === 1
+                    ? genreLabel(genre[0], language) + " • KinoLab"
                     : t(navs[listing] === "home" ? "discover" : navs[listing])
                 }
                 eyebrow={t("catalogEyebrow")}
