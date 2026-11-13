@@ -100,6 +100,53 @@ describe("React storefront", () => {
     await waitFor(() => expect(document.documentElement.lang).toBe("ru"));
     expect(screen.getByRole("searchbox").placeholder).toBe("Поиск фильмов...");
   });
+  it("offers a genre dropdown like the year dropdown and combines both filters", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findAllByText("Արևի պատմություն");
+    const genrePicker = screen.getByRole("combobox", {name:"Ժանր"});
+    const yearPicker = screen.getByRole("combobox", {name:"Թողարկման տարեթիվ"});
+    expect([...genrePicker.options].map(option=>option.value)).toEqual(["All","Drama","Comedy"]);
+    expect(genrePicker.options[0].textContent).toBe("Բոլոր ժանրերը");
+    expect(genrePicker.options[1].textContent).toBe("Դրամա");
+    await user.selectOptions(genrePicker,"Drama");
+    await waitFor(()=>expect(location.hash).toBe("#/movies"));
+    const catalog = document.querySelector("#catalogSection");
+    expect(within(catalog).getByText("Արևի պատմություն")).toBeTruthy();
+    expect(within(catalog).queryByText("Լուսնի սերիալ")).toBeNull();
+    await user.selectOptions(yearPicker,"2023");
+    expect(within(catalog).queryByText("Արևի պատմություն")).toBeNull();
+    await user.selectOptions(yearPicker,"2024");
+    expect(within(catalog).getByText("Արևի պատմություն")).toBeTruthy();
+    await user.click(within(catalog).getByRole("button",{name:"Մաքրել զտիչները"}));
+    expect(genrePicker.value).toBe("All");
+    expect(yearPicker.value).toBe("All");
+  });
+
+  it("keeps the TV section while selecting genres and translates dropdown options", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findAllByText("Արևի պատմություն");
+    await user.click(within(screen.getByRole("navigation",{name:"Գլխավոր նավարկում"})).getByText("Սերիալներ"));
+    const catalog = document.querySelector("#catalogSection");
+    expect(within(catalog).getByText("Լուսնի սերիալ")).toBeTruthy();
+    await user.selectOptions(screen.getByRole("combobox",{name:"Ժանր"}),"Drama");
+    expect(location.hash).toBe("#/tv");
+    expect(within(catalog).queryByText("Լուսնի սերիալ")).toBeNull();
+    await user.selectOptions(screen.getByRole("combobox",{name:"Ժանր"}),"Comedy");
+    expect(within(catalog).getByText("Լուսնի սերիալ")).toBeTruthy();
+    await user.selectOptions(screen.getByRole("combobox",{name:"Ընտրել լեզուն"}),"ru");
+    const ru = screen.getByRole("combobox",{name:"Жанр"});
+    expect(ru.value).toBe("Comedy");
+    expect(within(ru).getByRole("option",{name:"Все жанры"})).toBeTruthy();
+    expect(within(ru).getByRole("option",{name:"Комедия"})).toBeTruthy();
+    await user.selectOptions(screen.getByRole("combobox",{name:"Выбрать язык"}),"en");
+    const en = screen.getByRole("combobox",{name:"Genre"});
+    expect(en.value).toBe("Comedy");
+    expect(within(en).getByRole("option",{name:"All genres"})).toBeTruthy();
+    expect(within(en).getByRole("option",{name:"Comedy"})).toBeTruthy();
+  });
+
   it("offers only release years in the live catalog, newest first, and filters movies by year", async () => {
     const user = userEvent.setup();
     render(<App />);
