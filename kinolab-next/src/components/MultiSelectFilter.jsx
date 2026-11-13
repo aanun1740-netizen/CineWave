@@ -2,15 +2,15 @@ import { useEffect, useRef, useState } from "react";
 
 const copy = {
   hy: {
-    apply: "Կիրառել", cancel: "Չեղարկել", clear: "Մաքրել",
+    apply: "Կիրառել", cancel: "Չեղարկել", clear: "Մաքրել", selectAll: "Ընտրել բոլորը",
     search: "Որոնել տարբերակներում…", selected: "ընտրված", none: "Տարբերակներ չեն գտնվել",
   },
   ru: {
-    apply: "Применить", cancel: "Отмена", clear: "Сбросить",
+    apply: "Применить", cancel: "Отмена", clear: "Сбросить", selectAll: "Выбрать все",
     search: "Поиск вариантов…", selected: "выбрано", none: "Варианты не найдены",
   },
   en: {
-    apply: "Apply", cancel: "Cancel", clear: "Clear",
+    apply: "Apply", cancel: "Cancel", clear: "Clear", selectAll: "Select all",
     search: "Search options…", selected: "selected", none: "No matching options",
   },
 };
@@ -34,6 +34,8 @@ export default function MultiSelectFilter({
   const [draft, setDraft] = useState(value);
   const [query, setQuery] = useState("");
   const selected = Array.isArray(value) ? value : [];
+  const allValues = options.map(option => option.value);
+  const allChecked = allValues.length > 0 && allValues.every(value => draft.includes(value));
   const visible = options.filter(option =>
     String(option.label).toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
   );
@@ -70,6 +72,9 @@ export default function MultiSelectFilter({
       document.removeEventListener("keydown", keydown);
     };
   }, [open, selected]);
+  function selectAll(checked) {
+    setDraft(checked ? [...new Set(allValues)] : []);
+  }
   function choose(key, checked) {
     setDraft(previous =>
       checked ? [...previous.filter(item => item !== key), key] :
@@ -101,6 +106,12 @@ export default function MultiSelectFilter({
             onChange={event => setQuery(event.target.value)}
             placeholder={strings.search}
             aria-label={title + ": " + strings.search} />
+          <label className="multi-filter-select-all">
+            <input type="checkbox" checked={allChecked} disabled={!allValues.length}
+              onChange={event => selectAll(event.target.checked)}
+              aria-label={strings.selectAll} />
+            <span>{strings.selectAll}</span>
+          </label>
           <div className="multi-filter-options">
             {visible.map(option => (
               <label key={option.value} className="multi-filter-option">
