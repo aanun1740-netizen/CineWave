@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { localizedMovie, genreLabel, adminModel, externalWatchUrl } from "../domain";
 import Player from "./Player";
 import { Artwork } from "./MovieRow";
+import { isCleanPlayerMovie } from "../services/clean-player";
 
 // Only trusted, intentionally embeddable platforms; never embed arbitrary hosts.
 function trustedEmbed(url) {
@@ -42,6 +43,7 @@ export default function MovieDialog({
   t,
   close,
   onWatch,
+  onCleanWatch,
   onOutbound,
   guestLocked,
   toggle,
@@ -67,6 +69,7 @@ export default function MovieDialog({
   const hasDirectPlayback = movie ? watchable(movie) : false;
   const official = /^https:\/\/(?:www\.)?netflix\.com\/title\/\d+\/?$/.test(movie?.officialWatch || "") ? movie.officialWatch : null;
   const externalWatch = !hasDirectPlayback ? externalWatchUrl(movie) : null;
+  const cleanPlayer = isCleanPlayerMovie(movie, externalWatch);
   return (
     <div
       className="modal open"
@@ -167,7 +170,12 @@ export default function MovieDialog({
           )}
           {movie && (
             <div className="detail-actions">
-              {externalWatch && !watch && (
+              {cleanPlayer && !watch && (
+                <button className="btn primary" type="button" onClick={onCleanWatch}>
+                  {({hy:"Դիտել ֆիլմը",ru:"Смотреть фильм",en:"Watch movie"}[language])}
+                </button>
+              )}
+              {externalWatch && !watch && !cleanPlayer && (
                 <div className="movielab-external-watch">
                   {guestLocked?.(movie) ? (
                     <button className="btn primary" type="button" onClick={() => onOutbound?.(null,movie)}>
