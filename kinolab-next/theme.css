@@ -1205,3 +1205,41 @@ body.cinewave-site[data-theme="light"] .multi-filter-reset {
   body.cinewave-site .multi-filter-options { grid-template-columns: repeat(2, minmax(0,1fr)); }
   body.cinewave-site .multi-filter-option { font-size: 11px; gap: 6px; }
 }
+
+
+/* One-click all-options control, shared by the genre and release-year pickers. */
+body.cinewave-site .multi-filter-select-all {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:40px;
+  margin:12px 14px 0;
+  padding:8px 11px;
+  border:1px solid #D4F45877;
+  border-radius:8px;
+  background:#D4F45812;
+  color:#D4F458;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+body.cinewave-site .multi-filter-select-all input {
+  width:16px;
+  height:16px;
+  margin:0;
+  accent-color:#D4F458;
+  cursor:pointer;
+}
+body.cinewave-site .multi-filter-select-all input:focus-visible {
+  outline:2px solid #D4F458;
+  outline-offset:3px;
+}
+body.cinewave-site .multi-filter-select-all:has(input:disabled) {
+  opacity:.48;
+  cursor:not-allowed;
+}
+body.cinewave-site[data-theme="light"] .multi-filter-select-all {
+  color:#20152E;
+  border-color:#20152E77;
+  background:#D4F45844;
+}
