@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { backendFetch, config, base } from "./services/backend";
 import { allowedExternalWatch } from "./services/external-links";
+import { isCleanPlayerMovie } from "./services/clean-player";
 import {
   mapCatalogMovie,
   localizedMovie,
@@ -17,6 +18,7 @@ import useAccount from "./hooks/useAccount";
 import Accounts from "./components/Accounts";
 import MovieRow, { Artwork } from "./components/MovieRow";
 import MovieDialog from "./components/MovieDialog";
+import CleanWatchPage from "./components/CleanWatchPage";
 import { playback } from "./components/Player";
 import { Brand, Icon, Icons } from "./components/Icons";
 import AI from "./components/AI";
@@ -72,12 +74,12 @@ export default function App() {
     }[language] || null;
     if (!seo) return;
     document.documentElement.lang = language;
-    document.title = seo.title;
+    if (!route.startsWith("play/")) document.title = seo.title;
     document.querySelector('meta[name="description"]')?.setAttribute("content", seo.description);
     document.querySelector('meta[property="og:title"]')?.setAttribute("content", seo.title);
     document.querySelector('meta[property="og:description"]')?.setAttribute("content", seo.description);
     document.querySelector('meta[property="og:locale"]')?.setAttribute("content", seo.locale);
-  }, [language]);
+  }, [language, route]);
   const accountPage = [
     "login",
     "register",
@@ -86,6 +88,7 @@ export default function App() {
     "recover",
   ].includes(route);
   const modal = /^(movie|watch)\//.test(route);
+  const cleanPage = route.startsWith("play/");
   const listing = route in navs ? route : underlay.current;
   const mayCount = account.ready && (!account.session || account.cloudReady) && !account.admin;
   useEffect(() => {
@@ -289,7 +292,7 @@ export default function App() {
   // A pasted /watch hash must not bypass the same 5-film guest allowance.
   // An existing choice is replayable; a new choice consumes one slot.
   useEffect(() => {
-    if (!route.startsWith("watch/") || !current || !account.ready ||
+    if (!/^(watch|play)\//.test(route) || !current || !account.ready ||
         account.session || guestFilms.includes(current.id)) return;
     allowWatch(current);
   }, [route, current?.id, account.ready, account.session, guestFilms]);
@@ -364,7 +367,7 @@ export default function App() {
   function openWatch(movie, route = false) {
     if (!allowWatch(movie)) return false;
     if (mayCount) recordMetric("watch_click", movie.id, language);
-    if (route) navigate("watch/" + encodeURIComponent(movie.id));
+    if (route) navigate((route === "clean" ? "play/" : "watch/") + encodeURIComponent(movie.id));
     return true;
   }
   function outboundClick(event, movie) {
@@ -415,7 +418,7 @@ export default function App() {
     guestLocked,
     onOutbound: outboundClick,
     open: (movie, play = false) => {
-      if (play) openWatch(movie, true);
+      if (play) openWatch(movie, play === "clean" ? "clean" : true);
       else navigate("movie/" + encodeURIComponent(movie.id));
     },
   };
@@ -445,6 +448,15 @@ export default function App() {
       ))}
     </nav>
   );
+  if (cleanPage) {
+    const external = current ? externalWatchUrl(current) : null;
+    const valid = isCleanPlayerMovie(current, external);
+    const access = account.ready && Boolean(account.session || guestFilms.includes(current?.id));
+    const locked = account.ready && !account.session && guestFilms.length >= FREE_GUEST_FILMS && !guestFilms.includes(current?.id);
+    return <CleanWatchPage movie={valid ? current : null} language={language}
+      ready={account.ready && state !== "loading"} access={access} locked={locked}
+      onBack={() => navigate(underlay.current)} />;
+  }
   return (
     <>
       <a className="skip-link" href="#catalog">
@@ -650,7 +662,13 @@ export default function App() {
                 </p>
                 <div className="actions">
                   {featured && externalWatchUrl(featured) && !watchable(featured) ? (
-                    guestLocked(featured) ? (
+                    isCleanPlayerMovie(featured, externalWatchUrl(featured)) ? (
+                      <button type="button" className="btn primary"
+                        onClick={() => openWatch(featured, "clean")}
+                        aria-label={`${t("watch")} — embedded player`}>
+                        <Icon name="play" /><span>{t("watch")}</span>
+                      </button>
+                    ) : guestLocked(featured) ? (
                       <button type="button" className="btn primary"
                         aria-label={`${t("watch")} — registration`}
                         onClick={() => outboundClick(null, featured)}>
@@ -900,6 +918,7 @@ export default function App() {
           t={t}
           close={() => navigate(underlay.current, true)}
           onWatch={() => openWatch(current, true)}
+          onCleanWatch={() => openWatch(current, "clean")}
           toggle={toggle}
           saved={Boolean(current && account.list.has(current.id))}
           watchable={watchable}
