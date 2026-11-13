@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   mapCatalogMovie,
+  genreLabel,
   filterMovies,
   initialLanguage,
   routeFromHash,
@@ -51,6 +52,34 @@ describe("migrated domain contracts", () => {
       .toEqual(["catalog:14"]);
     expect(filterMovies(rows, {genre:[],year:[]}).length).toBe(4);
   });
+  it("splits legacy slash-joined genres and translates each recognized genre across all languages", () => {
+    const movie = mapCatalogMovie({
+      id: 77,
+      title_en:"Mixed catalog",
+      genre_names:[
+        "Action movie /Adventures/ Science fiction",
+        "Detective / Drama / Movies / New items",
+        "Mysticism",
+        "Horrors",
+        "Melodrama",
+      ],
+    });
+    expect(movie.genres).toEqual([
+      "Action","Adventure","Sci-Fi","Mystery","Drama","Mysticism","Horror","Romance",
+    ]);
+    const en = movie.genres.map(name => genreLabel(name,"en"));
+    const ru = movie.genres.map(name => genreLabel(name,"ru"));
+    const hy = movie.genres.map(name => genreLabel(name,"hy"));
+    expect(en).toContain("Adventure");
+    expect(ru).toContain("Приключения");
+    expect(hy).toContain("Արկածային");
+    expect(ru).toContain("Мистика");
+    expect(hy).toContain("Միստիկա");
+    expect(hy).toContain("Դետեկտիվ");
+    expect(movie.genres).not.toContain("Movies");
+    expect(filterMovies([movie],{genre:["Sci-Fi"]})).toEqual([movie]);
+  });
+
   it("finds films by Armenian, Russian, and English descriptions across UI languages", () => {
     const rows = [
       mapCatalogMovie({
