@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { localizedMovie, genreLabel, POSTER_FALLBACK } from "../domain";
 import { playback } from "./Player";
 import { siteBase } from "../site-base";
+import { isCleanPlayerMovie } from "../services/clean-player";
 import { Icon } from "./Icons";
 export function Artwork({ src, alt, ...props }) {
   const [failed, setFailed] = useState(false);
@@ -102,6 +103,7 @@ export default function MovieRow({
           const info = localizedMovie(movie, language),
             available = watchable(movie),
             official = !available ? externalWatchUrl(movie) : null,
+            cleanPlayer = isCleanPlayerMovie(movie, official),
             progress = playback.progressFor(movie.id);
           return (
             <article
@@ -110,7 +112,7 @@ export default function MovieRow({
               data-id={movie.id}
               tabIndex={0}
               role="button"
-              aria-label={`${info.title} — ${t(available ? "watch" : "details")}`}
+              aria-label={`${info.title} — ${t(available || cleanPlayer ? "watch" : "details")}`}
               onClick={() => open(movie)}
               onKeyDown={(e) => {
                 if (["Enter", " "].includes(e.key)) {
@@ -136,11 +138,18 @@ export default function MovieRow({
                   alt={info.title}
                 />
                 <span
-                  className={`poster-badge ${available ? "available" : official ? "external" : ""}`}
+                  className={`poster-badge ${available || cleanPlayer ? "available" : official ? "external" : ""}`}
                 >
-                  {t(available ? "available" : official ? "externalLink" : "catalogOnly")}
+                  {t(available || cleanPlayer ? "available" : official ? "externalLink" : "catalogOnly")}
                 </span>
-                {official ? (
+                {cleanPlayer ? (
+                  <button className="play-overlay" type="button"
+                    aria-label={`${info.title} — ${t("watch")}`}
+                    onClick={(e) => {e.stopPropagation(); open(movie, "clean");}}
+                    onKeyDown={(e) => e.stopPropagation()}>
+                    <Icon name="play" />{t("watch")}
+                  </button>
+                ) : official ? (
                   guestLocked?.(movie) ? (
                     <button className="play-overlay" type="button"
                       aria-label={`${info.title} — ${t("watch")} (sign in)`}

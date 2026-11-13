@@ -71,7 +71,7 @@ export function routeFromHash(hash = location.hash) {
   if (/^#error=/.test(hash) || (!hash && (window.CineWaveAuth?.authRedirectError ||
       new URLSearchParams(location.search).has("error_code")))) return "login";
   const route = hash.replace(/^#\/?/, "") || "home";
-  return /^(home|movies|tv|my-list|login|register|profile|forgot|recover|movie\/.+|watch\/.+)$/.test(
+  return /^(home|movies|tv|my-list|login|register|profile|forgot|recover|movie\/.+|watch\/.+|play\/.+)$/.test(
     route,
   )
     ? route
