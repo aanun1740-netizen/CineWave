@@ -739,56 +739,45 @@ export default function App() {
                     <p className="eyebrow">{t("mood")}</p>
                     <h2>{t("genreHeading")}</h2>
                   </div>
-                  <button
-                    className="text-button"
-                    onClick={() => {
-                      setGenre("All");
-                      search(query);
-                    }}
-                  >
-                    {t("allGenres")}
-                  </button>
                 </div>
-                <div className="genre-year-filter">
-                  <label htmlFor="yearFilter">{t("releaseYear")}</label>
-                  <select
-                    id="yearFilter"
-                    value={year}
-                    aria-label={t("releaseYear")}
-                    onChange={(event) => {
-                      setYear(event.target.value);
-                      // Keep Movies, TV Shows and My List in their current sections.
-                      // From Discover, open the movie results view.
-                      if (listing === "home") search(query);
-                    }}
-                  >
-                    <option value="All">{t("allYears")}</option>
-                    {years.map((value) => (
-                      <option value={String(value)} key={value}>{value}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="genre-list">
-                  {["All", ...availableGenres(movies)].map((value, i) => (
-                    <button
-                      key={value}
-                      className={`genre ${genre === value ? "active" : ""}`}
-                      aria-pressed={genre === value}
-                      style={{
-                        "--g": `linear-gradient(135deg,${["#f9234c,#40152d", "#ed332f,#29111a", "#246a86,#182b40", "#dba12a,#61370f", "#854c73,#24192d"][i % 5]})`,
-                      }}
-                      onClick={() => {
-                        setGenre(value);
-                        search(query);
+                <div className="genre-year-filters">
+                  <div className="genre-year-filter">
+                    <label htmlFor="genreFilter">{t("genreFilter")}</label>
+                    <select
+                      id="genreFilter"
+                      value={genre}
+                      aria-label={t("genreFilter")}
+                      onChange={(event) => {
+                        setGenre(event.target.value);
+                        // Keep TV and My List active; Discover opens catalog results.
+                        if (listing === "home") search(query);
                       }}
                     >
-                      <span>
-                        {value === "All"
-                          ? t("all")
-                          : genreLabel(value, language)}
-                      </span>
-                    </button>
-                  ))}
+                      <option value="All">{t("allGenres")}</option>
+                      {availableGenres(movies).map((value) => (
+                        <option value={value} key={value}>{genreLabel(value, language)}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="genre-year-filter">
+                    <label htmlFor="yearFilter">{t("releaseYear")}</label>
+                    <select
+                      id="yearFilter"
+                      value={year}
+                      aria-label={t("releaseYear")}
+                      onChange={(event) => {
+                        setYear(event.target.value);
+                        // Keep Movies, TV Shows and My List in their current sections.
+                        // From Discover, open the movie results view.
+                        if (listing === "home") search(query);
+                      }}
+                    >
+                      <option value="All">{t("allYears")}</option>
+                      {years.map((value) => (
+                        <option value={String(value)} key={value}>{value}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </section>
               {state !== "ready" && (
