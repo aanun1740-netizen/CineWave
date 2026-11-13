@@ -922,13 +922,21 @@ body.cinewave-site[data-theme="light"] .account-card--profile .account-feedback-
   body.cinewave-site .account-card--profile { padding: 24px 20px; }
 }
 
-/* KinoLab catalog release year filter: subtle lime, compact on phones. */
+/* KinoLab release year and genre selectors use the same compact controls. */
+body.cinewave-site .genre-year-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  margin: -5px 0 15px;
+}
 body.cinewave-site .genre-year-filter {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 12px;
-  margin: -5px 0 13px;
+  margin: 0;
   color: #cfc7d8;
   font-size: 12px;
 }
@@ -963,12 +971,19 @@ body.cinewave-site[data-theme="light"] .genre-year-filter select {
   border-color: rgba(32,21,46,.28);
 }
 @media (max-width: 600px) {
+  body.cinewave-site .genre-year-filters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin: 0 0 14px;
+  }
   body.cinewave-site .genre-year-filter {
     justify-content: space-between;
-    margin: 0 0 12px;
+    width: 100%;
     font-size: 11px;
   }
   body.cinewave-site .genre-year-filter select {
+    width: min(200px, 59%);
     min-width: 135px;
     min-height: 44px;
   }
