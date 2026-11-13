@@ -33,6 +33,8 @@ jobs:
         working-directory: kinolab-next
     steps:
       - name: Validate explicit production release approval
+        # Run before checkout: the kinolab-next folder does not exist yet.
+        working-directory: .
         env:
           PUBLISH: ${{ inputs.publish }}
           CONFIRM_REPOSITORY: ${{ inputs.confirm_repository }}
