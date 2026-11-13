@@ -988,3 +988,220 @@ body.cinewave-site[data-theme="light"] .genre-year-filter select {
     min-height: 44px;
   }
 }
+
+
+/* KinoGo-style multi-select filtering, restyled for KinoLab. */
+body.cinewave-site .genre-year-filters {
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  margin: -5px 0 16px;
+}
+body.cinewave-site .genre-multi {
+  position: relative;
+  min-width: 162px;
+}
+body.cinewave-site .genre-multi.is-open { z-index: 85; }
+body.cinewave-site .multi-filter-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 43px;
+  padding: 9px 13px;
+  background: #251c33;
+  border: 1px solid rgba(212,244,88,.4);
+  border-radius: 10px;
+  color: #f7f5f0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .16s, background .16s;
+}
+body.cinewave-site .multi-filter-trigger:hover,
+body.cinewave-site .multi-filter-trigger[aria-expanded="true"] {
+  border-color: #D4F458;
+  background: #322442;
+}
+body.cinewave-site .multi-filter-trigger:focus-visible,
+body.cinewave-site .multi-filter-panel button:focus-visible,
+body.cinewave-site .multi-filter-search:focus-visible,
+body.cinewave-site .multi-filter-option input:focus-visible {
+  outline: 2px solid #D4F458;
+  outline-offset: 2px;
+}
+body.cinewave-site .multi-filter-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 99px;
+  background: #D4F458;
+  color: #20152E;
+  font-size: 11px;
+  font-weight: 800;
+}
+body.cinewave-site .multi-filter-chevron { font-size: 22px; line-height: 14px; color: #D4F458; }
+body.cinewave-site .multi-filter-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: min(500px, calc(100vw - 36px));
+  max-width: calc(100vw - 36px);
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid #615071;
+  background: #20152E;
+  color: #F7F5F0;
+  box-shadow: 0 24px 56px #0009;
+  overflow: hidden;
+  z-index: 86;
+}
+body.cinewave-site .multi-filter-panel-head {
+  padding: 15px 17px 11px;
+  font-size: 13px;
+  border-bottom: 1px solid #ffffff24;
+}
+body.cinewave-site .multi-filter-search {
+  display: block;
+  width: calc(100% - 28px);
+  margin: 12px 14px 0;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #655574;
+  background: #120d1c;
+  color: #F7F5F0;
+  font: inherit;
+  font-size: 13px;
+}
+body.cinewave-site .multi-filter-search::placeholder { color: #b9adc6; }
+body.cinewave-site .multi-filter-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: start;
+  gap: 2px 8px;
+  max-height: 285px;
+  min-height: 80px;
+  margin: 11px 6px 0 12px;
+  padding: 0 8px 9px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+body.cinewave-site .multi-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  min-height: 34px;
+  padding: 6px 4px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #E9E3EF;
+  cursor: pointer;
+}
+body.cinewave-site .multi-filter-option:hover { background: #ffffff14; }
+body.cinewave-site .multi-filter-option input {
+  width: 15px;
+  height: 15px;
+  min-width: 15px;
+  margin: 0;
+  accent-color: #D4F458;
+  cursor: pointer;
+}
+body.cinewave-site .multi-filter-option span {
+  overflow-wrap: anywhere;
+}
+body.cinewave-site .multi-filter-empty { grid-column: 1 / -1; font-size: 12px; color: #cec4d8; }
+body.cinewave-site .multi-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-top: 1px solid #ffffff24;
+}
+body.cinewave-site .multi-filter-actions button,
+body.cinewave-site .multi-filter-reset {
+  min-height: 37px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+body.cinewave-site .multi-filter-apply {
+  background: #D4F458;
+  color: #20152E;
+  border: 1px solid #D4F458;
+}
+body.cinewave-site .multi-filter-cancel,
+body.cinewave-site .multi-filter-clear,
+body.cinewave-site .multi-filter-reset {
+  background: transparent;
+  color: #F7F5F0;
+  border: 1px solid #ffffff60;
+}
+body.cinewave-site .multi-filter-clear { margin-left: auto; }
+body.cinewave-site .multi-filter-reset { white-space: nowrap; }
+body.cinewave-site[data-theme="light"] .multi-filter-trigger {
+  background: #fff;
+  color: #20152E;
+  border-color: #20152E50;
+}
+body.cinewave-site[data-theme="light"] .multi-filter-trigger:hover,
+body.cinewave-site[data-theme="light"] .multi-filter-trigger[aria-expanded="true"] {
+  background: #F1EEE8;
+  border-color: #20152E;
+}
+body.cinewave-site[data-theme="light"] .multi-filter-panel {
+  background: #FFFDF8;
+  color: #20152E;
+  border-color: #20152E55;
+  box-shadow: 0 18px 46px #20152E36;
+}
+body.cinewave-site[data-theme="light"] .multi-filter-panel-head,
+body.cinewave-site[data-theme="light"] .multi-filter-actions { border-color: #20152E22; }
+body.cinewave-site[data-theme="light"] .multi-filter-option { color: #20152E; }
+body.cinewave-site[data-theme="light"] .multi-filter-option:hover { background: #20152E11; }
+body.cinewave-site[data-theme="light"] .multi-filter-search {
+  background: white;
+  color: #20152E;
+  border-color: #20152E66;
+}
+body.cinewave-site[data-theme="light"] .multi-filter-search::placeholder,
+body.cinewave-site[data-theme="light"] .multi-filter-empty { color: #685875; }
+body.cinewave-site[data-theme="light"] .multi-filter-cancel,
+body.cinewave-site[data-theme="light"] .multi-filter-clear,
+body.cinewave-site[data-theme="light"] .multi-filter-reset {
+  color: #20152E;
+  border-color: #20152E65;
+}
+@media (max-width: 700px) {
+  body.cinewave-site .genre-year-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+    gap: 9px;
+  }
+  body.cinewave-site .genre-multi { width: 100%; min-width: 0; }
+  body.cinewave-site .multi-filter-trigger { min-height: 44px; }
+  body.cinewave-site .genre-multi:first-child .multi-filter-panel {
+    left: 0;
+    right: auto;
+  }
+  body.cinewave-site .multi-filter-reset { grid-column: 1 / -1; }
+  body.cinewave-site .multi-filter-options {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    max-height: min(320px, 44dvh);
+  }
+}
+@media (max-width: 420px) {
+  body.cinewave-site .multi-filter-panel { width: min(330px, calc(100vw - 36px)); }
+  body.cinewave-site .multi-filter-options { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  body.cinewave-site .multi-filter-option { font-size: 11px; gap: 6px; }
+}
