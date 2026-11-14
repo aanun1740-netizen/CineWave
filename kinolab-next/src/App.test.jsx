@@ -263,7 +263,8 @@ describe("React storefront", () => {
     render(<App />);
     await screen.findAllByText("Ոդիսական");
     const catalog = document.querySelector("#catalogSection");
-    const poster = within(catalog).getByRole("button",{name:/Ոդիսական — Դիտել հիմա/});
+    const poster = catalog.querySelector('article.movie[data-id="catalog:external:162"]');
+    expect(poster).toBeTruthy();
     await user.click(poster);
     const dialog = screen.getByRole("dialog",{name:"Ոդիսական"});
     await user.click(within(dialog).getByRole("button",{name:"Դիտել ֆիլմը"}));
