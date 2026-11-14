@@ -27,10 +27,15 @@ export default function MultiSelectFilter({
   value,
   onApply,
   language = "en",
+  // Parent-controlled state keeps both popovers from opening on top of each other.
+  controlledOpen,
+  onOpenChange,
 }) {
   const strings = copy[language] || copy.en;
   const root = useRef(null);
-  const [open, setOpen] = useState(false);
+  const [localOpen, setLocalOpen] = useState(false);
+  const open = controlledOpen ?? localOpen;
+  const setOpen = (next) => { if (onOpenChange) onOpenChange(next); else setLocalOpen(next); };
   const [draft, setDraft] = useState(value);
   const [query, setQuery] = useState("");
   const selected = Array.isArray(value) ? value : [];
@@ -53,6 +58,16 @@ export default function MultiSelectFilter({
       setOpen(true);
     }
   }
+  useEffect(() => {
+    if (!open) {
+      setQuery("");
+      return;
+    }
+    // An adjacent filter may have just closed this one. Restore its draft
+    // from the latest applied value every time the panel is opened.
+    setDraft(selected);
+    setQuery("");
+  }, [open]);
   useEffect(() => {
     if (!open) return;
     function outside(event) {
