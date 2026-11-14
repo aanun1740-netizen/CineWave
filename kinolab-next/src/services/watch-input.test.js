@@ -7,6 +7,7 @@ const frame = '<iframe width="720" height="405" src="' + rutube + '" frameborder
 describe("normalizeAdminWatchInput", () => {
   it("accepts and extracts a RUTUBE embed in the normal external editor", () => {
     expect(normalizeAdminWatchInput(frame, "external")).toBe(rutube);
+    expect(normalizeAdminWatchInput(frame.replace(rutube, rutube + "?r=plwd"), "external")).toBe(rutube);
     expect(normalizeAdminWatchInput(rutube, "external")).toBe(rutube);
   });
   it("accepts the same iframe in the clean-player editor", () => {
