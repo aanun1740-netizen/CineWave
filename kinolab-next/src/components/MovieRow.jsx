@@ -103,7 +103,7 @@ export default function MovieRow({
           const info = localizedMovie(movie, language),
             available = watchable(movie),
             official = !available ? externalWatchUrl(movie) : null,
-            cleanPlayer = isCleanPlayerMovie(movie, official),
+            cleanPlayer = isCleanPlayerMovie(movie, movie.externalWatch),
             progress = playback.progressFor(movie.id);
           return (
             <article

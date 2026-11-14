@@ -38,6 +38,7 @@ export default function App() {
     [query, setQuery] = useState(""),
     [genre, setGenre] = useState([]),
     [year, setYear] = useState([]),
+    [openFilter, setOpenFilter] = useState(null),
     [heroIndex, setHeroIndex] = useState(0),
     [profile, setProfile] = useState(false),
     [ai, setAI] = useState(false),
@@ -126,6 +127,7 @@ export default function App() {
       setQuery("");
       setGenre([]);
       setYear([]);
+      setOpenFilter(null);
     }
     setProfile(false);
     history[replace ? "replaceState" : "pushState"](null, "", `#/${next}`);
@@ -141,6 +143,7 @@ export default function App() {
         setQuery("");
         setGenre([]);
         setYear([]);
+        setOpenFilter(null);
       }
       setRoute(next);
     }
@@ -276,14 +279,23 @@ export default function App() {
   }, [choices.length, route, query, genre, year]);
   const featured = choices[heroIndex % Math.max(choices.length, 1)],
     info = featured ? localizedMovie(featured, language) : null;
+  const availableGenreValues = useMemo(() => availableGenres(movies), [movies]);
+  const years = useMemo(() => [...new Set(movies
+    .map((movie) => Number(movie.year))
+    .filter((value) => Number.isInteger(value) && value >= 1888 && value <= 2100))]
+    .sort((a, b) => b - a), [movies]);
+  // A checked "Select all" is not meant to hide films with missing metadata.
+  // Treat all selected values exactly like no filter (while showing the ticks).
+  const genreFilter = availableGenreValues.length && availableGenreValues.every(value => genre.includes(value)) ? [] : genre;
+  const yearFilter = years.length && years.every(value => year.includes(String(value))) ? [] : year;
   const filtered = useMemo(() => filterMovies(movies, {
     query,
-    genre,
-    year,
+    genre: genreFilter,
+    year: yearFilter,
     route: listing,
     list: account.list,
     language,
-  }), [movies, query, genre, year, listing, account.list, language]);
+  }), [movies, query, genreFilter, yearFilter, listing, account.list, language]);
   let movieId = "";
   try {
     movieId = decodeURIComponent(route.split("/").slice(1).join("/"));
@@ -302,10 +314,6 @@ export default function App() {
       const p = playback.progressFor(movie.id);
       return p > 0 && p < 99;
     });
-  const years = useMemo(() => [...new Set(movies
-    .map((movie) => Number(movie.year))
-    .filter((value) => Number.isInteger(value) && value >= 1888 && value <= 2100))]
-    .sort((a, b) => b - a), [movies]);
   function notice(message) {
     setToast(message);
     clearTimeout(toastTimer.current);
@@ -450,8 +458,8 @@ export default function App() {
     </nav>
   );
   if (cleanPage) {
-    const external = current ? externalWatchUrl(current) : null;
-    const valid = isCleanPlayerMovie(current, external);
+    const source = current?.playbackMode === "clean" ? current.externalWatch : null;
+    const valid = isCleanPlayerMovie(current, source);
     const access = account.ready && Boolean(account.session || guestFilms.includes(current?.id));
     const locked = account.ready && !account.session && guestFilms.length >= FREE_GUEST_FILMS && !guestFilms.includes(current?.id);
     return <CleanWatchPage movie={valid ? current : null} language={language}
@@ -663,7 +671,7 @@ export default function App() {
                 </p>
                 <div className="actions">
                   {featured && externalWatchUrl(featured) && !watchable(featured) ? (
-                    isCleanPlayerMovie(featured, externalWatchUrl(featured)) ? (
+                    isCleanPlayerMovie(featured, featured.externalWatch) ? (
                       <button type="button" className="btn primary"
                         onClick={() => openWatch(featured, "clean")}
                         aria-label={`${t("watch")} — embedded player`}>
@@ -764,11 +772,13 @@ export default function App() {
                     id="genreFilter"
                     title={t("genreFilter")}
                     allLabel={t("allGenres")}
-                    options={availableGenres(movies).map(value => ({
+                    options={availableGenreValues.map(value => ({
                       value, label: genreLabel(value, language)
                     }))}
                     value={genre}
                     language={language}
+                    controlledOpen={openFilter === "genre"}
+                    onOpenChange={next => setOpenFilter(next ? "genre" : null)}
                     onApply={values => {
                       setGenre(values);
                       // Discover opens the film results while TV/My List stay put.
@@ -782,6 +792,8 @@ export default function App() {
                     options={years.map(value => ({value:String(value), label:String(value)}))}
                     value={year}
                     language={language}
+                    controlledOpen={openFilter === "year"}
+                    onOpenChange={next => setOpenFilter(next ? "year" : null)}
                     onApply={values => {
                       setYear(values);
                       if (listing === "home") search(query);
@@ -789,7 +801,7 @@ export default function App() {
                   />
                   {(genre.length > 0 || year.length > 0) && (
                     <button type="button" className="multi-filter-reset"
-                      onClick={() => { setGenre([]); setYear([]); }}>
+                      onClick={() => { setGenre([]); setYear([]); setOpenFilter(null); }}>
                       {({hy:"Մաքրել զտիչները",ru:"Сбросить фильтры",en:"Clear filters"})[language]}
                     </button>
                   )}

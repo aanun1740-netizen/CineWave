@@ -213,6 +213,68 @@ describe("React storefront", () => {
     expect(screen.getByRole("checkbox",{name:"Select all"})).toBeTruthy();
   });
 
+  it("never stacks genre and year dropdowns and keeps each applied selection", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findAllByText("Արևի պատմություն");
+    await user.click(screen.getByRole("button",{name:"Ժանր"}));
+    await user.click(screen.getByRole("checkbox",{name:"Դրամա"}));
+    await user.click(screen.getByRole("button",{name:"Թողարկման տարեթիվ"}));
+    expect(screen.queryByRole("group",{name:"Ժանր"})).toBeNull();
+    expect(screen.getByRole("group",{name:"Թողարկման տարեթիվ"})).toBeTruthy();
+    await user.click(screen.getByRole("button",{name:"Ժանր"}));
+    expect(screen.getByRole("checkbox",{name:"Դրամա"}).checked).toBe(false);
+    expect(screen.queryByRole("group",{name:"Թողարկման տարեթիվ"})).toBeNull();
+  });
+
+  it("keeps movies with unknown metadata when both dropdowns select all", async () => {
+    const unknown = {
+      id: "12", title_en:"Untyped Film", title_hy:"Անհայտ ժանրի ֆիլմ",
+      media_type:"movie", genre_names:[], release_date:null,
+    };
+    mocks.backendFetch.mockResolvedValue({ ok:true, json:async()=>[...films, unknown] });
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findAllByText("Անհայտ ժանրի ֆիլմ");
+    await user.click(screen.getByRole("button",{name:"Ժանր"}));
+    await user.click(screen.getByRole("checkbox",{name:"Ընտրել բոլորը"}));
+    await user.click(screen.getByRole("button",{name:"Կիրառել"}));
+    const catalog=document.querySelector("#catalogSection");
+    expect(within(catalog).getByText("Անհայտ ժանրի ֆիլմ")).toBeTruthy();
+    await user.click(screen.getByRole("button",{name:"Թողարկման տարեթիվ"}));
+    await user.click(screen.getByRole("checkbox",{name:"Ընտրել բոլորը"}));
+    await user.click(screen.getByRole("button",{name:"Կիրառել"}));
+    expect(within(catalog).getByText("Անհայտ ժանրի ֆիլմ")).toBeTruthy();
+  });
+
+  it("opens a published RUTUBE clean-mode movie in the dedicated KinoLab player", async () => {
+    const demo = {
+      id: "162", title_en:"Odyssey", title_hy:"Ոդիսական",
+      title_ru:"Одиссея", media_type:"movie", is_published:true,
+      release_date:"2026-01-01", genre_names:["Adventure"],
+      external_watch_url:"https://rutube.ru/play/embed/425f1362acc34bcff78a143e83bfb1af",
+      playback_mode:"clean", terms_confirmed:true
+    };
+    mocks.backendFetch.mockImplementation(async (url) => ({
+      ok:true, json:async () => url.includes("/kinolab_external_catalog?") ? [demo] : films,
+    }));
+    localStorage.removeItem("kinolab:guest-films-v1");
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findAllByText("Ոդիսական");
+    const catalog = document.querySelector("#catalogSection");
+    const poster = catalog.querySelector('article.movie[data-id="catalog:external:162"]');
+    expect(poster).toBeTruthy();
+    await user.click(poster);
+    const dialog = screen.getByRole("dialog",{name:"Ոդիսական"});
+    await user.click(within(dialog).getByRole("button",{name:"Դիտել ֆիլմը"}));
+    await waitFor(() => expect(location.hash).toContain("#/play/catalog%3Aexternal%3A162"));
+    const player = await screen.findByTitle("Ոդիսական");
+    expect(player.getAttribute("src")).toBe("https://rutube.ru/play/embed/425f1362acc34bcff78a143e83bfb1af");
+    expect(document.title).toBe("Ոդիսական");
+    expect(screen.queryByText("Открыть исходный плеер")).toBeNull();
+  });
+
   it("searches dropdown values, and Clear removes the draft only after Apply", async () => {
     const user = userEvent.setup();
     render(<App />);

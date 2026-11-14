@@ -69,7 +69,7 @@ export default function MovieDialog({
   const hasDirectPlayback = movie ? watchable(movie) : false;
   const official = /^https:\/\/(?:www\.)?netflix\.com\/title\/\d+\/?$/.test(movie?.officialWatch || "") ? movie.officialWatch : null;
   const externalWatch = !hasDirectPlayback ? externalWatchUrl(movie) : null;
-  const cleanPlayer = isCleanPlayerMovie(movie, externalWatch);
+  const cleanPlayer = isCleanPlayerMovie(movie, movie?.externalWatch);
   return (
     <div
       className="modal open"
@@ -126,7 +126,7 @@ export default function MovieDialog({
           ) : (
             <div className="details-art">
               <Artwork className="detail-poster" src={movie.img} alt={info.title} />
-              {!hasDirectPlayback && !externalWatch && (
+              {!hasDirectPlayback && !externalWatch && !cleanPlayer && (
                 <div className="availability-note">{t("browseOnly")}</div>
               )}
             </div>
