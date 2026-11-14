@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { client } from "../services/backend";
 import { allowedExternalMovie, allowedExternalWatch } from "../services/external-links";
-import { cleanEmbedUrl } from "../services/clean-player";
+import { normalizeAdminWatchInput } from "../services/watch-input";
 
 const labels = {
   hy: {heading:"Ավելացնել ֆիլմ կամ սերիալ՝ արտաքին հղումով",type:"Տեսակ",movie:"Ֆիլմ",series:"Սերիալ",episodes:"Լրացուցիչ սերիաների հղումներ (յուրաքանչյուր տողում՝ մեկ հղում)",seriesHint:"Առաջին սերիայի հղումը գրիր դիտման դաշտում, իսկ մյուսները՝ այստեղ։ Օգտագործիր նույն սերիալի համար NextEmbed-ի /tv/ID/սեզոն/սերիա հասցեները։",badEpisodes:"Սերիաների հղումները պետք է լինեն նույն սերիալի ճիշտ HTTPS հասցեներ՝ առանց կրկնության (առավելագույնը 200)։", title:"Ֆիլմի անուն", titleRu:"Ռուսերեն անուն (ըստ ցանկության)",titleHy:"Հայերեն անուն (ըստ ցանկության)",genre:"Ժանրեր (ստորակետերով)",year:"Թողարկման տարեթիվ",trailer:"Թրեյլերի հղում (YouTube կամ Vimeo, ըստ ցանկության)",poster:"Նկարի HTTPS հղում",choose:"Ընտրել նկար համակարգչից",uploading:"Նկարը վերբեռնվում է…",uploaded:"Նկարը վերբեռնվեց։ Այժմ կարող ես պահպանել ֆիլմը։",preview:"Ընտրված պաստառ",descriptionEn:"Նկարագրություն՝ անգլերեն (EN)",descriptionRu:"Նկարագրություն՝ ռուսերեն (RU)",descriptionHy:"Նկարագրություն՝ հայերեն (HY)",url:"Դիտման արտաքին հղում",terms:"Հաստատում եմ, որ ստուգել եմ արտաքին կայքի հղումների տարածման պայմանները և այս հղումը թույլատրված է հրապարակել",submit:"Պահպանել և հրապարակել",saving:"Պահպանվում է…",success:"Ֆիլմը պահպանվեց և հրապարակվեց արտաքին հղումով։ Թարմացրու գլխավոր էջը՝ ստուգելու համար։",duplicate:"Այս արտաքին հղումով ֆիլմն արդեն գոյություն ունի։",intro:"Մուտքագրիր ֆիլմի տվյալներն ու արտաքին էջի հասցեն։ «Դիտել» կոճակը նոր ներդիրում կբացի արտաքին կայքը․ KinoLab-ը ֆիլմը չի վերահեռարձակում։", list:"Արտաքին հղումով ավելացված ֆիլմեր", refresh:"Թարմացնել ցանկը", remove:"Ջնջել", hide:"Հեռացնել կայքից", show:"Հրապարակել", confirmDelete:"Վերջնական ջնջե՞լ այս ֆիլմը։", empty:"Արտաքին հղումով ավելացված ֆիլմեր չկան։", deleted:"Ֆիլմը ջնջվեց արտաքին կատալոգից։", hidden:"Ֆիլմը հեռացվեց հանրային կայքից։", shown:"Ֆիլմը կրկին հրապարակվեց։",edit:"Խմբագրել",cancel:"Չեղարկել",saveEdit:"Պահպանել փոփոխությունները",updated:"Ֆիլմի փոփոխությունները պահպանվեցին։",editing:"Խմբագրվում է՝ "},
@@ -136,8 +136,8 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
     const form=event.currentTarget;
     const v=Object.fromEntries(new FormData(form).entries());
     const rawUrl=String(v.external_watch_url||"").trim();
-    const url=clean ? cleanEmbedUrl(rawUrl) : rawUrl;
-    if (clean && !url) {
+    const url=normalizeAdminWatchInput(rawUrl, mode);
+    if (!url) {
       setNotice(({hy:"Ներդրվող փլեյերի հասցեն չի ճանաչվել։ Օգտագործիր պաշտոնական embed հղում կամ iframe կոդ։",ru:"Не удалось распознать встроенный плеер. Используйте корректный embed URL или iframe.",en:"Unsupported embed link. Paste an official player URL or iframe."}[language]));
       return;
     }
@@ -254,7 +254,10 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
         <label>{t.descriptionEn}<textarea name="overview_en" rows="4" lang="en" placeholder="English"/></label>
         <label>{t.descriptionRu}<textarea name="overview_ru" rows="4" lang="ru" placeholder="Русский"/></label>
         <label>{t.descriptionHy}<textarea name="overview_hy" rows="4" lang="hy" placeholder="Հայերեն"/></label>
-        <label>{clean ? words.url : t.url}<input name="external_watch_url" type={clean ? "text" : "url"} required maxLength={clean ? 4096 : 2048} placeholder={clean ? "https://vkvideo.ru/video-123_456" : mediaType==="tv"?"https://api.nextembed.ws/embed/tv/12345/1/1":"https://example.com/watch/film"}/>
+        <label>{clean ? words.url : t.url}<input name="external_watch_url" type="text" required maxLength={4096} autoComplete="off" spellCheck={false}
+            onBlur={event=>{const normalized=normalizeAdminWatchInput(event.currentTarget.value, mode);if(normalized)event.currentTarget.value=normalized;}}
+            placeholder={clean ? "https://vkvideo.ru/video-123_456" : mediaType==="tv"?"https://api.nextembed.ws/embed/tv/12345/1/1":"https://example.com/watch/film"}/>
+          {!clean && <small className="hint">{({hy:"Կարող ես տեղադրել սովորական HTTPS հղում կամ աջակցվող հարթակի iframe կոդ։ Կոդից ավտոմատ կվերցվի վիդեոյի հասցեն։ KinoLab-ի առանձին փլեյերի համար օգտագործիր «Մաքուր փլեյերով ֆիլմ» բաժինը։",ru:"Вставьте HTTPS-ссылку или iframe-код поддерживаемого плеера: адрес видео извлечётся автоматически. Для просмотра внутри KinoLab используйте раздел «Фильм с чистым плеером».",en:"Paste a normal HTTPS link or supported player iframe code; KinoLab will extract the video URL. For playback inside KinoLab, use the separate Clean player movie section."}[language])}</small>}
           {clean && <small className="hint">{({hy:"Կարող ես տեղադրել VK Video, RUTUBE, OK, YouTube, Vimeo, Dailymotion, Internet Archive կամ NextEmbed-ի հղումը/iframe-ը։ Փլեյերի ներսի ապրանքանշանները մնում են աղբյուրի վերահսկողության տակ։",ru:"Поддерживаются VK Video, RUTUBE, OK, YouTube, Vimeo, Dailymotion, Internet Archive и NextEmbed (ссылка или iframe). Логотип внутри плеера контролируется провайдером.",en:"Supports VK Video, RUTUBE, OK, YouTube, Vimeo, Dailymotion, Internet Archive, NextEmbed URLs or iframe snippets. Provider player branding cannot be hidden."}[language])}</small>}
         </label>
         <label hidden={mediaType!=="tv"}>{t.episodes}
@@ -267,7 +270,7 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
       <div className="form-actions">
         <button type="submit" className="primary" disabled={busy||uploading}>{busy?t.saving:uploading?t.uploading:editingRow?t.saveEdit:t.submit}</button>
         {editingRow && <button type="button" className="secondary" onClick={resetEditor} disabled={busy||uploading}>{t.cancel}</button>}
-        <button type="button" className="secondary" onClick={()=>{const raw=formRef.current?.elements.namedItem("external_watch_url")?.value?.trim();const url=clean ? cleanEmbedUrl(raw) : raw;if(allowed(url))window.open(url,"_blank","noopener,noreferrer");else setNotice("Enter a valid supported player link first.");}}>{({hy:"Փորձարկել հղումը",ru:"Проверить ссылку",en:"Test link"}[language])}</button>
+        <button type="button" className="secondary" onClick={()=>{const input=formRef.current?.elements.namedItem("external_watch_url");const url=normalizeAdminWatchInput(input?.value?.trim(),mode);if(url && allowed(url)){input.value=url;window.open(url,"_blank","noopener,noreferrer");}else setNotice(({hy:"Մուտքագրիր ճիշտ HTTPS հղում կամ աջակցվող iframe կոդ։",ru:"Укажите корректный HTTPS URL или поддерживаемый iframe-код.",en:"Enter a valid HTTPS URL or supported iframe code."}[language]));}}>{({hy:"Փորձարկել հղումը",ru:"Проверить ссылку",en:"Test link"}[language])}</button>
       </div>
     </form>
     <div style={{marginTop:28,borderTop:"1px solid #ffffff22",paddingTop:20}}>
