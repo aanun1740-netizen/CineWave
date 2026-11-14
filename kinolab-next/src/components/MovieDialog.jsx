@@ -126,7 +126,7 @@ export default function MovieDialog({
           ) : (
             <div className="details-art">
               <Artwork className="detail-poster" src={movie.img} alt={info.title} />
-              {!hasDirectPlayback && !externalWatch && (
+              {!hasDirectPlayback && !externalWatch && !cleanPlayer && (
                 <div className="availability-note">{t("browseOnly")}</div>
               )}
             </div>
