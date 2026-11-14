@@ -187,6 +187,47 @@ describe("Quick add external movie release year", () => {
     expect(mocks.savedPayload.overview_hy).toBe("Պատմություն");
   });
 
+  it("accepts RUTUBE iframe code in the regular external edit form and stores only the URL", async () => {
+    mocks.rows = [{
+      id: 171, title_en: "Top Gun: Maverick", title_ru: "Топ Ган: Мэверик",
+      overview_ru: "Текст фильма", release_date: "2022-05-25",
+      genre_names: ["Action"], media_type: "movie", is_published: true,
+      terms_confirmed: true, playback_mode: "external",
+      external_watch_url: "https://rutube.ru/video/425f1362acc34bcff78a143e83bfb1af/",
+    }];
+    const user = userEvent.setup();
+    render(<QuickExternalMovie language="ru" mode="external" />);
+    await user.click(await screen.findByRole("button", { name: "Редактировать" }));
+    const form = document.querySelector(".quick-external form");
+    const field = form.elements.namedItem("external_watch_url");
+    expect(field.getAttribute("type")).toBe("text");
+    const embed = '<iframe width="720" height="405" src="https://rutube.ru/play/embed/425f1362acc34bcff78a143e83bfb1af?r=plwd" frameborder="0" allowfullscreen></iframe>';
+    fireEvent.change(field, { target: { value: embed } });
+    fireEvent.blur(field);
+    expect(field.value).toBe("https://rutube.ru/play/embed/425f1362acc34bcff78a143e83bfb1af");
+    fireEvent.submit(form);
+    await waitFor(() => expect(mocks.savedPayload?.external_watch_url)
+      .toBe("https://rutube.ru/play/embed/425f1362acc34bcff78a143e83bfb1af"));
+    expect(mocks.savedPayload.title_en).toBe("Top Gun: Maverick");
+    expect(mocks.savedPayload.overview_ru).toBe("Текст фильма");
+    expect(mocks.savedPayload.release_date).toBe("2022-05-25");
+    expect(mocks.savedPayload.playback_mode).toBe("external");
+  });
+
+  it("accepts an iframe in clean-player mode, keeping the clean watch setting", async () => {
+    render(<QuickExternalMovie language="en" mode="clean" />);
+    const form = document.querySelector(".quick-external form");
+    fireEvent.change(form.elements.namedItem("title_en"), { target: { value: "Test player" } });
+    fireEvent.change(form.elements.namedItem("year"), { target: { value: "2026" } });
+    fireEvent.change(form.elements.namedItem("external_watch_url"), {
+      target: { value: '<iframe src="https://rutube.ru/play/embed/425f1362acc34bcff78a143e83bfb1af"></iframe>' },
+    });
+    form.elements.namedItem("terms_confirmed").checked = true;
+    fireEvent.submit(form);
+    await waitFor(() => expect(mocks.savedPayload?.playback_mode).toBe("clean"));
+    expect(mocks.savedPayload.external_watch_url).toBe("https://rutube.ru/play/embed/425f1362acc34bcff78a143e83bfb1af");
+  });
+
   it("stores a valid YouTube trailer link and shows an error for an unrelated host", async () => {
     render(<QuickExternalMovie language="en" />);
     const fields = document.querySelector(".quick-external form");
