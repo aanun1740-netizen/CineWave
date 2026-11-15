@@ -24,7 +24,7 @@ test("a clean-mode film opens the player inside KinoLab", async ({ page }) => {
   await watch.click();
   await expect(page).toHaveURL(/#\/play\/catalog%3Aexternal%3A123$/);
   await expect(page).toHaveTitle(title);
-  const frame = page.locator(`iframe[title="\${title}"]`);
+  const frame = page.locator(`iframe[title="${title}"]`);
   await expect(frame).toHaveAttribute("src", player);
   await expect(frame.contentFrame().getByText("Loaded player frame")).toBeVisible();
 });
