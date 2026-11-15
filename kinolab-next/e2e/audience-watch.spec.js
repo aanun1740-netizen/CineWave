@@ -80,7 +80,9 @@ test("public film detail clearly opens its authorized external destination in a 
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(site);
-  const first = page.locator("#catalogSection .movie").first();
+  const first = page.locator("#catalogSection .movie").filter({
+    has: page.locator("a.play-overlay"),
+  }).first();
   await expect(first).toBeVisible({ timeout: 30_000 });
   await first.locator(".movie-title").click();
   const detail = page.locator(".modal[role='dialog']");

@@ -1,6 +1,7 @@
 name: Publish KinoLab production (manual approval only)
 
-# Never deploy automatically from a push, pull request, or staging branch.
+# This workflow only deploys on manual approval. The branch deployment also
+# reads the compiled storefront and Studio from the repository root.
 on:
   workflow_dispatch:
     inputs:
@@ -58,9 +59,11 @@ jobs:
       - run: npm audit --omit=dev --audit-level=high
       - run: npm test
       - run: npm run build
+      - name: Verify the branch deployment has the same storefront and Studio
+        run: node scripts/verify-pages-bundle.mjs dist ..
       - run: npx playwright install --with-deps chrome
       - name: Validate live public data read-only without editing Supabase records
-        run: npx playwright test e2e/production-readonly.spec.js --project=desktop --project=mobile
+        run: npx playwright test e2e/production-readonly.spec.js e2e/clean-watch.spec.js --project=desktop --project=mobile
       - name: Upload tested Pages build
         uses: actions/upload-pages-artifact@v3
         with:
