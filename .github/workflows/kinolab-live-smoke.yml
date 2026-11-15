@@ -8,6 +8,10 @@ on:
       - .github/workflows/kinolab-live-smoke.yml
       - kinolab-next/e2e/**
       - kinolab-next/src/**
+      - kinolab-next/scripts/verify-pages-bundle.mjs
+      - index.html
+      - admin/index.html
+      - assets/**
 
 permissions:
   contents: read
@@ -29,6 +33,17 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run build
       - run: npx playwright install --with-deps chrome
+      - name: Wait for the tested storefront and Studio bundles to go live
+        run: |
+          for attempt in $(seq 1 12); do
+            if node scripts/verify-pages-bundle.mjs dist https://kinolabmovies.com/; then exit 0; fi
+            sleep 15
+          done
+          exit 1
+      - name: Check the clean watch route on the live site
+        env:
+          KINOLAB_SMOKE_URL: https://kinolabmovies.com/
+        run: npx playwright test e2e/clean-watch.spec.js --project=desktop --project=mobile
       - name: Check public Pages catalog and protected admin on desktop and mobile
         run: npx playwright test e2e/live-pages.spec.js e2e/audience-watch.spec.js --project=desktop --project=mobile
       - name: Keep diagnostic snapshots on failure

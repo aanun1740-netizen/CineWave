@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - 'kinolab-next/**'
+      - 'index.html'
+      - 'admin/index.html'
+      - 'assets/**'
       - '.github/workflows/kinolab-candidate.yml'
   workflow_dispatch:
 permissions:
@@ -25,10 +28,12 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
       - run: npm test
       - run: npm run build
+      - name: Verify that the Pages root serves the tested storefront and Studio build
+        run: node scripts/verify-pages-bundle.mjs dist ..
       - name: Install Chrome for read-only public production browser smoke tests
         run: npx playwright install --with-deps chrome
       - name: Test catalog, real public artwork, language and admin login gate (no credentials)
-        run: npx playwright test e2e/production-readonly.spec.js --project=desktop --project=mobile
+        run: npx playwright test e2e/production-readonly.spec.js e2e/clean-watch.spec.js --project=desktop --project=mobile
       - name: Preserve browser screenshots only on failure
         if: failure()
         uses: actions/upload-artifact@v4
