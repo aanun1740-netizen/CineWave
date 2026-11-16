@@ -279,6 +279,12 @@ export default function App() {
   }, [choices.length, route, query, genre, year]);
   const featured = choices[heroIndex % Math.max(choices.length, 1)],
     info = featured ? localizedMovie(featured, language) : null;
+  // Sort the combined catalog once. Filtering preserves this order, and ties
+  // keep their existing order. Missing release years go after dated titles.
+  const moviesByReleaseYear = useMemo(
+    () => [...movies].sort((a, b) => (b.year ?? 0) - (a.year ?? 0)),
+    [movies],
+  );
   const availableGenreValues = useMemo(() => availableGenres(movies), [movies]);
   const years = useMemo(() => [...new Set(movies
     .map((movie) => Number(movie.year))
@@ -288,14 +294,14 @@ export default function App() {
   // Treat all selected values exactly like no filter (while showing the ticks).
   const genreFilter = availableGenreValues.length && availableGenreValues.every(value => genre.includes(value)) ? [] : genre;
   const yearFilter = years.length && years.every(value => year.includes(String(value))) ? [] : year;
-  const filtered = useMemo(() => filterMovies(movies, {
+  const filtered = useMemo(() => filterMovies(moviesByReleaseYear, {
     query,
     genre: genreFilter,
     year: yearFilter,
     route: listing,
     list: account.list,
     language,
-  }), [movies, query, genreFilter, yearFilter, listing, account.list, language]);
+  }), [moviesByReleaseYear, query, genreFilter, yearFilter, listing, account.list, language]);
   let movieId = "";
   try {
     movieId = decodeURIComponent(route.split("/").slice(1).join("/"));
@@ -887,9 +893,7 @@ export default function App() {
                         })
                       : ""
                   }
-                  movies={[...movies]
-                    .sort((a, b) => (b.year || 0) - (a.year || 0))
-                    .slice(0, 12)}
+                  movies={moviesByReleaseYear.slice(0, 12)}
                 />
               )}
               <section className="discovery-note">
