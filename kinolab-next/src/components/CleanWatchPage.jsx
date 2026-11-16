@@ -43,13 +43,13 @@ export default function CleanWatchPage({ movie, language, ready, access, locked,
         {ready && access && selected && (
           <div className="clean-episode-picker">
             <label>{t.season}
-              <select value={selected.season}
+              <select aria-label={t.season} value={selected.season}
                 onChange={event => selectEpisode(episodes.find(item => item.season === Number(event.target.value)))}>
                 {seasons.map(season => <option key={season} value={season}>{season}</option>)}
               </select>
             </label>
             <label>{t.episode}
-              <select value={selected.episode}
+              <select aria-label={t.episode} value={selected.episode}
                 onChange={event => selectEpisode(seasonEpisodes.find(item => item.episode === Number(event.target.value)))}>
                 {seasonEpisodes.map(item => <option key={item.episode} value={item.episode}>{item.episode}</option>)}
               </select>
