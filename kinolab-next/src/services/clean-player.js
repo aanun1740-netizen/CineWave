@@ -20,11 +20,13 @@ export function cleanEmbedUrl(raw) {
     const path = url.pathname;
     if (host === "rutube.ru" || host === "www.rutube.ru") {
       const match = path.match(/^\/(?:video\/|play\/embed\/)([a-fA-F0-9]{32})\/?$/);
-      // RUTUBE share links often append a short ?r=... referral marker.
-      // It does not identify the video, so strip only this known parameter.
-      const referral = url.searchParams.get("r");
-      const safeSearch = !url.search || (url.searchParams.size === 1 &&
-        typeof referral === "string" && /^[A-Za-z0-9_-]{1,32}$/.test(referral));
+      // Share links may include a referral or the containing playlist.
+      // Neither parameter changes which video the player should load.
+      const params = [...url.searchParams];
+      const safeSearch = params.every(([key, value]) =>
+        url.searchParams.getAll(key).length === 1 &&
+        ((key === "r" && /^[A-Za-z0-9_-]{1,32}$/.test(value)) ||
+          (key === "playlist" && /^\d{1,20}$/.test(value))));
       if (match && safeSearch) return "https://rutube.ru/play/embed/" + match[1].toLowerCase();
     }
     if (host === "ok.ru" || host === "www.ok.ru") {
