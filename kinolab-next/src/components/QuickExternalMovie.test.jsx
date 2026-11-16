@@ -261,7 +261,12 @@ describe("Quick add external movie release year", () => {
     fireEvent.submit(form);
     expect(mocks.savedPayload).toBeNull();
 
-    fill("episode_urls", '2/1 <iframe src="https://vkvideo.ru/video_ext.php?oid=-1&amp;id=2"></iframe>\n1/1 ' + first);
+    const iframe = '<iframe\n  width="720"\n  src="https://vkvideo.ru/video_ext.php?oid=-1&amp;id=2"\n  allowFullScreen\n></iframe>';
+    fill("episode_urls", "2/1\n" + iframe + "<script>alert(1)</script>\n1/1 " + first);
+    fireEvent.submit(form);
+    expect(mocks.savedPayload).toBeNull();
+
+    fill("episode_urls", "2/1\n" + iframe + "\n\n1/1 " + first);
     fireEvent.submit(form);
     await waitFor(() => expect(mocks.savedPayload?.media_type).toBe("tv"));
     expect(mocks.savedPayload).toMatchObject({

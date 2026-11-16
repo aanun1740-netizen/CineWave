@@ -18,14 +18,17 @@ export function cleanSeriesEpisodes(items) {
 }
 
 export function parseCleanSeriesEpisodes(input) {
-  const lines = input.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-  if (!lines.length || lines.length > maxEpisodes) return null;
+  // Episode numbers start entries. Provider iframe snippets can span lines.
+  const entries = input.trim().split(/\r?\n(?=[ \t]*\d+\/\d+(?:\s|$))/);
+  if (entries.length > maxEpisodes) return null;
   const items = [];
   const urls = new Set();
-  for (const line of lines) {
-    const match = /^(\d+)\/(\d+)\s+(.+)$/.exec(line);
+  for (const entry of entries) {
+    const match = /^(\d+)\/(\d+)\s+([\s\S]+)$/.exec(entry.trim());
     if (!match) return null;
-    const url = normalizeAdminWatchInput(match[3], "clean");
+    const source = match[3].trim();
+    if (!/^<iframe\b/i.test(source) && /\s/.test(source)) return null;
+    const url = normalizeAdminWatchInput(source, "clean");
     if (!url || urls.has(url)) return null;
     const season = Number(match[1]);
     const episode = Number(match[2]);
@@ -36,5 +39,5 @@ export function parseCleanSeriesEpisodes(input) {
     items.push({ season, episode, url });
   }
   const validated = cleanSeriesEpisodes(items);
-  return validated.length === lines.length ? validated : null;
+  return validated.length === entries.length ? validated : null;
 }

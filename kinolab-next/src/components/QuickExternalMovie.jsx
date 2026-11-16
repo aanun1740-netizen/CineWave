@@ -35,7 +35,7 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
       intro:"Դիտումը կբացվի KinoLab-ում։ Սերիալն ունի մեկ քարտ և սեզոնի ու սերիայի ընտրություն։",
       list:"Մաքուր փլեյերով ֆիլմեր և սերիալներ", url:"Փլեյերի հղում կամ iframe",
       episodes:"Սերիաների հղումներ",
-      episodeHint:"Յուրաքանչյուր տողում գրիր սեզոն/սերիա, ապա բացատ ու փլեյերի հղում կամ iframe։ Օրինակ՝ 1/1 https://rutube.ru/play/embed/…",
+      episodeHint:"Յուրաքանչյուր սերիա սկսիր նոր տողից՝ սեզոն/սերիա համարով։ Հղումը գրիր նույն տողում կամ համարը գրելուց հետո տեղադրիր iframe կոդը, նույնիսկ եթե այն մի քանի տող է։ Օրինակ՝ 1/1 https://rutube.ru/play/embed/…",
       badEpisodes:"Մուտքագրիր մինչև 200 սերիա՝ սեզոն/սերիա ձևաչափով և տարբեր փլեյերի հղումներով։ Սեզոնն ու սերիան չպետք է կրկնվեն։"
     },
     ru: {
@@ -43,7 +43,7 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
       intro:"Просмотр откроется в KinoLab. У сериала одна карточка с выбором сезона и серии.",
       list:"Фильмы и сериалы с чистым плеером", url:"Ссылка на плеер или iframe",
       episodes:"Ссылки на серии",
-      episodeHint:"Каждая строка: сезон/серия, пробел и ссылка на плеер или iframe. Например, 1/1 https://rutube.ru/play/embed/…",
+      episodeHint:"Начинайте каждую серию с новой строки: сезон/серия и ссылка на плеер. После номера можно вставить и многострочный iframe. Например: 1/1 https://rutube.ru/play/embed/…",
       badEpisodes:"Укажите до 200 серий в формате сезон/серия со ссылками на поддерживаемые плееры. Номера и ссылки не должны повторяться."
     },
     en: {
@@ -51,7 +51,7 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
       intro:"Playback opens in KinoLab. Each series has one card with a season and episode selector.",
       list:"Clean-player movies and series", url:"Player URL or iframe",
       episodes:"Episode links",
-      episodeHint:"On each line, enter season/episode, a space, and a player link or iframe. For example, 1/1 https://rutube.ru/play/embed/…",
+      episodeHint:"Start each episode on a new line with season/episode and a player link. You can also paste multiline iframe code after the number. Example: 1/1 https://rutube.ru/play/embed/…",
       badEpisodes:"Enter up to 200 episodes with supported player links in season/episode format. Use unique episode numbers and links."
     }
   })[language] || {};
