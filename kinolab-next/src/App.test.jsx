@@ -100,6 +100,31 @@ describe("React storefront", () => {
     await waitFor(() => expect(document.documentElement.lang).toBe("ru"));
     expect(screen.getByRole("searchbox").placeholder).toBe("Поиск фильмов...");
   });
+  it("uses the saved slide order while preserving the public catalog order", async () => {
+    const selected = [
+      { id: 19, title_en: "Hero Choice A", release_date: "1999-01-01" },
+      { id: 20, title_en: "Hero Choice B", release_date: "2026-01-01" },
+    ].map(row => ({
+      ...row, media_type: "movie", is_published: true,
+      external_watch_url: "https://films.example.org/watch/" + row.id,
+    }));
+    mocks.backendFetch.mockImplementation(async url => ({
+      ok: true,
+      json: async () => url.includes("kinolab_featured_films")
+        ? [{ movie_ids: ["catalog:external:19", "catalog:external:999", "catalog:external:20"] }]
+        : url.includes("kinolab_external_catalog") ? selected : films,
+    }));
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByRole("heading", { level: 1, name: "Hero Choice A" });
+    const hero = document.querySelector(".hero");
+    const slides = hero.querySelectorAll(".hero-pagination button");
+    expect(slides).toHaveLength(2);
+    await user.click(slides[1]);
+    expect(await screen.findByRole("heading", { level: 1, name: "Hero Choice B" })).toBeTruthy();
+    expect(document.querySelector("#catalogSection article.movie").dataset.id).toBe("catalog:external:20");
+  });
+
   it("orders the combined catalog newest first and keeps that order in filtered results", async () => {
     const external = [
       { id: 10, title_en: "Catalog Classic", release_date: "1999-01-01", genre_names: ["Drama"] },
@@ -738,7 +763,7 @@ describe("React storefront", () => {
     mocks.backendFetch.mockResolvedValue({ ok: true, json: async () => films });
     await user.click(screen.getByRole("button", { name: "Փորձել կրկին" }));
     await screen.findAllByText("Արևի պատմություն");
-    expect(mocks.backendFetch).toHaveBeenCalledTimes(4);
+    expect(mocks.backendFetch.mock.calls.filter(([url]) => !url.includes("kinolab_featured_films"))).toHaveLength(4);
     expect(mocks.backendFetch).toHaveBeenCalledWith(
       expect.stringContaining("/kinolab_external_catalog?"),
       expect.any(Object),
