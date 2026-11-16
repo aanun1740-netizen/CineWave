@@ -261,12 +261,27 @@ describe("Quick add external movie release year", () => {
     fireEvent.submit(form);
     expect(mocks.savedPayload).toBeNull();
 
+    const duplicate = '1/2\n<iframe\n  src="' + first + '"\n></iframe>';
+    const duplicateText = "1/1 " + first + "?playlist=306282\n\n" + duplicate;
+    fill("episode_urls", duplicateText);
+    fireEvent.submit(form);
+    const episodeInput = form.elements.namedItem("episode_urls");
+    expect(screen.getByRole("alert").textContent).toContain("Episodes 1/1 and 1/2 use the same link");
+    expect(document.activeElement).toBe(episodeInput);
+    expect(episodeInput.value.slice(episodeInput.selectionStart, episodeInput.selectionEnd)).toBe(duplicate.slice("1/2\n".length));
+    expect(mocks.savedPayload).toBeNull();
+
+    fill("episode_urls", "1/3 https://rutube.ru/plst/306282/");
+    fireEvent.submit(form);
+    expect(screen.getByRole("alert").textContent).toContain("1/3. This is a playlist link");
+    expect(mocks.savedPayload).toBeNull();
+
     const iframe = '<iframe\n  width="720"\n  src="https://vkvideo.ru/video_ext.php?oid=-1&amp;id=2"\n  allowFullScreen\n></iframe>';
     fill("episode_urls", "2/1\n" + iframe + "<script>alert(1)</script>\n1/1 " + first);
     fireEvent.submit(form);
     expect(mocks.savedPayload).toBeNull();
 
-    fill("episode_urls", "2/1\n" + iframe + "\n\n1/1 " + first);
+    fill("episode_urls", "2/1\n" + iframe + "\n\n1/1 " + first + "?r=plwd&playlist=306282");
     fireEvent.submit(form);
     await waitFor(() => expect(mocks.savedPayload?.media_type).toBe("tv"));
     expect(mocks.savedPayload).toMatchObject({
