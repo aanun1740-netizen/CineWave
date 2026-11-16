@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { client, signOut, base } from "./services/backend";
-import { adminModel as model } from "./domain";
+import { adminModel as model, mapCatalogMovie } from "./domain";
+import { allowedExternalWatch } from "./services/external-links";
 import { useLanguage } from "./hooks/useLanguage";
 import { adminEntries } from "./admin-translations";
 import Player from "./components/Player";
 import ArchiveImporter from "./components/ArchiveImporter";
 import QuickExternalMovie from "./components/QuickExternalMovie";
 import AnalyticsDashboard from "./components/AnalyticsDashboard";
+import FeaturedFilmsEditor from "./components/FeaturedFilmsEditor";
 const table = new Map(adminEntries.map(([en, ru, hy]) => [en, { en, ru, hy }]));
 const empty = () =>
   Object.fromEntries(
@@ -20,6 +22,7 @@ const empty = () =>
 export default function Admin() {
   const { language, setLanguage } = useLanguage();
   const t = (text) => table.get(text)?.[language] || text;
+  const featuredLabel = { hy: "Գլխավոր էջի սլայդեր", ru: "Слайды главной страницы", en: "Homepage slides" }[language];
   const [embedPreview, setEmbedPreview] = useState(null);
   const [session, setSession] = useState(null),
     [authorized, setAuthorized] = useState(false),
@@ -101,7 +104,7 @@ export default function Admin() {
       for (let start = 0; ; start += 100) {
         const { data, error } = await client
           .from("kinolab_external_catalog")
-          .select("id,title_en,is_published,created_at")
+          .select("id,title_en,title_ru,title_hy,release_date,media_type,external_watch_url,is_published,terms_confirmed,created_at")
           .order("created_at", { ascending: false })
           .order("id", { ascending: false })
           .range(start, start + 99);
@@ -608,13 +611,13 @@ export default function Admin() {
             <small>STUDIO</small>
              </a>
             <nav>
-              {["overview", "movies", "external", "clean", "archive", "analytics"].map((page) => (
+              {["overview", "movies", "external", "clean", "featured", "archive", "analytics"].map((page) => (
                 <button
                   key={page}
                   className={view === page ? "active" : ""}
                   onClick={() => leave(page)}
                 >
-                  {page==="analytics" ? ({hy:"▥ Վիճակագրություն",ru:"▥ Статистика",en:"▥ Analytics"}[language]) : page==="external" ? ({hy:"▶ Արագ ֆիլմ ավելացնել",ru:"▶ Быстро добавить фильм",en:"▶ Quick add movie"}[language]) : page==="clean" ? ({hy:"▣ Մաքուր փլեյերով ֆիլմ / սերիալ",ru:"▣ Фильм / сериал с чистым плеером",en:"▣ Clean-player movie / series"}[language]) : page==="archive" ? ({hy:"▤ Վերնագրերի արխիվ",ru:"▤ Архив названий",en:"▤ Title archive"}[language]) : t(page === "overview" ? "◈ Overview" : "▤ Movie library")}
+                  {page==="featured" ? featuredLabel : page==="analytics" ? ({hy:"▥ Վիճակագրություն",ru:"▥ Статистика",en:"▥ Analytics"}[language]) : page==="external" ? ({hy:"▶ Արագ ֆիլմ ավելացնել",ru:"▶ Быстро добавить фильм",en:"▶ Quick add movie"}[language]) : page==="clean" ? ({hy:"▣ Մաքուր փլեյերով ֆիլմ / սերիալ",ru:"▣ Фильм / сериал с чистым плеером",en:"▣ Clean-player movie / series"}[language]) : page==="archive" ? ({hy:"▤ Վերնագրերի արխիվ",ru:"▤ Архив названий",en:"▤ Title archive"}[language]) : t(page === "overview" ? "◈ Overview" : "▤ Movie library")}
                 </button>
               ))}
               <button onClick={() => edit()}>{t("＋ Add movie")}</button>
@@ -635,6 +638,7 @@ export default function Admin() {
                   {t(
                     {
                       overview: "Overview",
+                      featured: featuredLabel,
                       movies: "Movie library",
                       archive: ({hy:"Վերնագրերի արխիվ",ru:"Архив названий",en:"Title archive"}[language]),
                       analytics: ({hy:"Այցելությունների վիճակագրություն",ru:"Статистика посещений",en:"Traffic analytics"}[language]),
@@ -739,6 +743,14 @@ export default function Admin() {
                   </p>
                 </div>
               </section>
+            )}
+            {view === "featured" && (
+              <FeaturedFilmsEditor language={language} onDirty={setDirty} movies={[
+                ...rows.filter(row => row.is_published && row.media_type !== "tv").map(mapCatalogMovie),
+                ...externalRows.filter(row => row.is_published && row.terms_confirmed &&
+                  row.media_type === "movie" && allowedExternalWatch(row.external_watch_url))
+                  .map(row => mapCatalogMovie({ ...row, id: "external:" + row.id })),
+              ]} />
             )}
             {view === "archive" && <ArchiveImporter language={language} />}
             {view === "analytics" && <AnalyticsDashboard language={language} />}

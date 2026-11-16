@@ -40,6 +40,7 @@ export default function App() {
     [year, setYear] = useState([]),
     [openFilter, setOpenFilter] = useState(null),
     [heroIndex, setHeroIndex] = useState(0),
+    [featuredIds, setFeaturedIds] = useState(null),
     [profile, setProfile] = useState(false),
     [ai, setAI] = useState(false),
     [theme, setTheme] = useState(() => {
@@ -262,21 +263,45 @@ export default function App() {
       abort.abort();
     };
   }, []);
+  useEffect(() => {
+    const abort = new AbortController();
+    const timeout = window.setTimeout(() => {
+      abort.abort();
+      setFeaturedIds([]);
+    }, 3500);
+    backendFetch(`${config.url}/rest/v1/kinolab_featured_films?select=movie_ids&id=eq.1`, {
+      headers: { apikey: config.key, Authorization: `Bearer ${config.key}` },
+      signal: abort.signal,
+    }).then(response => response.ok ? response.json() : null)
+      .then(rows => {
+        if (!abort.signal.aborted) {
+          const ids = rows?.[0]?.movie_ids;
+          setFeaturedIds(Array.isArray(ids) ? ids.slice(0, 5) : []);
+        }
+      }).catch(() => {
+        if (!abort.signal.aborted) setFeaturedIds([]);
+      }).finally(() => window.clearTimeout(timeout));
+    return () => { abort.abort(); window.clearTimeout(timeout); };
+  }, []);
   const watchable = useCallback((movie) => approvedPlayback(movie, proofs), [proofs]);
   // Search and unrelated UI updates should not re-sort the entire catalog.
-  const choices = useMemo(() => [...movies]
-    .sort(
+  const choices = useMemo(() => {
+    if (featuredIds === null) return [];
+    const byId = new Map(movies.map(movie => [movie.id, movie]));
+    const selected = featuredIds.map(id => byId.get(id)).filter(Boolean);
+    if (selected.length) return selected;
+    return [...movies].sort(
       (a, b) =>
         Number(watchable(b)) - Number(watchable(a)) ||
         Number(b.img !== POSTER_FALLBACK) - Number(a.img !== POSTER_FALLBACK),
-    )
-    .slice(0, 5), [movies, watchable]);
+    ).slice(0, 5);
+  }, [featuredIds, movies, watchable]);
   // Rotate featured movies every six seconds; preserve manual dot selection.
   useEffect(() => {
     if (choices.length < 2 || route !== "home" || query || genre.length > 0 || year.length > 0) return;
     const timer = window.setInterval(() => setHeroIndex(index => (index + 1) % choices.length), 6000);
     return () => window.clearInterval(timer);
-  }, [choices.length, route, query, genre, year]);
+  }, [choices, route, query, genre, year]);
   const featured = choices[heroIndex % Math.max(choices.length, 1)],
     info = featured ? localizedMovie(featured, language) : null;
   // Sort the combined catalog once. Filtering preserves this order, and ties
