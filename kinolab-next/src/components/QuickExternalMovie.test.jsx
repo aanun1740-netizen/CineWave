@@ -246,4 +246,37 @@ describe("Quick add external movie release year", () => {
     await waitFor(() => expect(mocks.savedPayload?.trailer_url).toBe("https://www.youtube.com/watch?v=abcdefghijk"));
     expect(mocks.savedPayload.release_date).toBe("2026-01-01");
   });
+  it("saves and reopens a clean-player series with ordered episodes and normalized iframe links", async () => {
+    const first = "https://rutube.ru/play/embed/0123456789abcdef0123456789abcdef";
+    const second = "https://vkvideo.ru/video_ext.php?oid=-1&id=2";
+    const editor = render(<QuickExternalMovie language="en" mode="clean" />);
+    let form = document.querySelector(".quick-external form");
+    const fill = (name, value) => fireEvent.change(form.elements.namedItem(name), { target: { value } });
+    fill("media_type", "tv");
+    fill("title_en", "Example series");
+    fill("year", "2026");
+    form.elements.namedItem("terms_confirmed").checked = true;
+    expect(form.elements.namedItem("external_watch_url").disabled).toBe(true);
+    fill("episode_urls", "1/1 " + first + "\n1/1 " + second);
+    fireEvent.submit(form);
+    expect(mocks.savedPayload).toBeNull();
+
+    fill("episode_urls", '2/1 <iframe src="https://vkvideo.ru/video_ext.php?oid=-1&amp;id=2"></iframe>\n1/1 ' + first);
+    fireEvent.submit(form);
+    await waitFor(() => expect(mocks.savedPayload?.media_type).toBe("tv"));
+    expect(mocks.savedPayload).toMatchObject({
+      playback_mode: "clean", external_watch_url: first, episode_links: [
+        { season: 1, episode: 1, url: first },
+        { season: 2, episode: 1, url: second },
+      ],
+    });
+    mocks.rows = [{ id: 42, ...mocks.savedPayload }];
+    editor.unmount();
+    render(<QuickExternalMovie language="en" mode="clean" />);
+    fireEvent.click(await screen.findByRole("button", { name: "Edit" }));
+    form = document.querySelector(".quick-external form");
+    expect(form.elements.namedItem("media_type").value).toBe("tv");
+    expect(form.elements.namedItem("episode_urls").value).toBe("1/1 " + first + "\n2/1 " + second);
+  });
+
 });

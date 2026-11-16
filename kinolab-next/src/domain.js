@@ -1,6 +1,7 @@
 import "../catalog.js";
 import { siteBase } from "./site-base.js";
 import { allowedExternalWatch } from "./services/external-links";
+import { cleanSeriesEpisodes } from "./services/clean-series";
 import "../availability.js";
 import "../model.js";
 export const POSTER_FALLBACK = `${siteBase()}assets/poster-fallback.svg`;
@@ -11,6 +12,8 @@ export const mapCatalogMovie = (row) => {
   const movie = catalog.mapCatalogMovie(row);
   return {
     ...movie,
+    episodes: movie.playbackMode === "clean" && movie.mediaType === "tv"
+      ? cleanSeriesEpisodes(row.episode_links) : movie.episodes,
     img:
       movie.img === "assets/poster-fallback.svg" ? POSTER_FALLBACK : movie.img,
   };

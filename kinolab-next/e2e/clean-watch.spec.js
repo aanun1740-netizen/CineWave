@@ -28,3 +28,42 @@ test("a clean-mode film opens the player inside KinoLab", async ({ page }) => {
   await expect(frame).toHaveAttribute("src", player);
   await expect(frame.contentFrame().getByText("Loaded player frame")).toBeVisible();
 });
+
+test("a clean-player series switches seasons and episodes in the same page", async ({ page }) => {
+  const episode2 = "https://rutube.ru/play/embed/123456789abcdef0123456789abcdef0";
+  const episode3 = "https://rutube.ru/play/embed/23456789abcdef0123456789abcdef01";
+  const series = "KinoLab clean series smoke test";
+  await page.route("**/rest/v1/rpc/kinolab_record_event", route => route.fulfill({ status: 204 }));
+  await page.route("**/rest/v1/movies?*", route => route.fulfill({ json: [] }));
+  await page.route("**/rest/v1/kinolab_external_catalog?*", route => route.fulfill({ json: [{
+    id: 124, title_en: series, media_type: "tv", is_published: true,
+    release_date: "2026-01-01", genre_names: ["Adventure"], playback_mode: "clean",
+    external_watch_url: player, terms_confirmed: true,
+    episode_links: [
+      { season: 1, episode: 1, url: player },
+      { season: 2, episode: 1, url: episode2 },
+      { season: 2, episode: 2, url: episode3 },
+    ],
+  }] }));
+  await page.route("https://rutube.ru/play/embed/**", route => route.fulfill({
+    contentType: "text/html", body: "<p>Loaded series player frame</p>",
+  }));
+
+  await page.goto(process.env.KINOLAB_SMOKE_URL || "/");
+  await page.locator('#catalogSection .movie[data-id="catalog:external:124"] .movie-title').click();
+  await page.getByRole("dialog", { name: series }).getByRole("button", { name: "Watch Now", exact: true }).click();
+  const frame = page.locator("iframe").filter({ visible: true });
+  const season = page.getByLabel("Season", { exact: true });
+  const episode = page.getByLabel("Episode", { exact: true });
+  await expect(frame).toHaveAttribute("src", player);
+  await season.selectOption("2");
+  await expect(frame).toHaveAttribute("src", episode2);
+  await expect(episode).toHaveValue("1");
+  await episode.selectOption("2");
+  await expect(frame).toHaveAttribute("src", episode3);
+  await expect(frame.contentFrame().getByText("Loaded series player frame")).toBeVisible();
+  await expect(page).toHaveURL(/#\/play\/catalog%3Aexternal%3A124$/);
+  await expect(page).toHaveTitle(series);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))))
+    .toEqual(["catalog:external:124"]);
+});

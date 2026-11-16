@@ -614,7 +614,7 @@ export default function Admin() {
                   className={view === page ? "active" : ""}
                   onClick={() => leave(page)}
                 >
-                  {page==="analytics" ? ({hy:"▥ Վիճակագրություն",ru:"▥ Статистика",en:"▥ Analytics"}[language]) : page==="external" ? ({hy:"▶ Արագ ֆիլմ ավելացնել",ru:"▶ Быстро добавить фильм",en:"▶ Quick add movie"}[language]) : page==="clean" ? ({hy:"▣ Մաքուր փլեյերով ֆիլմ",ru:"▣ Фильм с чистым плеером",en:"▣ Clean player movie"}[language]) : page==="archive" ? ({hy:"▤ Վերնագրերի արխիվ",ru:"▤ Архив названий",en:"▤ Title archive"}[language]) : t(page === "overview" ? "◈ Overview" : "▤ Movie library")}
+                  {page==="analytics" ? ({hy:"▥ Վիճակագրություն",ru:"▥ Статистика",en:"▥ Analytics"}[language]) : page==="external" ? ({hy:"▶ Արագ ֆիլմ ավելացնել",ru:"▶ Быстро добавить фильм",en:"▶ Quick add movie"}[language]) : page==="clean" ? ({hy:"▣ Մաքուր փլեյերով ֆիլմ / սերիալ",ru:"▣ Фильм / сериал с чистым плеером",en:"▣ Clean-player movie / series"}[language]) : page==="archive" ? ({hy:"▤ Վերնագրերի արխիվ",ru:"▤ Архив названий",en:"▤ Title archive"}[language]) : t(page === "overview" ? "◈ Overview" : "▤ Movie library")}
                 </button>
               ))}
               <button onClick={() => edit()}>{t("＋ Add movie")}</button>
@@ -639,7 +639,7 @@ export default function Admin() {
                       archive: ({hy:"Վերնագրերի արխիվ",ru:"Архив названий",en:"Title archive"}[language]),
                       analytics: ({hy:"Այցելությունների վիճակագրություն",ru:"Статистика посещений",en:"Traffic analytics"}[language]),
                       external: ({hy:"Արագ ֆիլմ ավելացնել",ru:"Быстро добавить фильм",en:"Quick add movie"}[language]),
-                      clean: ({hy:"Մաքուր փլեյերով ֆիլմ ավելացնել",ru:"Добавить фильм с чистым плеером",en:"Add a clean-player movie"}[language]),
+                      clean: ({hy:"Մաքուր փլեյերով ֆիլմ կամ սերիալ",ru:"Фильм или сериал с чистым плеером",en:"Clean-player movie or series"}[language]),
                       editor: editing ? "Edit movie" : "Add movie",
                     }[view],
                   )}

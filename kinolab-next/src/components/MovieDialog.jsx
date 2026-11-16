@@ -143,7 +143,7 @@ export default function MovieDialog({
             {info.desc ||
               t(movie ? "descriptionFallback" : loading ? "loading" : "empty")}
           </p>
-          {movie?.kind === "TV Show" && movie.episodes?.length > 0 && !watch && (
+          {movie?.kind === "TV Show" && movie.episodes?.length > 0 && !cleanPlayer && !watch && (
             <section className="series-episode-section" aria-label={({hy:"Սերիաներ",ru:"Серии",en:"Episodes"}[language])}>
               <h3>{({hy:"Սեզոններ և սերիաներ",ru:"Сезоны и серии",en:"Seasons & episodes"}[language])}</h3>
               <div className="series-episode-grid">
@@ -172,7 +172,7 @@ export default function MovieDialog({
             <div className="detail-actions">
               {cleanPlayer && !watch && (
                 <button className="btn primary" type="button" onClick={onCleanWatch}>
-                  {({hy:"Դիտել ֆիլմը",ru:"Смотреть фильм",en:"Watch movie"}[language])}
+                  {movie.mediaType === "tv" ? t("watch") : ({hy:"Դիտել ֆիլմը",ru:"Смотреть фильм",en:"Watch movie"}[language])}
                 </button>
               )}
               {externalWatch && !watch && !cleanPlayer && (
