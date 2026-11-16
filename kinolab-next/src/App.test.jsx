@@ -100,6 +100,33 @@ describe("React storefront", () => {
     await waitFor(() => expect(document.documentElement.lang).toBe("ru"));
     expect(screen.getByRole("searchbox").placeholder).toBe("Поиск фильмов...");
   });
+  it("orders the combined catalog newest first and keeps that order in filtered results", async () => {
+    const external = [
+      { id: 10, title_en: "Catalog Classic", release_date: "1999-01-01", genre_names: ["Drama"] },
+      { id: 11, title_en: "Catalog Unknown", release_date: null },
+      { id: 12, title_en: "Catalog New", release_date: "2026-01-01", genre_names: ["Drama"] },
+    ].map((row) => ({
+      ...row, media_type: "movie", is_published: true,
+      external_watch_url: "https://films.example.org/watch/" + row.id,
+    }));
+    mocks.backendFetch.mockImplementation(async (url) => ({
+      ok: true,
+      json: async () => url.includes("kinolab_external_catalog") ? external : films,
+    }));
+    const user = userEvent.setup();
+    render(<App />);
+    const visibleIds = () => [...document.querySelectorAll("#catalogSection article.movie")]
+      .map((card) => card.dataset.id);
+    await waitFor(() => expect(visibleIds()).toEqual([
+      "catalog:external:12", "catalog:1", "catalog:2", "catalog:external:10", "catalog:external:11",
+    ]));
+
+    await user.click(screen.getByRole("button", { name: "Ժանր" }));
+    await user.click(screen.getByRole("checkbox", { name: "Դրամա" }));
+    await user.click(screen.getByRole("button", { name: "Կիրառել" }));
+    expect(visibleIds()).toEqual(["catalog:external:12", "catalog:1", "catalog:external:10"]);
+  });
+
   it("opens searchable checkbox grids for genre and year, applies combined multi-select filters", async () => {
     const user = userEvent.setup();
     render(<App />);
