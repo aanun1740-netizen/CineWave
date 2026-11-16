@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { client } from "../services/backend";
 import { allowedExternalMovie, allowedExternalWatch } from "../services/external-links";
 import { normalizeAdminWatchInput } from "../services/watch-input";
+import { parseCleanSeriesEpisodes } from "../services/clean-series";
 
 const labels = {
   hy: {heading:"Ավելացնել ֆիլմ կամ սերիալ՝ արտաքին հղումով",type:"Տեսակ",movie:"Ֆիլմ",series:"Սերիալ",episodes:"Լրացուցիչ սերիաների հղումներ (յուրաքանչյուր տողում՝ մեկ հղում)",seriesHint:"Առաջին սերիայի հղումը գրիր դիտման դաշտում, իսկ մյուսները՝ այստեղ։ Օգտագործիր նույն սերիալի համար NextEmbed-ի /tv/ID/սեզոն/սերիա հասցեները։",badEpisodes:"Սերիաների հղումները պետք է լինեն նույն սերիալի ճիշտ HTTPS հասցեներ՝ առանց կրկնության (առավելագույնը 200)։", title:"Ֆիլմի անուն", titleRu:"Ռուսերեն անուն (ըստ ցանկության)",titleHy:"Հայերեն անուն (ըստ ցանկության)",genre:"Ժանրեր (ստորակետերով)",year:"Թողարկման տարեթիվ",trailer:"Թրեյլերի հղում (YouTube կամ Vimeo, ըստ ցանկության)",poster:"Նկարի HTTPS հղում",choose:"Ընտրել նկար համակարգչից",uploading:"Նկարը վերբեռնվում է…",uploaded:"Նկարը վերբեռնվեց։ Այժմ կարող ես պահպանել ֆիլմը։",preview:"Ընտրված պաստառ",descriptionEn:"Նկարագրություն՝ անգլերեն (EN)",descriptionRu:"Նկարագրություն՝ ռուսերեն (RU)",descriptionHy:"Նկարագրություն՝ հայերեն (HY)",url:"Դիտման արտաքին հղում",terms:"Հաստատում եմ, որ ստուգել եմ արտաքին կայքի հղումների տարածման պայմանները և այս հղումը թույլատրված է հրապարակել",submit:"Պահպանել և հրապարակել",saving:"Պահպանվում է…",success:"Ֆիլմը պահպանվեց և հրապարակվեց արտաքին հղումով։ Թարմացրու գլխավոր էջը՝ ստուգելու համար։",duplicate:"Այս արտաքին հղումով ֆիլմն արդեն գոյություն ունի։",intro:"Մուտքագրիր ֆիլմի տվյալներն ու արտաքին էջի հասցեն։ «Դիտել» կոճակը նոր ներդիրում կբացի արտաքին կայքը․ KinoLab-ը ֆիլմը չի վերահեռարձակում։", list:"Արտաքին հղումով ավելացված ֆիլմեր", refresh:"Թարմացնել ցանկը", remove:"Ջնջել", hide:"Հեռացնել կայքից", show:"Հրապարակել", confirmDelete:"Վերջնական ջնջե՞լ այս ֆիլմը։", empty:"Արտաքին հղումով ավելացված ֆիլմեր չկան։", deleted:"Ֆիլմը ջնջվեց արտաքին կատալոգից։", hidden:"Ֆիլմը հեռացվեց հանրային կայքից։", shown:"Ֆիլմը կրկին հրապարակվեց։",edit:"Խմբագրել",cancel:"Չեղարկել",saveEdit:"Պահպանել փոփոխությունները",updated:"Ֆիլմի փոփոխությունները պահպանվեցին։",editing:"Խմբագրվում է՝ "},
@@ -29,10 +30,31 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
   const t=labels[language] || labels.en;
   const clean = mode === "clean";
   const words = ({
-    hy: {heading:"Ավելացնել ֆիլմ՝ մաքուր փլեյերով",intro:"Լրացրու ֆիլմի վերնագիրը, նկարները, նկարագրությունները՝ երեք լեզվով, ժանրը, տարեթիվը, թրեյլերը և ֆիլմի դիտման հղումը։ Նոր դիտման էջում բրաուզերի ներդիրը ցույց կտա միայն ֆիլմի անունը, բայց փլեյերի ներսում հնարավոր է մնա հարթակի լոգոն։",list:"Մաքուր փլեյերով ֆիլմեր",url:"Փլեյերի հղում կամ iframe"},
-    ru: {heading:"Добавить фильм с отдельным плеером",intro:"Введите название, постер, описания на трёх языках, жанры, год, трейлер и ссылку. Вкладка просмотра называется только именем фильма; внутри стороннего плеера логотип может остаться.",list:"Фильмы с отдельным плеером",url:"Ссылка на плеер или iframe"},
-    en: {heading:"Add a movie with a clean player",intro:"Enter film titles, poster, EN/RU/HY descriptions, genres, year, trailer and a permitted player link. The viewing tab shows the film title; provider branding inside the player may remain.",list:"Clean-player movies",url:"Player URL or iframe"}
-  }[language] || {});
+    hy: {
+      heading:"Ավելացնել ֆիլմ կամ սերիալ մաքուր փլեյերով",
+      intro:"Դիտումը կբացվի KinoLab-ում։ Սերիալն ունի մեկ քարտ և սեզոնի ու սերիայի ընտրություն։",
+      list:"Մաքուր փլեյերով ֆիլմեր և սերիալներ", url:"Փլեյերի հղում կամ iframe",
+      episodes:"Սերիաների հղումներ",
+      episodeHint:"Յուրաքանչյուր տողում գրիր սեզոն/սերիա, ապա բացատ ու փլեյերի հղում կամ iframe։ Օրինակ՝ 1/1 https://rutube.ru/play/embed/…",
+      badEpisodes:"Մուտքագրիր մինչև 200 սերիա՝ սեզոն/սերիա ձևաչափով և տարբեր փլեյերի հղումներով։ Սեզոնն ու սերիան չպետք է կրկնվեն։"
+    },
+    ru: {
+      heading:"Добавить фильм или сериал с чистым плеером",
+      intro:"Просмотр откроется в KinoLab. У сериала одна карточка с выбором сезона и серии.",
+      list:"Фильмы и сериалы с чистым плеером", url:"Ссылка на плеер или iframe",
+      episodes:"Ссылки на серии",
+      episodeHint:"Каждая строка: сезон/серия, пробел и ссылка на плеер или iframe. Например, 1/1 https://rutube.ru/play/embed/…",
+      badEpisodes:"Укажите до 200 серий в формате сезон/серия со ссылками на поддерживаемые плееры. Номера и ссылки не должны повторяться."
+    },
+    en: {
+      heading:"Add a movie or series with a clean player",
+      intro:"Playback opens in KinoLab. Each series has one card with a season and episode selector.",
+      list:"Clean-player movies and series", url:"Player URL or iframe",
+      episodes:"Episode links",
+      episodeHint:"On each line, enter season/episode, a space, and a player link or iframe. For example, 1/1 https://rutube.ru/play/embed/…",
+      badEpisodes:"Enter up to 200 episodes with supported player links in season/episode format. Use unique episode numbers and links."
+    }
+  })[language] || {};
   const [busy,setBusy]=useState(false),[notice,setNotice]=useState("");
   const [posterUrl,setPosterUrl]=useState("");
   const [uploading,setUploading]=useState(false);
@@ -41,6 +63,7 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
   const [editingRow,setEditingRow]=useState(null);
   const [duplicateRow,setDuplicateRow]=useState(null);
   const [mediaType,setMediaType]=useState("movie");
+  const cleanSeries = clean && mediaType === "tv";
   const formRef=useRef(null);
   async function refreshList() {
     setListLoading(true);
@@ -76,7 +99,10 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
     const type=row.media_type==="tv" ? "tv" : "movie";
     form.elements.namedItem("media_type").value=type;
     setMediaType(type);
-    form.elements.namedItem("episode_urls").value=Array.isArray(row.episode_links) ? row.episode_links.map(item=>item.url).filter(url=>url && url!==row.external_watch_url).join("\n") : "";
+    const episodes = Array.isArray(row.episode_links) ? row.episode_links : [];
+    form.elements.namedItem("episode_urls").value = clean
+      ? episodes.map(item => item.season + "/" + item.episode + " " + item.url).join("\n")
+      : episodes.map(item => item.url).filter(url => url && url !== row.external_watch_url).join("\n");
     setPosterUrl(row.poster_path||"");
     setDuplicateRow(null);
     setEditingRow({id:row.id,is_published:row.is_published,release_date:row.release_date});
@@ -130,21 +156,35 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
     finally{setUploading(false);input.value="";}
   }
 
+  function testFirstEpisode() {
+    const input = formRef.current.elements.namedItem("episode_urls");
+    const episodes = parseCleanSeriesEpisodes(input.value);
+    if (!episodes) {
+      setNotice(words.badEpisodes);
+      return;
+    }
+    window.open(episodes[0].url, "_blank", "noopener,noreferrer");
+  }
+
   async function submit(event) {
     event.preventDefault();
     if(busy || uploading) return;
     const form=event.currentTarget;
     const v=Object.fromEntries(new FormData(form).entries());
     const rawUrl=String(v.external_watch_url||"").trim();
-    const url=normalizeAdminWatchInput(rawUrl, mode);
+    const type=v.media_type==="tv" ? "tv" : "movie";
+    let episodeLinks = cleanSeries ? parseCleanSeriesEpisodes(String(v.episode_urls || "")) : [];
+    if (!episodeLinks) {
+      setNotice(words.badEpisodes);
+      return;
+    }
+    const url=cleanSeries ? episodeLinks[0].url : normalizeAdminWatchInput(rawUrl, mode);
     if (!url) {
       setNotice(({hy:"Ներդրվող փլեյերի հասցեն չի ճանաչվել։ Օգտագործիր պաշտոնական embed հղում կամ iframe կոդ։",ru:"Не удалось распознать встроенный плеер. Используйте корректный embed URL или iframe.",en:"Unsupported embed link. Paste an official player URL or iframe."}[language]));
       return;
     }
     const trailer=String(v.trailer_url||"").trim();
-    const type=clean ? "movie" : (v.media_type==="tv" ? "tv" : "movie");
-    let episodeLinks=[];
-    if(type==="tv") {
+    if(type==="tv" && !clean) {
       const extra=String(v.episode_urls||"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
       const urls=[url,...extra];
       const matches=urls.map(link=>link.match(/^https:\/\/api\.nextembed\.ws\/embed\/tv\/(\d+)\/(\d+)\/(\d+)\/?$/));
@@ -205,7 +245,9 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
           const { data: existing, error: lookupError } = await client
             .from("kinolab_external_catalog").select("*")
             .eq("external_watch_url", url).maybeSingle();
-          if(!lookupError && existing) setDuplicateRow(existing);
+          if(!lookupError && existing && (existing.playback_mode === "clean") === clean) {
+            setDuplicateRow(existing);
+          }
           throw Error(t.duplicate);
         }
         if(result.error.code==="23505") throw Error(t.duplicate);
@@ -213,7 +255,9 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
       }
       if(!result.data?.length)throw Error("No record was saved. Check your administrator access.");
       resetEditor();
-      setNotice(editingRow?t.updated:t.success);
+      setNotice(editingRow?t.updated:cleanSeries
+        ? ({hy:"Սերիալը պահպանվեց և հրապարակվեց։",ru:"Сериал сохранён и опубликован.",en:"Series saved and published."}[language])
+        : t.success);
       await refreshList();
     } catch(error) {setNotice(error?.message||String(error));}
     finally {setBusy(false);}
@@ -233,7 +277,7 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
     <form ref={formRef} onSubmit={submit} onInvalidCapture={(e)=>{const name=e.target.closest("label")?.innerText?.trim()||e.target.name||"field";setNotice(({hy:"Լրացրու կամ ուղղիր պարտադիր դաշտը՝ ",ru:"Заполните или исправьте поле: ",en:"Complete or correct this field: "}[language])+name.slice(0,85));}}>
       <div className="form-grid">
         <label>{t.type}
-          <select name="media_type" value={clean ? "movie" : mediaType} disabled={clean} onChange={e=>setMediaType(e.target.value)}>
+          <select name="media_type" value={mediaType} onChange={e=>setMediaType(e.target.value)}>
             <option value="movie">{t.movie}</option>
             <option value="tv">{t.series}</option>
           </select>
@@ -254,15 +298,15 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
         <label>{t.descriptionEn}<textarea name="overview_en" rows="4" lang="en" placeholder="English"/></label>
         <label>{t.descriptionRu}<textarea name="overview_ru" rows="4" lang="ru" placeholder="Русский"/></label>
         <label>{t.descriptionHy}<textarea name="overview_hy" rows="4" lang="hy" placeholder="Հայերեն"/></label>
-        <label>{clean ? words.url : t.url}<input name="external_watch_url" type="text" required maxLength={4096} autoComplete="off" spellCheck={false}
+        <label hidden={cleanSeries}>{clean ? words.url : t.url}<input name="external_watch_url" type="text" required={!cleanSeries} disabled={cleanSeries} maxLength={4096} autoComplete="off" spellCheck={false}
             onBlur={event=>{const normalized=normalizeAdminWatchInput(event.currentTarget.value, mode);if(normalized)event.currentTarget.value=normalized;}}
             placeholder={clean ? "https://vkvideo.ru/video-123_456" : mediaType==="tv"?"https://api.nextembed.ws/embed/tv/12345/1/1":"https://example.com/watch/film"}/>
           {!clean && <small className="hint">{({hy:"Կարող ես տեղադրել սովորական HTTPS հղում կամ աջակցվող հարթակի iframe կոդ։ Կոդից ավտոմատ կվերցվի վիդեոյի հասցեն։ KinoLab-ի առանձին փլեյերի համար օգտագործիր «Մաքուր փլեյերով ֆիլմ» բաժինը։",ru:"Вставьте HTTPS-ссылку или iframe-код поддерживаемого плеера: адрес видео извлечётся автоматически. Для просмотра внутри KinoLab используйте раздел «Фильм с чистым плеером».",en:"Paste a normal HTTPS link or supported player iframe code; KinoLab will extract the video URL. For playback inside KinoLab, use the separate Clean player movie section."}[language])}</small>}
           {clean && <small className="hint">{({hy:"Կարող ես տեղադրել VK Video, RUTUBE, OK, YouTube, Vimeo, Dailymotion, Internet Archive կամ NextEmbed-ի հղումը/iframe-ը։ Փլեյերի ներսի ապրանքանշանները մնում են աղբյուրի վերահսկողության տակ։",ru:"Поддерживаются VK Video, RUTUBE, OK, YouTube, Vimeo, Dailymotion, Internet Archive и NextEmbed (ссылка или iframe). Логотип внутри плеера контролируется провайдером.",en:"Supports VK Video, RUTUBE, OK, YouTube, Vimeo, Dailymotion, Internet Archive, NextEmbed URLs or iframe snippets. Provider player branding cannot be hidden."}[language])}</small>}
         </label>
-        <label hidden={mediaType!=="tv"}>{t.episodes}
-          <textarea name="episode_urls" rows="5" placeholder={"https://api.nextembed.ws/embed/tv/12345/1/2\nhttps://api.nextembed.ws/embed/tv/12345/1/3"} disabled={mediaType!=="tv"}/>
-          <small className="hint">{t.seriesHint}</small>
+        <label hidden={mediaType!=="tv"} style={cleanSeries ? {gridColumn:"1 / -1"} : undefined}>{clean ? words.episodes : t.episodes}
+          <textarea name="episode_urls" rows="5" placeholder={clean ? "1/1 https://…\n1/2 https://…" : "https://api.nextembed.ws/embed/tv/12345/1/2\nhttps://api.nextembed.ws/embed/tv/12345/1/3"} disabled={mediaType!=="tv"} required={cleanSeries}/>
+          <small className="hint">{clean ? words.episodeHint : t.seriesHint}</small>
         </label>
         <label>{t.trailer}<input name="trailer_url" type="url" maxLength="2048" placeholder="https://www.youtube.com/watch?v=..."/></label>
       </div>
@@ -270,7 +314,8 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
       <div className="form-actions">
         <button type="submit" className="primary" disabled={busy||uploading}>{busy?t.saving:uploading?t.uploading:editingRow?t.saveEdit:t.submit}</button>
         {editingRow && <button type="button" className="secondary" onClick={resetEditor} disabled={busy||uploading}>{t.cancel}</button>}
-        <button type="button" className="secondary" onClick={()=>{const input=formRef.current?.elements.namedItem("external_watch_url");const url=normalizeAdminWatchInput(input?.value?.trim(),mode);if(url && allowed(url)){input.value=url;window.open(url,"_blank","noopener,noreferrer");}else setNotice(({hy:"Մուտքագրիր ճիշտ HTTPS հղում կամ աջակցվող iframe կոդ։",ru:"Укажите корректный HTTPS URL или поддерживаемый iframe-код.",en:"Enter a valid HTTPS URL or supported iframe code."}[language]));}}>{({hy:"Փորձարկել հղումը",ru:"Проверить ссылку",en:"Test link"}[language])}</button>
+        {!cleanSeries && <button type="button" className="secondary" onClick={()=>{const input=formRef.current?.elements.namedItem("external_watch_url");const url=normalizeAdminWatchInput(input?.value?.trim(),mode);if(url && allowed(url)){input.value=url;window.open(url,"_blank","noopener,noreferrer");}else setNotice(({hy:"Մուտքագրիր ճիշտ HTTPS հղում կամ աջակցվող iframe կոդ։",ru:"Укажите корректный HTTPS URL или поддерживаемый iframe-код.",en:"Enter a valid HTTPS URL or supported iframe code."}[language]));}}>{({hy:"Փորձարկել հղումը",ru:"Проверить ссылку",en:"Test link"}[language])}</button>}
+        {cleanSeries && <button type="button" className="secondary" onClick={testFirstEpisode}>{({hy:"Փորձարկել առաջին սերիան",ru:"Проверить первую серию",en:"Test first episode"}[language])}</button>}
       </div>
     </form>
     <div style={{marginTop:28,borderTop:"1px solid #ffffff22",paddingTop:20}}>
