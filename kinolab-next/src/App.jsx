@@ -52,7 +52,7 @@ export default function App() {
     [guestFilms, setGuestFilms] = useState(readGuestFilms),
     [guestPrompt, setGuestPrompt] = useState(false),
     [, setProgress] = useState(0);
-  const underlay = useRef("home"),
+  const underlay = useRef(route in navs ? route : "home"),
     ratingReturn = useRef(null),
     profilePanel = useRef(null),
     toastTimer = useRef(null),
@@ -411,7 +411,10 @@ export default function App() {
   function openWatch(movie, route = false) {
     if (!allowWatch(movie)) return false;
     if (mayCount) recordMetric("watch_click", movie.id, language);
-    if (route) navigate((route === "clean" ? "play/" : "watch/") + encodeURIComponent(movie.id));
+    if (route) {
+      const separatePlayer = route === "clean" && movie.mediaType !== "tv";
+      navigate((separatePlayer ? "play/" : "watch/") + encodeURIComponent(movie.id));
+    }
     return true;
   }
   function outboundClick(event, movie) {
@@ -963,7 +966,6 @@ export default function App() {
           close={() => navigate(underlay.current, true)}
           onWatch={() => openWatch(current, true)}
           onInlineWatch={() => openWatch(current)}
-          onCleanWatch={() => openWatch(current, "clean")}
           toggle={toggle}
           saved={Boolean(current && account.list.has(current.id))}
           watchable={watchable}

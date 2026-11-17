@@ -2,6 +2,17 @@ import { test, expect } from "@playwright/test";
 
 const player = "https://rutube.ru/play/embed/0123456789abcdef0123456789abcdef";
 const title = "KinoLab clean player smoke test";
+const playerFrame = `<title>Player fixture</title>
+  <button>Expand video</button>
+  <script>
+    const toggle = document.querySelector("button");
+    toggle.onclick = () => document.fullscreenElement
+      ? document.exitFullscreen()
+      : document.documentElement.requestFullscreen();
+    document.addEventListener("fullscreenchange", () => {
+      toggle.textContent = document.fullscreenElement ? "Shrink video" : "Expand video";
+    });
+  </script>`;
 
 // A stable fixture exercises the exact site route and iframe request without
 // counting test traffic or depending on availability of a third-party film.
@@ -17,18 +28,7 @@ test("a clean-mode film opens the player inside KinoLab", async ({ page }) => {
     external_watch_url: player, terms_confirmed: true,
   }] }));
   await page.route(player, route => route.fulfill({
-    contentType: "text/html",
-    body: `<title>Player fixture</title>
-      <button>Expand video</button>
-      <script>
-        const toggle = document.querySelector("button");
-        toggle.onclick = () => document.fullscreenElement
-          ? document.exitFullscreen()
-          : document.documentElement.requestFullscreen();
-        document.addEventListener("fullscreenchange", () => {
-          toggle.textContent = document.fullscreenElement ? "Shrink video" : "Expand video";
-        });
-      </script>`,
+    contentType: "text/html", body: playerFrame,
   }));
 
   await page.goto(process.env.KINOLAB_SMOKE_URL || "/");
@@ -52,7 +52,7 @@ test("a clean-mode film opens the player inside KinoLab", async ({ page }) => {
     .toEqual(["catalog:external:123"]);
 });
 
-test("a clean-player series switches seasons and episodes in the same page", async ({ page }) => {
+test("a clean-player series switches episodes and expands the video inside its details", async ({ page }) => {
   const episode2 = "https://rutube.ru/play/embed/123456789abcdef0123456789abcdef0";
   const episode3 = "https://rutube.ru/play/embed/23456789abcdef0123456789abcdef01";
   const series = "KinoLab clean series smoke test";
@@ -69,24 +69,38 @@ test("a clean-player series switches seasons and episodes in the same page", asy
     ],
   }] }));
   await page.route("https://rutube.ru/play/embed/**", route => route.fulfill({
-    contentType: "text/html", body: "<p>Loaded series player frame</p>",
+    contentType: "text/html", body: playerFrame,
   }));
 
-  await page.goto(process.env.KINOLAB_SMOKE_URL || "/");
-  await page.locator('#catalogSection .movie[data-id="catalog:external:124"] .movie-title').click();
-  await page.getByRole("dialog", { name: series }).getByRole("button", { name: "Watch Now", exact: true }).click();
-  const frame = page.locator("iframe").filter({ visible: true });
-  const season = page.getByLabel("Season", { exact: true });
-  const episode = page.getByLabel("Episode", { exact: true });
+  await page.goto((process.env.KINOLAB_SMOKE_URL || "/") + "#/tv");
+  const card = page.locator('#catalogSection .movie[data-id="catalog:external:124"]');
+  await card.locator(".movie-title").click();
+  const dialog = page.getByRole("dialog", { name: series });
+  const frame = dialog.locator("iframe");
+  const season = dialog.getByLabel("Season", { exact: true });
+  const episode = dialog.getByLabel("Episode", { exact: true });
+  await expect(frame).toHaveCount(0);
+  await dialog.getByRole("button", { name: "Watch Now", exact: true }).click();
+  await expect(page).toHaveURL(/#\/movie\/catalog%3Aexternal%3A124$/);
   await expect(frame).toHaveAttribute("src", player);
   await season.selectOption("2");
   await expect(frame).toHaveAttribute("src", episode2);
   await expect(episode).toHaveValue("1");
   await episode.selectOption("2");
   await expect(frame).toHaveAttribute("src", episode3);
-  await expect(frame.contentFrame().getByText("Loaded series player frame")).toBeVisible();
-  await expect(page).toHaveURL(/#\/play\/catalog%3Aexternal%3A124$/);
-  await expect(page).toHaveTitle(series);
+  await expect(dialog.locator(".video-wrap > *")).toHaveCount(1);
+  const embedded = frame.contentFrame();
+  await embedded.getByRole("button", { name: "Expand video" }).press("Enter");
+  await expect(dialog.locator("iframe:fullscreen")).toHaveCount(1);
+  await embedded.getByRole("button", { name: "Shrink video" }).press("Enter");
+  await expect(dialog.locator("iframe:fullscreen")).toHaveCount(0);
+  await expect(frame).toHaveAttribute("src", episode3);
+
+  await dialog.getByRole("button", { name: "Close", exact: true }).click();
+  await expect(page).toHaveURL(/#\/tv$/);
+  await card.locator(".play-overlay").press("Enter");
+  await expect(page).toHaveURL(/#\/watch\/catalog%3Aexternal%3A124$/);
+  await expect(frame).toHaveAttribute("src", player);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))))
     .toEqual(["catalog:external:124"]);
 });

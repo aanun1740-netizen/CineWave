@@ -48,3 +48,5 @@
   border: 0;
   background: #000;
 }
+.cinewave-site .dialog-episode-picker { padding: 0 22px 12px; }
+.cinewave-site .dialog-episode-picker select { min-height: 44px; }
