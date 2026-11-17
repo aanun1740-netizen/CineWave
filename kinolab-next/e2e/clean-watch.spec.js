@@ -14,7 +14,18 @@ test("a clean-mode film opens the player inside KinoLab", async ({ page }) => {
     external_watch_url: player, terms_confirmed: true,
   }] }));
   await page.route(player, route => route.fulfill({
-    contentType: "text/html", body: "<title>Player fixture</title><p>Loaded player frame</p>",
+    contentType: "text/html",
+    body: `<title>Player fixture</title>
+      <button>Expand video</button>
+      <script>
+        const toggle = document.querySelector("button");
+        toggle.onclick = () => document.fullscreenElement
+          ? document.exitFullscreen()
+          : document.documentElement.requestFullscreen();
+        document.addEventListener("fullscreenchange", () => {
+          toggle.textContent = document.fullscreenElement ? "Shrink video" : "Expand video";
+        });
+      </script>`,
   }));
 
   await page.goto(process.env.KINOLAB_SMOKE_URL || "/");
@@ -27,12 +38,13 @@ test("a clean-mode film opens the player inside KinoLab", async ({ page }) => {
   await expect(page).toHaveURL(/#\/movie\/catalog%3Aexternal%3A123$/);
   const frame = dialog.locator(`iframe[title="${title}"]`);
   await expect(frame).toHaveAttribute("src", player);
-  await expect(frame.contentFrame().getByText("Loaded player frame")).toBeVisible();
-  await dialog.getByRole("button", { name: "Fullscreen", exact: true }).click();
-  await expect(dialog.locator(".inline-movie-stage:fullscreen")).toBeVisible();
-  await dialog.getByRole("button", { name: "Exit fullscreen", exact: true }).click();
-  await expect(dialog.locator(".inline-movie-stage:fullscreen")).toHaveCount(0);
-  await expect(frame.contentFrame().getByText("Loaded player frame")).toBeVisible();
+  await expect(dialog.locator(".video-wrap").locator(":scope > *")).toHaveCount(1);
+  const embedded = frame.contentFrame();
+  await embedded.getByRole("button", { name: "Expand video" }).click();
+  await expect(dialog.locator("iframe:fullscreen")).toHaveCount(1);
+  await embedded.getByRole("button", { name: "Shrink video" }).press("Enter");
+  await expect(dialog.locator("iframe:fullscreen")).toHaveCount(0);
+  await expect(embedded.getByRole("button", { name: "Expand video" })).toBeVisible();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))))
     .toEqual(["catalog:external:123"]);
 });
