@@ -1,8 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { localizedMovie, genreLabel, adminModel, externalWatchUrl } from "../domain";
 import Player from "./Player";
 import { Artwork } from "./MovieRow";
-import { isCleanPlayerMovie } from "../services/clean-player";
+import { Icon } from "./Icons";
+import InlineMoviePlayer from "./InlineMoviePlayer";
+import "./inline-movie-player.css";
+import { cleanEmbedUrl } from "../services/clean-player";
 
 // Only trusted, intentionally embeddable platforms; never embed arbitrary hosts.
 function trustedEmbed(url) {
@@ -43,6 +46,7 @@ export default function MovieDialog({
   t,
   close,
   onWatch,
+  onInlineWatch,
   onCleanWatch,
   onOutbound,
   guestLocked,
@@ -53,6 +57,7 @@ export default function MovieDialog({
 }) {
   const dialog = useRef(null),
     closer = useRef(null);
+  const [inlinePlaying, setInlinePlaying] = useState(false);
   useEffect(() => {
     const opener = document.activeElement;
     document.body.classList.add("has-player-dialog");
@@ -69,7 +74,10 @@ export default function MovieDialog({
   const hasDirectPlayback = movie ? watchable(movie) : false;
   const official = /^https:\/\/(?:www\.)?netflix\.com\/title\/\d+\/?$/.test(movie?.officialWatch || "") ? movie.officialWatch : null;
   const externalWatch = !hasDirectPlayback ? externalWatchUrl(movie) : null;
-  const cleanPlayer = isCleanPlayerMovie(movie, movie?.externalWatch);
+  const cleanSource = movie?.playbackMode === "clean" ? cleanEmbedUrl(movie.externalWatch) : null;
+  const inlineSource = movie?.mediaType === "movie" ? cleanSource : null;
+  const showInline = Boolean(inlineSource && inlinePlaying);
+  const watchLabel = {hy:"Դիտել ֆիլմը",ru:"Смотреть фильм",en:"Watch movie"}[language];
   return (
     <div
       className="modal open"
@@ -81,14 +89,14 @@ export default function MovieDialog({
         if (e.target === e.currentTarget) close();
       }}
       onKeyDown={(e) => {
-        if (e.key === "Escape") {
+        if (e.key === "Escape" && !document.fullscreenElement) {
           e.stopPropagation();
           close();
         }
         if (e.key === "Tab") {
           const nodes = [
             ...dialog.current.querySelectorAll(
-              'button:not(:disabled),a[href],input:not(:disabled),select,[tabindex="0"]',
+              'button:not(:disabled),a[href],input:not(:disabled),select,iframe,[tabindex="0"]',
             ),
           ].filter((node) => node.getClientRects().length);
           const first = nodes[0],
@@ -123,10 +131,22 @@ export default function MovieDialog({
         <div className="video-wrap">
           {movie && (watch && hasDirectPlayback ? (
             <Player movie={movie} language={language} onProgress={onProgress} />
+          ) : showInline ? (
+            <InlineMoviePlayer src={inlineSource} title={info.title} language={language}
+              externalWatch={externalWatch} onOutbound={(event) => onOutbound?.(event, movie)} />
+          ) : inlineSource ? (
+            <div className="inline-movie-preview">
+              <Artwork className="inline-movie-backdrop" src={movie.backdrop || movie.img} alt="" />
+              <Artwork className="inline-movie-poster" src={movie.img} alt="" />
+              <button className="btn primary inline-movie-play" type="button"
+                onClick={() => { if (onInlineWatch()) setInlinePlaying(true); }}>
+                <Icon name="play" /> {watchLabel}
+              </button>
+            </div>
           ) : (
             <div className="details-art">
               <Artwork className="detail-poster" src={movie.img} alt={info.title} />
-              {!hasDirectPlayback && !externalWatch && !cleanPlayer && (
+              {!hasDirectPlayback && !externalWatch && !cleanSource && (
                 <div className="availability-note">{t("browseOnly")}</div>
               )}
             </div>
@@ -143,7 +163,7 @@ export default function MovieDialog({
             {info.desc ||
               t(movie ? "descriptionFallback" : loading ? "loading" : "empty")}
           </p>
-          {movie?.kind === "TV Show" && movie.episodes?.length > 0 && !cleanPlayer && !watch && (
+          {movie?.kind === "TV Show" && movie.episodes?.length > 0 && !cleanSource && !watch && (
             <section className="series-episode-section" aria-label={({hy:"Սերիաներ",ru:"Серии",en:"Episodes"}[language])}>
               <h3>{({hy:"Սեզոններ և սերիաներ",ru:"Сезоны и серии",en:"Seasons & episodes"}[language])}</h3>
               <div className="series-episode-grid">
@@ -170,21 +190,21 @@ export default function MovieDialog({
           )}
           {movie && (
             <div className="detail-actions">
-              {cleanPlayer && !watch && (
+              {cleanSource && !inlineSource && !watch && (
                 <button className="btn primary" type="button" onClick={onCleanWatch}>
-                  {movie.mediaType === "tv" ? t("watch") : ({hy:"Դիտել ֆիլմը",ru:"Смотреть фильм",en:"Watch movie"}[language])}
+                  {movie.mediaType === "tv" ? t("watch") : watchLabel}
                 </button>
               )}
-              {externalWatch && !watch && !cleanPlayer && (
+              {externalWatch && !watch && !cleanSource && (
                 <div className="movielab-external-watch">
                   {guestLocked?.(movie) ? (
                     <button className="btn primary" type="button" onClick={() => onOutbound?.(null,movie)}>
-                      {({hy:"Դիտել ֆիլմը",ru:"Смотреть фильм",en:"Watch movie"}[language])}
+                      {watchLabel}
                     </button>
                   ) : (
                     <a className="btn primary" href={externalWatch} target="_blank" rel="noopener noreferrer"
                       onClick={(e) => onOutbound?.(e,movie)}>
-                      {({hy:"Դիտել ֆիլմը",ru:"Смотреть фильм",en:"Watch movie"}[language])}
+                      {watchLabel}
                     </a>
                   )}
                   <span className="movielab-external-disclosure">{({hy:"Բացվում է արտաքին նվագարկիչում · KinoLab-ը մնում է բաց",ru:"Откроется внешний плеер · KinoLab останется открытым",en:"Opens an external player · KinoLab stays open"}[language])}</span>

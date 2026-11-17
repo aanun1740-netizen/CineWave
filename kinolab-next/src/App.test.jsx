@@ -299,7 +299,7 @@ describe("React storefront", () => {
     expect(within(catalog).getByText("Անհայտ ժանրի ֆիլմ")).toBeTruthy();
   });
 
-  it("opens a published RUTUBE clean-mode movie in the dedicated KinoLab player", async () => {
+  it("opens a published RUTUBE clean-mode movie inside its details after counting the watch", async () => {
     const demo = {
       id: "162", title_en:"Odyssey", title_hy:"Ոդիսական",
       title_ru:"Одиссея", media_type:"movie", is_published:true,
@@ -319,12 +319,17 @@ describe("React storefront", () => {
     expect(poster).toBeTruthy();
     await user.click(poster);
     const dialog = screen.getByRole("dialog",{name:"Ոդիսական"});
+    expect(dialog.querySelector("iframe")).toBeNull();
+    expect(localStorage.getItem("kinolab:guest-films-v1")).toBeNull();
     await user.click(within(dialog).getByRole("button",{name:"Դիտել ֆիլմը"}));
-    await waitFor(() => expect(location.hash).toContain("#/play/catalog%3Aexternal%3A162"));
-    const player = await screen.findByTitle("Ոդիսական");
+    expect(location.hash).toBe("#/movie/catalog%3Aexternal%3A162");
+    const player = within(dialog).getByTitle("Ոդիսական");
     expect(player.getAttribute("src")).toBe("https://rutube.ru/play/embed/425f1362acc34bcff78a143e83bfb1af");
-    expect(document.title).toBe("Ոդիսական");
-    expect(screen.queryByText("Открыть исходный плеер")).toBeNull();
+    expect(JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))).toEqual(["catalog:external:162"]);
+    expect(within(dialog).getByRole("link",{name:"Բացել աղբյուրի կայքում"}).target).toBe("_blank");
+    await user.click(within(dialog).getByRole("button",{name:"Փակել"}));
+    await user.click(poster);
+    expect(screen.getByRole("dialog",{name:"Ոդիսական"}).querySelector("iframe")).toBeNull();
   });
 
   it("searches dropdown values, and Clear removes the draft only after Apply", async () => {

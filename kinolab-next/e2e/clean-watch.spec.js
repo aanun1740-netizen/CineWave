@@ -19,14 +19,22 @@ test("a clean-mode film opens the player inside KinoLab", async ({ page }) => {
 
   await page.goto(process.env.KINOLAB_SMOKE_URL || "/");
   await page.locator('#catalogSection .movie[data-id="catalog:external:123"] .movie-title').click();
-  const watch = page.getByRole("button", { name: "Watch movie", exact: true });
+  const dialog = page.getByRole("dialog", { name: title });
+  const watch = dialog.getByRole("button", { name: "Watch movie", exact: true });
   await expect(watch).toBeVisible();
+  await expect(dialog.locator("iframe")).toHaveCount(0);
   await watch.click();
-  await expect(page).toHaveURL(/#\/play\/catalog%3Aexternal%3A123$/);
-  await expect(page).toHaveTitle(title);
-  const frame = page.locator(`iframe[title="${title}"]`);
+  await expect(page).toHaveURL(/#\/movie\/catalog%3Aexternal%3A123$/);
+  const frame = dialog.locator(`iframe[title="${title}"]`);
   await expect(frame).toHaveAttribute("src", player);
   await expect(frame.contentFrame().getByText("Loaded player frame")).toBeVisible();
+  await dialog.getByRole("button", { name: "Fullscreen", exact: true }).click();
+  await expect(dialog.locator(".inline-movie-stage:fullscreen")).toBeVisible();
+  await dialog.getByRole("button", { name: "Exit fullscreen", exact: true }).click();
+  await expect(dialog.locator(".inline-movie-stage:fullscreen")).toHaveCount(0);
+  await expect(frame.contentFrame().getByText("Loaded player frame")).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))))
+    .toEqual(["catalog:external:123"]);
 });
 
 test("a clean-player series switches seasons and episodes in the same page", async ({ page }) => {

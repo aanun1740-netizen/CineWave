@@ -949,6 +949,7 @@ export default function App() {
       {navigation(true)}
       {modal && (
         <MovieDialog
+          key={current?.id}
           movie={current}
           loading={state === "loading"}
           watch={route.startsWith("watch/") && Boolean(account.session || guestFilms.includes(current?.id))}
@@ -956,6 +957,7 @@ export default function App() {
           t={t}
           close={() => navigate(underlay.current, true)}
           onWatch={() => openWatch(current, true)}
+          onInlineWatch={() => openWatch(current)}
           onCleanWatch={() => openWatch(current, "clean")}
           toggle={toggle}
           saved={Boolean(current && account.list.has(current.id))}
