@@ -6,10 +6,18 @@ export default function BackToTop({ language }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const updateVisibility = () => setVisible(window.scrollY >= 220);
+    const updateVisibility = () => {
+      const { scrollHeight, clientHeight } = document.documentElement;
+      const threshold = Math.min(120, (scrollHeight - clientHeight) / 2);
+      setVisible(window.scrollY > 0 && window.scrollY >= threshold);
+    };
     updateVisibility();
     window.addEventListener("scroll", updateVisibility, { passive: true });
-    return () => window.removeEventListener("scroll", updateVisibility);
+    window.addEventListener("resize", updateVisibility);
+    return () => {
+      window.removeEventListener("scroll", updateVisibility);
+      window.removeEventListener("resize", updateVisibility);
+    };
   }, []);
 
   if (!visible) return null;
