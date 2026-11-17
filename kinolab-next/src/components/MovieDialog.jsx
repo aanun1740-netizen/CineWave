@@ -6,6 +6,7 @@ import MovieRating from "./MovieRating";
 import { Icon } from "./Icons";
 import "./inline-movie-player.css";
 import { cleanEmbedUrl } from "../services/clean-player";
+import CleanEpisodePicker, { useCleanEpisodes } from "./CleanEpisodePicker";
 
 // Only trusted, intentionally embeddable platforms; never embed arbitrary hosts.
 function trustedEmbed(url) {
@@ -47,7 +48,6 @@ export default function MovieDialog({
   close,
   onWatch,
   onInlineWatch,
-  onCleanWatch,
   onOutbound,
   guestLocked,
   toggle,
@@ -77,9 +77,9 @@ export default function MovieDialog({
   const hasDirectPlayback = movie ? watchable(movie) : false;
   const official = /^https:\/\/(?:www\.)?netflix\.com\/title\/\d+\/?$/.test(movie?.officialWatch || "") ? movie.officialWatch : null;
   const externalWatch = !hasDirectPlayback ? externalWatchUrl(movie) : null;
-  const cleanSource = movie?.playbackMode === "clean" ? cleanEmbedUrl(movie.externalWatch) : null;
-  const inlineSource = movie?.mediaType === "movie" ? cleanSource : null;
-  const showInline = Boolean(inlineSource && inlinePlaying);
+  const playback = useCleanEpisodes(movie);
+  const cleanSource = cleanEmbedUrl(playback.source);
+  const showInline = Boolean(cleanSource && (inlinePlaying || (movie?.mediaType === "tv" && watch)));
   const watchLabel = {hy:"Դիտել ֆիլմը",ru:"Смотреть фильм",en:"Watch movie"}[language];
   useEffect(() => {
     if (showInline) inlineFrame.current?.focus({ preventScroll: true });
@@ -134,21 +134,24 @@ export default function MovieDialog({
             ×
           </button>
         </div>
+        {showInline && playback.selected && (
+          <div className="dialog-episode-picker"><CleanEpisodePicker {...playback} language={language} /></div>
+        )}
         <div className="video-wrap">
           {movie && (watch && hasDirectPlayback ? (
             <Player movie={movie} language={language} onProgress={onProgress} />
           ) : showInline ? (
             <iframe className="inline-movie-frame" ref={inlineFrame}
-              title={info.title} src={inlineSource} allowFullScreen
+              title={info.title} src={cleanSource} allowFullScreen
               allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
               referrerPolicy="strict-origin-when-cross-origin" />
-          ) : inlineSource ? (
+          ) : cleanSource ? (
             <div className="inline-movie-preview">
               <Artwork className="inline-movie-backdrop" src={movie.backdrop || movie.img} alt="" />
               <Artwork className="inline-movie-poster" src={movie.img} alt="" />
               <button className="btn primary inline-movie-play" type="button"
                 onClick={() => { if (onInlineWatch()) setInlinePlaying(true); }}>
-                <Icon name="play" /> {watchLabel}
+                <Icon name="play" /> {movie.mediaType === "tv" ? t("watch") : watchLabel}
               </button>
             </div>
           ) : (
@@ -198,11 +201,6 @@ export default function MovieDialog({
           )}
           {movie && (
             <div className="detail-actions">
-              {cleanSource && !inlineSource && !watch && (
-                <button className="btn primary" type="button" onClick={onCleanWatch}>
-                  {movie.mediaType === "tv" ? t("watch") : watchLabel}
-                </button>
-              )}
               {externalWatch && !watch && !cleanSource && (
                 <div className="movielab-external-watch">
                   {guestLocked?.(movie) ? (
