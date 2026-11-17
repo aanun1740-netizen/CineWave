@@ -53,6 +53,7 @@ export default function App() {
     [guestPrompt, setGuestPrompt] = useState(false),
     [, setProgress] = useState(0);
   const underlay = useRef("home"),
+    ratingReturn = useRef(null),
     profilePanel = useRef(null),
     toastTimer = useRef(null),
     request = useRef(0),
@@ -124,6 +125,7 @@ export default function App() {
     }
   }, [mayCount, route, language]);
   function navigate(next, replace = false) {
+    if (next !== "login" && next !== "register") ratingReturn.current = null;
     if (next in navs) {
       underlay.current = next;
       setQuery("");
@@ -140,6 +142,7 @@ export default function App() {
   useEffect(() => {
     function change() {
       const next = routeFromHash();
+      if (next !== "login" && next !== "register") ratingReturn.current = null;
       if (next in navs) {
         underlay.current = next;
         setQuery("");
@@ -656,6 +659,7 @@ export default function App() {
               language={language}
               setLanguage={setLanguage}
               navigate={navigate}
+              signedInRoute={ratingReturn.current ?? "home"}
               movies={movies}
             />
             <div className="account-ai-slot">
@@ -966,6 +970,11 @@ export default function App() {
           guestLocked={guestLocked}
           onOutbound={outboundClick}
           onProgress={() => setProgress((value) => value + 1)}
+          ratingAccount={account}
+          onRateLogin={() => {
+            ratingReturn.current = "movie/" + encodeURIComponent(current.id);
+            navigate("login");
+          }}
         />
       )}
       {guestPrompt && <GuestSignupPrompt language={language}

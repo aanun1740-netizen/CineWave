@@ -86,6 +86,48 @@ beforeEach(() => {
     .mockResolvedValue({ ok: true, json: async () => ({ films: [] }) });
 });
 describe("React storefront", () => {
+  it("shows the public rating and lets a viewer sign in, return to the movie, and change one vote", async () => {
+    const session = { user: { id: "rating-viewer", email: "viewer@example.invalid" } };
+    const movieKey = "catalog:1";
+    const own = { average_stars: 4.5, vote_count: 2, own_stars: null };
+    const user = userEvent.setup();
+    mocks.signIn.mockResolvedValue({ data: { session }, error: null });
+    mocks.role.mockImplementation(async (name, args) => {
+      if (name === "kinolab_movie_rating") return { data: [own], error: null };
+      if (name === "kinolab_rate_movie") return { data: [{
+        average_stars: args.p_stars === 5 ? 4.7 : 4.3, vote_count: 3, own_stars: args.p_stars,
+      }], error: null };
+      return { data: false, error: null };
+    });
+    const query = {
+      select: vi.fn(() => query), eq: vi.fn(() => query),
+      maybeSingle: vi.fn(async () => ({ data: null, error: null })),
+      then: resolve => Promise.resolve({ data: [], error: null }).then(resolve),
+    };
+    mocks.from.mockReturnValue(query);
+    history.replaceState(null, "", "#/movie/" + encodeURIComponent(movieKey));
+    render(<App />);
+    const region = () => screen.getByRole("region", { name: "KinoLab-ի գնահատականը" });
+    const login = await screen.findByRole("button", { name: "Մուտք գործիր՝ գնահատելու համար" });
+    expect(within(region()).getByText("2 գնահատական")).toBeTruthy();
+    expect(within(region()).queryByRole("group")).toBeNull();
+    await user.click(login);
+    await user.type(screen.getByLabelText("Էլեկտրոնային հասցե"), "viewer@example.invalid");
+    await user.type(screen.getByLabelText("Գաղտնաբառ"), "Kino2026");
+    await user.click(within(document.querySelector(".account-form")).getByRole("button", { name: "Մուտք գործել" }));
+    const five = await screen.findByRole("button", { name: "5 աստղ՝ 5-ից" });
+    expect(location.hash).toBe("#/movie/" + encodeURIComponent(movieKey));
+    await user.click(five);
+    expect(five.getAttribute("aria-pressed")).toBe("true");
+    expect(within(region()).getByText("3 գնահատական")).toBeTruthy();
+    const four = within(region()).getByRole("button", { name: "4 աստղ՝ 5-ից" });
+    await user.click(four);
+    expect(four.getAttribute("aria-pressed")).toBe("true");
+    expect(five.getAttribute("aria-pressed")).toBe("false");
+    expect(within(region()).getByText("3 գնահատական")).toBeTruthy();
+    expect(mocks.role).toHaveBeenCalledWith("kinolab_rate_movie", { p_movie_key: movieKey, p_stars: 4 });
+  });
+
   it("opens in English for new visitors, lets them choose Russian, and remembers it on reload", async () => {
     localStorage.removeItem("cinewave:language");
     const user = userEvent.setup();

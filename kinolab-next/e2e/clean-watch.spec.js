@@ -7,6 +7,9 @@ const title = "KinoLab clean player smoke test";
 // counting test traffic or depending on availability of a third-party film.
 test("a clean-mode film opens the player inside KinoLab", async ({ page }) => {
   await page.route("**/rest/v1/rpc/kinolab_record_event", route => route.fulfill({ status: 204 }));
+  await page.route("**/rest/v1/rpc/kinolab_movie_rating", route => route.fulfill({
+    json: [{ average_stars: null, vote_count: 0, own_stars: null }],
+  }));
   await page.route("**/rest/v1/movies?*", route => route.fulfill({ json: [] }));
   await page.route("**/rest/v1/kinolab_external_catalog?*", route => route.fulfill({ json: [{
     id: 123, title_en: title, media_type: "movie", is_published: true,
@@ -40,7 +43,7 @@ test("a clean-mode film opens the player inside KinoLab", async ({ page }) => {
   await expect(frame).toHaveAttribute("src", player);
   await expect(dialog.locator(".video-wrap").locator(":scope > *")).toHaveCount(1);
   const embedded = frame.contentFrame();
-  await embedded.getByRole("button", { name: "Expand video" }).click();
+  await embedded.getByRole("button", { name: "Expand video" }).press("Enter");
   await expect(dialog.locator("iframe:fullscreen")).toHaveCount(1);
   await embedded.getByRole("button", { name: "Shrink video" }).press("Enter");
   await expect(dialog.locator("iframe:fullscreen")).toHaveCount(0);
