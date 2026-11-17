@@ -41,51 +41,10 @@
   box-shadow: 0 6px 30px #100917c9;
 }
 .cinewave-site .inline-movie-play svg { width: 21px; height: 21px; }
-.inline-movie-stage {
-  background: #0e0a14;
-  color: #f7f5f0;
-}
-.inline-movie-stage iframe {
+.inline-movie-frame {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
   border: 0;
   background: #000;
 }
-.inline-movie-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px 16px;
-  padding: 6px 12px;
-  border-top: 1px solid #ffffff19;
-}
-.inline-movie-controls a {
-  margin-inline-end: auto;
-  padding: 10px 0;
-  color: #c1b7cc;
-  font-size: 12px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.inline-movie-fullscreen {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 44px;
-  padding: 6px 10px;
-  border: 1px solid #ffffff2b;
-  border-radius: 8px;
-  background: #20152e;
-  color: #d4f458;
-  font: inherit;
-  font-size: 12px;
-}
-.inline-movie-fullscreen svg { width: 18px; height: 18px; }
-.inline-movie-fullscreen:hover { border-color: currentColor; }
-.inline-movie-fullscreen:focus-visible,
-.inline-movie-controls a:focus-visible { outline: 2px solid #d4f458; outline-offset: 2px; }
-.inline-movie-status { margin: 0; padding: 4px 12px 12px; font-size: 12px; }
-.inline-movie-stage:fullscreen { display: flex; flex-direction: column; background: #000; }
-.inline-movie-stage:fullscreen iframe { flex: 1; min-height: 0; aspect-ratio: auto; }

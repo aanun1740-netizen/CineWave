@@ -326,7 +326,9 @@ describe("React storefront", () => {
     const player = within(dialog).getByTitle("Ոդիսական");
     expect(player.getAttribute("src")).toBe("https://rutube.ru/play/embed/425f1362acc34bcff78a143e83bfb1af");
     expect(JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))).toEqual(["catalog:external:162"]);
-    expect(within(dialog).getByRole("link",{name:"Բացել աղբյուրի կայքում"}).target).toBe("_blank");
+    expect(player.hasAttribute("allowfullscreen")).toBe(true);
+    expect(within(dialog).queryByRole("link",{ name:"Բացել աղբյուրի կայքում" })).toBeNull();
+    expect(within(dialog).queryByRole("button",{ name:"Ամբողջ էկրան" })).toBeNull();
     await user.click(within(dialog).getByRole("button",{name:"Փակել"}));
     await user.click(poster);
     expect(screen.getByRole("dialog",{name:"Ոդիսական"}).querySelector("iframe")).toBeNull();

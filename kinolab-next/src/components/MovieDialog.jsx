@@ -3,7 +3,6 @@ import { localizedMovie, genreLabel, adminModel, externalWatchUrl } from "../dom
 import Player from "./Player";
 import { Artwork } from "./MovieRow";
 import { Icon } from "./Icons";
-import InlineMoviePlayer from "./InlineMoviePlayer";
 import "./inline-movie-player.css";
 import { cleanEmbedUrl } from "../services/clean-player";
 
@@ -56,7 +55,8 @@ export default function MovieDialog({
   onProgress,
 }) {
   const dialog = useRef(null),
-    closer = useRef(null);
+    closer = useRef(null),
+    inlineFrame = useRef(null);
   const [inlinePlaying, setInlinePlaying] = useState(false);
   useEffect(() => {
     const opener = document.activeElement;
@@ -78,6 +78,9 @@ export default function MovieDialog({
   const inlineSource = movie?.mediaType === "movie" ? cleanSource : null;
   const showInline = Boolean(inlineSource && inlinePlaying);
   const watchLabel = {hy:"Դիտել ֆիլմը",ru:"Смотреть фильм",en:"Watch movie"}[language];
+  useEffect(() => {
+    if (showInline) inlineFrame.current?.focus({ preventScroll: true });
+  }, [showInline]);
   return (
     <div
       className="modal open"
@@ -132,8 +135,10 @@ export default function MovieDialog({
           {movie && (watch && hasDirectPlayback ? (
             <Player movie={movie} language={language} onProgress={onProgress} />
           ) : showInline ? (
-            <InlineMoviePlayer src={inlineSource} title={info.title} language={language}
-              externalWatch={externalWatch} onOutbound={(event) => onOutbound?.(event, movie)} />
+            <iframe className="inline-movie-frame" ref={inlineFrame}
+              title={info.title} src={inlineSource} allowFullScreen
+              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+              referrerPolicy="strict-origin-when-cross-origin" />
           ) : inlineSource ? (
             <div className="inline-movie-preview">
               <Artwork className="inline-movie-backdrop" src={movie.backdrop || movie.img} alt="" />
