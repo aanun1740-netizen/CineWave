@@ -23,6 +23,7 @@ import CleanWatchPage from "./components/CleanWatchPage";
 import { playback } from "./components/Player";
 import { Brand, Icon, Icons } from "./components/Icons";
 import AI from "./components/AI";
+import BackToTop from "./components/BackToTop";
 import ArchiveSearch from "./components/ArchiveSearch";
 import { recordMetric } from "./services/analytics";
 import { FREE_GUEST_FILMS, GUEST_FILMS_KEY, readGuestFilms, attemptGuestFilm, saveGuestFilms } from "./guest-watch";
@@ -974,6 +975,7 @@ export default function App() {
       <div className="toast" role="status" aria-live="polite">
         {toast}
       </div>
+      {(route === "movies" || route === "tv") && !ai && <BackToTop language={language} />}
       {!accountPage && <AI open={ai} setOpen={setAI} t={t} movies={movies} language={language} onOpenMovie={(movie) => { setAI(false); navigate("movie/" + encodeURIComponent(movie.id)); }} />}
     </>
   );

@@ -86,6 +86,26 @@ test("production admin entry stays protected and works at root/admin", async ({p
   expect(errors).toEqual([]);
 });
 
+test("Movies and TV Shows offer a fast return to the top above KinoLab AI", async ({ page }) => {
+  await page.route("**/rest/v1/rpc/kinolab_record_event", route => route.fulfill({status: 204}));
+  const button = page.getByRole("button", { name: "Back to top" });
+  const ai = page.locator("#cw-ai-button");
+  for (const section of ["movies", "tv"]) {
+    await page.goto("/#/" + section);
+    await expect(page.locator("#catalogSection .movie").first()).toBeVisible();
+    await expect(button).toHaveCount(0);
+    await page.evaluate(() => window.scrollTo(0, 350));
+    await expect(button).toBeVisible();
+    const arrowBox = await button.boundingBox();
+    const aiBox = await ai.boundingBox();
+    expect(arrowBox.y + arrowBox.height).toBeLessThan(aiBox.y);
+    expect(arrowBox.x + arrowBox.width).toBeCloseTo(aiBox.x + aiBox.width);
+    await button.click();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    await expect(button).toHaveCount(0);
+  }
+});
+
 test("KinoLab AI enforces guest identity and origin before provider access", async ({ request }) => {
   // Guests ARE allowed five questions; an invalid guest identifier must
   // be refused before incrementing quotas or contacting Gemini.

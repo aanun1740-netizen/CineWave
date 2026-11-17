@@ -226,7 +226,8 @@ body.cinewave-site[data-theme="light"] .toast {
 }
 
 /* AI conversation is light too, without changing its mobile sizing. */
-body.cinewave-site[data-theme="light"] #cw-ai-button {
+body.cinewave-site[data-theme="light"] #cw-ai-button,
+body.cinewave-site[data-theme="light"] .back-to-top {
   background: #ffffff;
   color: #20152e;
   border-color: #819934;
