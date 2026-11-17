@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { localizedMovie, genreLabel, adminModel, externalWatchUrl } from "../domain";
 import Player from "./Player";
 import { Artwork } from "./MovieRow";
+import MovieRating from "./MovieRating";
 import { Icon } from "./Icons";
 import "./inline-movie-player.css";
 import { cleanEmbedUrl } from "../services/clean-player";
@@ -53,6 +54,8 @@ export default function MovieDialog({
   saved,
   watchable,
   onProgress,
+  ratingAccount,
+  onRateLogin,
 }) {
   const dialog = useRef(null),
     closer = useRef(null),
@@ -245,6 +248,12 @@ export default function MovieDialog({
                 </a>
               )}
             </div>
+          )}
+          {ratingAccount && movie?.mediaType === "movie" && (
+            <MovieRating key={ratingAccount.session?.user.id ?? "guest"}
+              movieKey={movie.id} language={language} ready={ratingAccount.ready}
+              signedIn={Boolean(ratingAccount.session?.user && !ratingAccount.session.user.is_anonymous)}
+              onLogin={onRateLogin} />
           )}
         </div>
       </div>

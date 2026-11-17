@@ -18,6 +18,7 @@ export default function Accounts({
   language,
   setLanguage,
   navigate,
+  signedInRoute = "home",
   movies,
 }) {
   const [feedback, setFeedback] = useState(""),
@@ -64,8 +65,8 @@ export default function Accounts({
     if (["profile", "recover"].includes(route) && !account.session)
       navigate("login", true);
     if (["login", "register"].includes(route) && account.session)
-      navigate("home", true);
-  }, [route, account.ready, account.session]);
+      navigate(signedInRoute, true);
+  }, [route, account.ready, account.session, signedInRoute]);
   async function submit(event) {
     event.preventDefault();
     if (busy) return;
@@ -93,7 +94,7 @@ export default function Accounts({
         // Refresh member details in parallel; loading favorites is not a
         // prerequisite to leave the sign-in form.
         void account.refresh(data.session);
-        navigate("home", true);
+        navigate(signedInRoute, true);
       } else if (route === "register") {
         setConfirmationPending(false);
         if (values.password !== values.confirm) {
@@ -111,9 +112,9 @@ export default function Accounts({
         });
         if (error) throw error;
         if (data.session) {
-          // Projects that allow immediate signup sessions should also open Home.
+          // Follow the same return route as signing in.
           void account.refresh(data.session);
-          navigate("home", true);
+          navigate(signedInRoute, true);
         } else {
           // Registration is NOT complete until the email is confirmed.
           // Keep the guidance visible instead of dropping into a login form.

@@ -1,0 +1,61 @@
+.movie-rating {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+  padding: 16px;
+  border: 1px solid #a58cb846;
+  border-radius: 12px;
+  color: #f7f5f0;
+  background: #20152e;
+}
+.movie-rating-summary,
+.movie-rating-score,
+.movie-rating-vote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.movie-rating-summary { justify-content: space-between; }
+.movie-rating-summary h3 { margin: 0; font-size: 15px; }
+.movie-rating-score, .movie-rating-vote > span, .movie-rating-feedback { font-size: 13px; }
+.movie-rating-score strong { color: #d4f458; }
+.movie-rating-stars { display: flex; flex-wrap: wrap; gap: 3px; }
+.movie-rating-stars button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #e7dccf;
+  font-size: 26px;
+  line-height: 1;
+}
+.movie-rating-stars button:hover,
+.movie-rating-stars button[data-filled="true"] { color: #d4f458; }
+.movie-rating-stars button[aria-pressed="true"] { border-color: #d4f45880; }
+.movie-rating-link {
+  justify-self: start;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #d4f458;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.movie-rating-feedback { margin: 0; }
+.movie-rating-feedback:empty { display: none; }
+body.cinewave-site[data-theme="light"] .movie-rating {
+  color: #20152e;
+  background: #f7f5f0;
+  border-color: #20152e30;
+}
+body.cinewave-site[data-theme="light"] .movie-rating-score strong,
+body.cinewave-site[data-theme="light"] .movie-rating-stars button:hover,
+body.cinewave-site[data-theme="light"] .movie-rating-stars button[data-filled="true"],
+body.cinewave-site[data-theme="light"] .movie-rating-link { color: #4b620b; }
+body.cinewave-site[data-theme="light"] .movie-rating-stars button:not([data-filled="true"], :hover) { color: #61566e; }
+body.cinewave-site[data-theme="light"] .movie-rating-stars button[aria-pressed="true"] { border-color: #657936; }
