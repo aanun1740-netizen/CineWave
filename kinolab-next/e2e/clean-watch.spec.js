@@ -16,8 +16,16 @@ test("a clean-mode film opens the player inside KinoLab", async ({ page }) => {
   await page.route(player, route => route.fulfill({
     contentType: "text/html",
     body: `<title>Player fixture</title>
-      <button onclick="document.documentElement.requestFullscreen()">Expand video</button>
-      <button onclick="document.exitFullscreen()">Shrink video</button>`,
+      <button>Expand video</button>
+      <script>
+        const toggle = document.querySelector("button");
+        toggle.onclick = () => document.fullscreenElement
+          ? document.exitFullscreen()
+          : document.documentElement.requestFullscreen();
+        document.addEventListener("fullscreenchange", () => {
+          toggle.textContent = document.fullscreenElement ? "Shrink video" : "Expand video";
+        });
+      </script>`,
   }));
 
   await page.goto(process.env.KINOLAB_SMOKE_URL || "/");
@@ -34,7 +42,7 @@ test("a clean-mode film opens the player inside KinoLab", async ({ page }) => {
   const embedded = frame.contentFrame();
   await embedded.getByRole("button", { name: "Expand video" }).click();
   await expect(dialog.locator("iframe:fullscreen")).toHaveCount(1);
-  await embedded.getByRole("button", { name: "Shrink video" }).click();
+  await embedded.getByRole("button", { name: "Shrink video" }).press("Enter");
   await expect(dialog.locator("iframe:fullscreen")).toHaveCount(0);
   await expect(embedded.getByRole("button", { name: "Expand video" })).toBeVisible();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))))
