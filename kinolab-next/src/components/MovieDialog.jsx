@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { localizedMovie, genreLabel, externalWatchUrl } from "../domain";
 import Player from "./Player";
+import EmbeddedMoviePlayer from "./EmbeddedMoviePlayer";
 import { Artwork } from "./MovieRow";
 import MovieRating from "./MovieRating";
 import { Icon } from "./Icons";
@@ -39,7 +40,8 @@ export default function MovieDialog({
 }) {
   const dialog = useRef(null),
     closer = useRef(null),
-    inlineFrame = useRef(null);
+    inlineFrame = useRef(null),
+    embeddedPlayer = useRef(null);
   const [inlinePlaying, setInlinePlaying] = useState(false);
   useEffect(() => {
     const opener = document.activeElement;
@@ -62,7 +64,8 @@ export default function MovieDialog({
   const watchLabel = {hy:"Դիտել ֆիլմը",ru:"Смотреть фильм",en:"Watch movie"}[language];
   useEffect(() => {
     if (showTrailer) inlineFrame.current?.scrollIntoView?.({ block: "nearest" });
-    if (showTrailer || showInline) inlineFrame.current?.focus({ preventScroll: true });
+    if (showTrailer) inlineFrame.current?.focus({ preventScroll: true });
+    if (showInline) embeddedPlayer.current?.focus({ preventScroll: true });
   }, [showTrailer, showInline]);
   return (
     <div
@@ -126,10 +129,8 @@ export default function MovieDialog({
           ) : watch && hasDirectPlayback ? (
             <Player movie={movie} language={language} onProgress={onProgress} />
           ) : showInline ? (
-            <iframe className="inline-movie-frame" ref={inlineFrame}
-              title={info.title} src={cleanSource} allowFullScreen
-              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-              referrerPolicy="strict-origin-when-cross-origin" />
+            <EmbeddedMoviePlayer src={cleanSource} title={info.title} language={language}
+              playerRef={embeddedPlayer} />
           ) : cleanSource ? (
             <div className="inline-movie-preview">
               <Artwork className="inline-movie-backdrop" src={movie.backdrop || movie.img} alt="" />

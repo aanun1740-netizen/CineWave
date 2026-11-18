@@ -51,3 +51,60 @@
 .inline-trailer-frame { min-height: 200px; }
 .cinewave-site .dialog-episode-picker { padding: 0 22px 12px; }
 .cinewave-site .dialog-episode-picker select { min-height: 44px; }
+
+.movie-embed {
+  position: relative;
+  width: 100%;
+  background: #08070d;
+}
+.movie-embed:focus { outline: none; }
+.movie-embed > iframe { min-height: 200px; }
+@supports not (aspect-ratio: 16 / 9) {
+  .movie-embed:not(.movie-embed-expanded) { padding-bottom: 56.25%; }
+  .movie-embed:not(.movie-embed-expanded) > iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+  }
+}
+.movie-embed-expanded {
+  flex: 1 0 auto;
+  min-height: 50vh;
+}
+.movie-embed-expanded > iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+}
+.movie-embed-status {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #20152e;
+  color: #f7f5f0;
+  text-align: center;
+}
+.movie-embed-status p { margin: 0 0 12px; }
+.movie-embed-retry {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid #d4f458;
+  border-radius: 8px;
+  background: #d4f458;
+  color: #20152e;
+  font: inherit;
+  cursor: pointer;
+}
+.movie-embed-retry:focus {
+  outline: 2px solid #f7f5f0;
+  outline-offset: 3px;
+}

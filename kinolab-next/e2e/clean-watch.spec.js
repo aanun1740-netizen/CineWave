@@ -5,6 +5,7 @@ const title = "KinoLab clean player smoke test";
 const playerFrame = `<title>Player fixture</title>
   <button>Expand video</button>
   <script>
+    parent.postMessage(JSON.stringify({ type: "player:ready" }), "*");
     const toggle = document.querySelector("button");
     toggle.onclick = () => document.fullscreenElement
       ? document.exitFullscreen()
@@ -70,8 +71,12 @@ test("a clean-player series switches episodes and expands the video inside its d
       { season: 2, episode: 2, url: episode3 },
     ],
   }] }));
+  let episode2Attempts = 0;
   await page.route("https://rutube.ru/play/embed/**", route => route.fulfill({
-    contentType: "text/html", body: playerFrame,
+    contentType: "text/html",
+    body: route.request().url() === episode2 && ++episode2Attempts === 1
+      ? '<script>parent.postMessage(JSON.stringify({ type: "player:error" }), "*")</script>'
+      : playerFrame,
   }));
 
   await page.goto((process.env.KINOLAB_SMOKE_URL || "/") + "#/tv");
@@ -88,6 +93,13 @@ test("a clean-player series switches episodes and expands the video inside its d
   await season.selectOption("2");
   await expect(frame).toHaveAttribute("src", episode2);
   await expect(episode).toHaveValue("1");
+  const retry = dialog.getByRole("button", { name: "Try again", exact: true });
+  await expect(retry).toBeVisible();
+  await retry.click();
+  await expect(retry).toHaveCount(0);
+  await expect(frame).toHaveAttribute("src", episode2);
+  await expect(frame).toHaveAttribute("tabindex", "0");
+  expect(episode2Attempts).toBe(2);
   await episode.selectOption("2");
   await expect(frame).toHaveAttribute("src", episode3);
   await expect(dialog.locator(".video-wrap > *")).toHaveCount(1);
