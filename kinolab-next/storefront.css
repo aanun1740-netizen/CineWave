@@ -641,3 +641,12 @@ body.cinewave-site .back-to-top:hover {
     --floating-action-bottom: 83px;
   }
 }
+/* Remote-control focus remains visible on TV browsers without :focus-visible. */
+body.tv-navigation button:focus,
+body.tv-navigation a:focus,
+body.tv-navigation select:focus,
+body.tv-navigation input:focus,
+body.tv-navigation [tabindex="0"]:focus {
+  outline: 3px solid #D4F458 !important;
+  outline-offset: 3px;
+}

@@ -29,3 +29,14 @@ it("keeps blocked RUTUBE content behind the recovery panel and retries the same 
   expect(screen.queryByRole("status")).toBeNull();
   expect(retryFrame.getAttribute("tabindex")).toBe("0");
 });
+
+it("lets a TV viewer reveal the embedded player when its ready message never arrives", () => {
+  vi.useFakeTimers();
+  render(<EmbeddedMoviePlayer src={src} title={title} language="en" />);
+  act(() => vi.advanceTimersByTime(12000));
+  fireEvent.click(screen.getByRole("button", { name: "Try playback" }));
+  expect(screen.queryByRole("status")).toBeNull();
+  expect(screen.getByTitle(title).getAttribute("tabindex")).toBe("0");
+  expect(document.activeElement).toBe(screen.getByTitle(title));
+  expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
+});
