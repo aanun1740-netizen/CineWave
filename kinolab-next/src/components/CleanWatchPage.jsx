@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { cleanEmbedUrl } from "../services/clean-player";
 import { localizedMovie } from "../domain";
+import EmbeddedMoviePlayer from "./EmbeddedMoviePlayer";
+import "./inline-movie-player.css";
 import CleanEpisodePicker, { useCleanEpisodes } from "./CleanEpisodePicker";
 
 const strings = {
@@ -38,12 +40,8 @@ export default function CleanWatchPage({ movie, language, ready, access, locked,
        !access ? <div style={{padding:24}}><p>{locked ? t.locked : t.loading}</p>
           {locked && <a href="#/register" style={{color:"#D4F458"}}>{t.login}</a>}
         </div> :
-        <div style={{width:"100%",flex:"1 0 auto",minHeight:"50dvh",background:"#000",position:"relative"}}>
-          <iframe key={src} title={title || "Movie player"} src={src} allowFullScreen
-            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-            referrerPolicy="strict-origin-when-cross-origin"
-            style={{position:"absolute",inset:0,display:"block",width:"100%",height:"100%",border:0,background:"#000"}} />
-        </div>}
+        <EmbeddedMoviePlayer src={src} title={title || "Movie player"}
+          language={language} expanded />}
     </main>
   );
 }
