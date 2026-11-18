@@ -25,8 +25,6 @@ export default function MovieRow({
   t,
   watchable,
   externalWatchUrl,
-  guestLocked,
-  onOutbound,
   open,
   actions,
   results = false,
@@ -112,7 +110,7 @@ export default function MovieRow({
               data-id={movie.id}
               tabIndex={0}
               role="button"
-              aria-label={`${info.title} — ${t(available || cleanPlayer ? "watch" : "details")}`}
+              aria-label={`${info.title} — ${t("details")}`}
               onClick={() => open(movie)}
               onKeyDown={(e) => {
                 if (["Enter", " "].includes(e.key)) {
@@ -142,32 +140,14 @@ export default function MovieRow({
                 >
                   {t(available || cleanPlayer ? "available" : official ? "externalLink" : "catalogOnly")}
                 </span>
-                {cleanPlayer ? (
+                {available || cleanPlayer || official ? (
                   <button className="play-overlay" type="button"
                     aria-label={`${info.title} — ${t("watch")}`}
-                    onClick={(e) => {e.stopPropagation(); open(movie, "clean");}}
-                    onKeyDown={(e) => e.stopPropagation()}>
-                    <Icon name="play" />{t("watch")}
-                  </button>
-                ) : official ? (
-                  guestLocked?.(movie) ? (
-                    <button className="play-overlay" type="button"
-                      aria-label={`${info.title} — ${t("watch")} (sign in)`}
-                      onClick={(e) => { e.stopPropagation(); onOutbound?.(null, movie); }}
-                      onKeyDown={(e) => e.stopPropagation()}>
-                      <Icon name="play" />{t("watch")}
-                    </button>
-                  ) : (
-                    <a className="play-overlay" href={official} target="_blank" rel="noopener noreferrer"
-                      aria-label={`${info.title} — ${t("watch")} (external player)`}
-                      onClick={(e) => { e.stopPropagation(); onOutbound?.(e, movie); }}
-                      onKeyDown={(e) => e.stopPropagation()}>
-                      <Icon name="play" />{t("watch")}
-                    </a>
-                  )
-                ) : available ? (
-                  <button className="play-overlay" type="button" onClick={(e) => {e.stopPropagation(); open(movie, true);}}
-                    onKeyDown={(e) => e.stopPropagation()}>
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      open(movie);
+                    }}
+                    onKeyDown={(event) => event.stopPropagation()}>
                     <Icon name="play" />{t("watch")}
                   </button>
                 ) : (

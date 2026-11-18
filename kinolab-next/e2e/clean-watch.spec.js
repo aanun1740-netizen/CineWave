@@ -32,10 +32,12 @@ test("a clean-mode film opens the player inside KinoLab", async ({ page }) => {
   }));
 
   await page.goto(process.env.KINOLAB_SMOKE_URL || "/");
-  await page.locator('#catalogSection .movie[data-id="catalog:external:123"] .movie-title').click();
+  await page.locator('#catalogSection .movie[data-id="catalog:external:123"] .play-overlay').press("Enter");
   const dialog = page.getByRole("dialog", { name: title });
   const watch = dialog.getByRole("button", { name: "Watch movie", exact: true });
   await expect(watch).toBeVisible();
+  await expect(page).toHaveURL(/#\/movie\/catalog%3Aexternal%3A123$/);
+  expect(await page.evaluate(() => localStorage.getItem("kinolab:guest-films-v1"))).toBeNull();
   await expect(dialog.locator("iframe")).toHaveCount(0);
   await watch.click();
   await expect(page).toHaveURL(/#\/movie\/catalog%3Aexternal%3A123$/);
@@ -99,8 +101,9 @@ test("a clean-player series switches episodes and expands the video inside its d
   await dialog.getByRole("button", { name: "Close", exact: true }).click();
   await expect(page).toHaveURL(/#\/tv$/);
   await card.locator(".play-overlay").press("Enter");
-  await expect(page).toHaveURL(/#\/watch\/catalog%3Aexternal%3A124$/);
-  await expect(frame).toHaveAttribute("src", player);
+  await expect(page).toHaveURL(/#\/movie\/catalog%3Aexternal%3A124$/);
+  await expect(frame).toHaveCount(0);
+  await expect(dialog.getByRole("button", { name: "Watch Now", exact: true })).toBeVisible();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))))
     .toEqual(["catalog:external:124"]);
 });
