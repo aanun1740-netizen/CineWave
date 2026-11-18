@@ -4,6 +4,7 @@ import { allowedExternalMovie, allowedExternalWatch } from "../services/external
 import { normalizeAdminWatchInput } from "../services/watch-input";
 import { parseCleanSeriesEpisodes } from "../services/clean-series";
 import { cleanSeriesErrorMessage } from "../services/clean-series-errors";
+import { trailerEmbedUrl } from "../services/trailer";
 
 const labels = {
   hy: {heading:"Ավելացնել ֆիլմ կամ սերիալ՝ արտաքին հղումով",type:"Տեսակ",movie:"Ֆիլմ",series:"Սերիալ",episodes:"Լրացուցիչ սերիաների հղումներ (յուրաքանչյուր տողում՝ մեկ հղում)",seriesHint:"Առաջին սերիայի հղումը գրիր դիտման դաշտում, իսկ մյուսները՝ այստեղ։ Օգտագործիր նույն սերիալի համար NextEmbed-ի /tv/ID/սեզոն/սերիա հասցեները։",badEpisodes:"Սերիաների հղումները պետք է լինեն նույն սերիալի ճիշտ HTTPS հասցեներ՝ առանց կրկնության (առավելագույնը 200)։", title:"Ֆիլմի անուն", titleRu:"Ռուսերեն անուն (ըստ ցանկության)",titleHy:"Հայերեն անուն (ըստ ցանկության)",genre:"Ժանրեր (ստորակետերով)",year:"Թողարկման տարեթիվ",trailer:"Թրեյլերի հղում (YouTube կամ Vimeo, ըստ ցանկության)",poster:"Նկարի HTTPS հղում",choose:"Ընտրել նկար համակարգչից",uploading:"Նկարը վերբեռնվում է…",uploaded:"Նկարը վերբեռնվեց։ Այժմ կարող ես պահպանել ֆիլմը։",preview:"Ընտրված պաստառ",descriptionEn:"Նկարագրություն՝ անգլերեն (EN)",descriptionRu:"Նկարագրություն՝ ռուսերեն (RU)",descriptionHy:"Նկարագրություն՝ հայերեն (HY)",url:"Դիտման արտաքին հղում",terms:"Հաստատում եմ, որ ստուգել եմ արտաքին կայքի հղումների տարածման պայմանները և այս հղումը թույլատրված է հրապարակել",submit:"Պահպանել և հրապարակել",saving:"Պահպանվում է…",success:"Ֆիլմը պահպանվեց և հրապարակվեց արտաքին հղումով։ Թարմացրու գլխավոր էջը՝ ստուգելու համար։",duplicate:"Այս արտաքին հղումով ֆիլմն արդեն գոյություն ունի։",intro:"Մուտքագրիր ֆիլմի տվյալներն ու արտաքին էջի հասցեն։ «Դիտել» կոճակը նոր ներդիրում կբացի արտաքին կայքը․ KinoLab-ը ֆիլմը չի վերահեռարձակում։", list:"Արտաքին հղումով ավելացված ֆիլմեր", refresh:"Թարմացնել ցանկը", remove:"Ջնջել", hide:"Հեռացնել կայքից", show:"Հրապարակել", confirmDelete:"Վերջնական ջնջե՞լ այս ֆիլմը։", empty:"Արտաքին հղումով ավելացված ֆիլմեր չկան։", deleted:"Ֆիլմը ջնջվեց արտաքին կատալոգից։", hidden:"Ֆիլմը հեռացվեց հանրային կայքից։", shown:"Ֆիլմը կրկին հրապարակվեց։",edit:"Խմբագրել",cancel:"Չեղարկել",saveEdit:"Պահպանել փոփոխությունները",updated:"Ֆիլմի փոփոխությունները պահպանվեցին։",editing:"Խմբագրվում է՝ "},
@@ -11,22 +12,6 @@ const labels = {
   en: {heading:"Add a movie or TV series with an external link",type:"Content type",movie:"Movie",series:"TV Show",episodes:"Other episode links (one URL per line)",seriesHint:"Put episode one in the watch URL field and additional episodes below. Use NextEmbed /tv/ID/season/episode for the same series.",badEpisodes:"Use valid HTTPS episode links from the same series, without duplicates (maximum 200).",title:"Title",titleRu:"Russian title (optional)",titleHy:"Armenian title (optional)",genre:"Genres (comma-separated)",year:"Release year",trailer:"Trailer link (YouTube or Vimeo, optional)",poster:"HTTPS poster URL",choose:"Upload poster from computer",uploading:"Uploading image…",uploaded:"Image uploaded. You can now save the movie.",preview:"Poster preview",descriptionEn:"English description (EN)",descriptionRu:"Russian description (RU)",descriptionHy:"Armenian description (HY)",url:"External watch URL",terms:"I checked the external site's linking terms and have permission to publish this link",submit:"Save and publish",saving:"Saving…",success:"Movie saved and published. Refresh the storefront to check.",duplicate:"A movie using this link already exists.",intro:"Enter movie information and the external watch URL. Watch opens the provider in a new tab; KinoLab does not host the movie.", list:"External-link movies", refresh:"Refresh list", remove:"Delete", hide:"Unpublish", show:"Publish", confirmDelete:"Permanently delete this film?", empty:"No external-link movies found.", deleted:"Movie deleted from the external catalog.", hidden:"Movie removed from the public site.", shown:"Movie published.",edit:"Edit",cancel:"Cancel",saveEdit:"Save changes",updated:"Movie changes saved.",editing:"Editing: "}
 };
 const allowed = allowedExternalWatch;
-// Trailers only link to recognized video platforms; they open in a new tab.
-function allowedTrailer(raw) {
-  try {
-    const u=new URL(raw);
-    if(u.protocol!=="https:" || u.username || u.password || u.port) return false;
-    if(["youtube.com","www.youtube.com","m.youtube.com"].includes(u.hostname)) {
-      if(u.pathname==="/watch") return /^[A-Za-z0-9_-]{11}$/.test(u.searchParams.get("v")||"");
-      return /^\/(?:embed|shorts|live)\/[A-Za-z0-9_-]{11}\/?$/.test(u.pathname);
-    }
-    if(u.hostname==="youtu.be") return /^\/[A-Za-z0-9_-]{11}\/?$/.test(u.pathname);
-    if(["vimeo.com","www.vimeo.com","player.vimeo.com"].includes(u.hostname))
-      return /^\/(?:video\/)?[0-9]+\/?$/.test(u.pathname);
-  } catch {}
-  return false;
-}
-
 export default function QuickExternalMovie({language,onChange,mode="external"}) {
   const t=labels[language] || labels.en;
   const clean = mode === "clean";
@@ -207,7 +192,7 @@ export default function QuickExternalMovie({language,onChange,mode="external"}) 
     } else if(!allowedExternalMovie(url)){
       setNotice(({hy:"Ֆիլմը հրապարակելու համար օգտագործիր ճիշտ https:// հղում։",ru:"Для публикации фильма укажите действительную ссылку https://.",en:"Use a valid https:// movie link to publish."}[language]));return;
     }
-    if(trailer && !allowedTrailer(trailer)) {
+    if(trailer && !trailerEmbedUrl(trailer)) {
       setNotice(({hy:"Թրեյլերի համար օգտագործիր YouTube-ի կամ Vimeo-ի ճիշտ HTTPS հղում։",ru:"Для трейлера укажите корректную HTTPS-ссылку YouTube или Vimeo.",en:"Use a valid HTTPS YouTube or Vimeo trailer link."}[language]));return;
     }
     if(!allowed(url)){setNotice(({hy:"Գրիր ճիշտ HTTPS դիտման հղում։",ru:"Укажите правильную HTTPS-ссылку для просмотра.",en:"Enter a valid HTTPS watch link."}[language]));return;}

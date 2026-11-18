@@ -28,6 +28,8 @@ import ArchiveSearch from "./components/ArchiveSearch";
 import { recordMetric } from "./services/analytics";
 import { FREE_GUEST_FILMS, GUEST_FILMS_KEY, readGuestFilms, attemptGuestFilm, saveGuestFilms } from "./guest-watch";
 import GuestSignupPrompt from "./components/GuestSignupPrompt";
+import TrailerAction from "./components/TrailerAction";
+import { trailerEmbedUrl } from "./services/trailer";
 const navs = { home: "home", movies: "movies", tv: "tv", "my-list": "list" };
 export default function App() {
   const { language, setLanguage, t } = useLanguage(),
@@ -44,6 +46,7 @@ export default function App() {
     [featuredIds, setFeaturedIds] = useState(null),
     [profile, setProfile] = useState(false),
     [ai, setAI] = useState(false),
+    [trailerId, setTrailerId] = useState(null),
     [theme, setTheme] = useState(() => {
       try { return localStorage.getItem("kinolab:theme") === "light" ? "light" : "dark"; }
       catch { return "dark"; }
@@ -125,6 +128,7 @@ export default function App() {
     }
   }, [mayCount, route, language]);
   function navigate(next, replace = false) {
+    setTrailerId(null);
     if (next !== "login" && next !== "register") ratingReturn.current = null;
     if (next in navs) {
       underlay.current = next;
@@ -141,6 +145,7 @@ export default function App() {
   }
   useEffect(() => {
     function change() {
+      setTrailerId(null);
       const next = routeFromHash();
       if (next !== "login" && next !== "register") ratingReturn.current = null;
       if (next in navs) {
@@ -373,6 +378,7 @@ export default function App() {
     }
   }
   function search(value) {
+    setTrailerId(null);
     setQuery(value);
     underlay.current = "movies";
     history.replaceState(null, "", "#/movies");
@@ -738,12 +744,13 @@ export default function App() {
                       <span>{t(featured && watchable(featured) ? "watch" : "details")}</span>
                     </button>
                   )}
-                  {featured?.trailer && /^https:\/\//i.test(featured.trailer) && (
-                    <a className="btn secondary" href={featured.trailer} target="_blank" rel="noopener noreferrer">
-                      <Icon name="play" />
-                      <span>{({hy:"Թրեյլեր",ru:"Трейлер",en:"Trailer"}[language])}</span>
-                    </a>
-                  )}
+                  <TrailerAction url={featured?.trailer} onPlay={trailerEmbedUrl(featured?.trailer) ? () => {
+                    navigate("movie/" + encodeURIComponent(featured.id));
+                    setTrailerId(featured.id);
+                  } : null}>
+                    <Icon name="play" />
+                    <span>{({hy:"Թրեյլեր",ru:"Трейлер",en:"Trailer"}[language])}</span>
+                  </TrailerAction>
                   <button
                     className="btn secondary"
                     disabled={!featured}
@@ -966,6 +973,9 @@ export default function App() {
           close={() => navigate(underlay.current, true)}
           onWatch={() => openWatch(current, true)}
           onInlineWatch={() => openWatch(current)}
+          trailerOpen={Boolean(current && trailerId === current.id)}
+          onOpenTrailer={() => setTrailerId(current.id)}
+          onCloseTrailer={() => setTrailerId(null)}
           toggle={toggle}
           saved={Boolean(current && account.list.has(current.id))}
           watchable={watchable}

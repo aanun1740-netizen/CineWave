@@ -679,8 +679,11 @@ describe("React storefront", () => {
     expect(link.getAttribute("rel")).toContain("noopener");
     expect(dialog.querySelector("iframe")).toBeNull();
   });
-  it("shows an external movie trailer in the hero and movie details", async () => {
-    const trailer = "https://www.youtube.com/watch?v=abcdefghijk";
+  it("plays a trailer inside KinoLab from the hero and details without counting a guest watch", async () => {
+    const trailer = "https://youtu.be/abcdefghijk?si=test";
+    const expected = "https://www.youtube-nocookie.com/embed/abcdefghijk?autoplay=1&playsinline=1";
+    const watched = ["catalog:1", "catalog:2", "catalog:3", "catalog:4", "catalog:5"];
+    localStorage.setItem("kinolab:guest-films-v1", JSON.stringify(watched));
     const movie = {
       id: 55,
       title_en: "Trailer Test Film",
@@ -697,14 +700,19 @@ describe("React storefront", () => {
     }));
     const user = userEvent.setup();
     render(<App />);
-    const heroTrailer = await screen.findByRole("link", { name: "Թրեյլեր" });
-    expect(heroTrailer.getAttribute("href")).toBe(trailer);
-    expect(heroTrailer.getAttribute("target")).toBe("_blank");
-    await user.click(document.querySelector('[data-id="catalog:external:55"]'));
+    const heroTrailer = await screen.findByRole("button", { name: "Թրեյլեր" });
+    expect(document.querySelector("iframe")).toBeNull();
+    await user.click(heroTrailer);
     const dialog = await screen.findByRole("dialog", { name: "Թրեյլերի փորձարկում" });
-    const dialogTrailer = within(dialog).getByRole("link", { name: "Դիտել թրեյլերը" });
-    expect(dialogTrailer.getAttribute("href")).toBe(trailer);
-    expect(dialogTrailer.getAttribute("target")).toBe("_blank");
+    const player = () => within(dialog).getByTitle("Թրեյլերի փորձարկում · Դիտել թրեյլերը");
+    expect(player().getAttribute("src")).toBe(expected);
+    expect(player().hasAttribute("allowfullscreen")).toBe(true);
+    expect(within(dialog).getByRole("link", { name: "Բացել թրեյլերը աղբյուրի կայքում" }).href).toBe(trailer);
+    await user.click(within(dialog).getByRole("button", { name: "Հետ՝ մանրամասներին" }));
+    expect(dialog.querySelector("iframe")).toBeNull();
+    await user.click(within(dialog).getByRole("button", { name: "Դիտել թրեյլերը" }));
+    expect(player().getAttribute("src")).toBe(expected);
+    expect(JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))).toEqual(watched);
   });
   it("lists external TV series in TV Shows and shows season episode links", async () => {
     const episode1="https://api.nextembed.ws/embed/tv/12345/1/1";
