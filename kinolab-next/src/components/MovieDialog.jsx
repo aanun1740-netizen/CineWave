@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { localizedMovie, genreLabel, adminModel, externalWatchUrl } from "../domain";
+import { localizedMovie, genreLabel, externalWatchUrl } from "../domain";
 import Player from "./Player";
 import { Artwork } from "./MovieRow";
 import MovieRating from "./MovieRating";
@@ -7,37 +7,14 @@ import { Icon } from "./Icons";
 import "./inline-movie-player.css";
 import { cleanEmbedUrl } from "../services/clean-player";
 import CleanEpisodePicker, { useCleanEpisodes } from "./CleanEpisodePicker";
+import TrailerAction from "./TrailerAction";
+import { trailerEmbedUrl } from "../services/trailer";
 
-// Only trusted, intentionally embeddable platforms; never embed arbitrary hosts.
-function trustedEmbed(url) {
-  try {
-    const u = new URL(url);
-    if (u.protocol !== "https:" || u.username || u.password) return null;
-    let id = null;
-    if (["youtube.com", "www.youtube.com", "m.youtube.com"].includes(u.hostname)) {
-      if (u.pathname === "/watch") id = u.searchParams.get("v");
-      else if (u.pathname.startsWith("/embed/")) id = u.pathname.split("/")[2];
-    } else if (u.hostname === "youtu.be") id = u.pathname.slice(1);
-    if (id && /^[a-zA-Z0-9_-]{11}$/.test(id))
-      return "https://www.youtube-nocookie.com/embed/" + id;
-    if (u.hostname === "archive.org" || u.hostname === "www.archive.org") {
-      const match = u.pathname.match(/^\/(?:details|embed)\/([A-Za-z0-9_][A-Za-z0-9_.-]{0,119})\/?$/);
-      if (match && !u.search && !u.hash) return "https://archive.org/embed/" + match[1];
-    }
-    if (u.hostname === "geo.dailymotion.com") {
-      const match = u.pathname.match(/^\/player\/([A-Za-z0-9]+)\.html$/);
-      const video = u.searchParams.get("video");
-      if (match && video && /^[A-Za-z0-9]+$/.test(video) && u.searchParams.size === 1 && !u.hash)
-        return "https://geo.dailymotion.com/player/" + match[1] + ".html?video=" + video;
-    }
-    if (u.hostname === "api.nextembed.ws" && /^\/embed\/(movie|tv)\/\d+(?:\/\d+\/\d+)?\/?$/.test(u.pathname) && !u.search && !u.hash) return u.href;
-    if (u.hostname === "player.vimeo.com" || u.hostname === "vimeo.com" || u.hostname === "www.vimeo.com") {
-      const match = u.pathname.match(/^\/(?:video\/)?([0-9]+)\/?$/);
-      if (match) return "https://player.vimeo.com/video/" + match[1];
-    }
-  } catch {}
-  return null;
-}
+const trailerLabels = {
+  hy: { play: "Դիտել թրեյլերը", back: "Հետ՝ մանրամասներին", source: "Բացել թրեյլերը աղբյուրի կայքում" },
+  ru: { play: "Трейлер", back: "К описанию", source: "Открыть трейлер на сайте источника" },
+  en: { play: "Watch trailer", back: "Back to details", source: "Open trailer on source site" },
+};
 
 export default function MovieDialog({
   movie,
@@ -48,6 +25,9 @@ export default function MovieDialog({
   close,
   onWatch,
   onInlineWatch,
+  trailerOpen,
+  onOpenTrailer,
+  onCloseTrailer,
   onOutbound,
   guestLocked,
   toggle,
@@ -71,19 +51,19 @@ export default function MovieDialog({
     };
   }, []);
   const info = movie ? localizedMovie(movie, language) : {};
-  const trailerEmbed = movie && movie.source === "supabase" && movie.approval?.license_verified === true && movie.approval?.commercial_reuse_verified === true ? trustedEmbed(movie.embed) : null;
-  // All authorized external embed references open directly in a new browser tab.
-  // Native MP4/HLS keeps the built-in player; no iframe preflight or popups.
   const hasDirectPlayback = movie ? watchable(movie) : false;
-  const official = /^https:\/\/(?:www\.)?netflix\.com\/title\/\d+\/?$/.test(movie?.officialWatch || "") ? movie.officialWatch : null;
   const externalWatch = !hasDirectPlayback ? externalWatchUrl(movie) : null;
   const playback = useCleanEpisodes(movie);
   const cleanSource = cleanEmbedUrl(playback.source);
-  const showInline = Boolean(cleanSource && (inlinePlaying || (movie?.mediaType === "tv" && watch)));
+  const trailerSource = trailerEmbedUrl(movie?.trailer);
+  const showTrailer = Boolean(trailerOpen && trailerSource);
+  const trailerText = trailerLabels[language] || trailerLabels.en;
+  const showInline = Boolean(!showTrailer && cleanSource && (inlinePlaying || (movie?.mediaType === "tv" && watch)));
   const watchLabel = {hy:"Դիտել ֆիլմը",ru:"Смотреть фильм",en:"Watch movie"}[language];
   useEffect(() => {
-    if (showInline) inlineFrame.current?.focus({ preventScroll: true });
-  }, [showInline]);
+    if (showTrailer) inlineFrame.current?.scrollIntoView?.({ block: "nearest" });
+    if (showTrailer || showInline) inlineFrame.current?.focus({ preventScroll: true });
+  }, [showTrailer, showInline]);
   return (
     <div
       className="modal open"
@@ -138,7 +118,12 @@ export default function MovieDialog({
           <div className="dialog-episode-picker"><CleanEpisodePicker {...playback} language={language} /></div>
         )}
         <div className="video-wrap">
-          {movie && (watch && hasDirectPlayback ? (
+          {movie && (showTrailer ? (
+            <iframe className="inline-movie-frame inline-trailer-frame" ref={inlineFrame}
+              title={info.title + " · " + trailerText.play} src={trailerSource} allowFullScreen
+              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+              referrerPolicy="strict-origin-when-cross-origin" />
+          ) : watch && hasDirectPlayback ? (
             <Player movie={movie} language={language} onProgress={onProgress} />
           ) : showInline ? (
             <iframe className="inline-movie-frame" ref={inlineFrame}
@@ -229,21 +214,15 @@ export default function MovieDialog({
                 {saved ? "✓ " : "＋ "}
                 {t(saved ? "inList" : "list")}
               </button>
-              {adminModel.https(movie.trailer) && (
-                <a
-                  className="btn secondary"
-                  href={movie.trailer}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {
-                    {
-                      hy: "Դիտել թրեյլերը",
-                      ru: "Трейлер",
-                      en: "Watch trailer",
-                    }[language]
-                  }
-                </a>
+              {showTrailer ? (
+                <>
+                  <button className="btn secondary" type="button" onClick={onCloseTrailer}>{trailerText.back}</button>
+                  <TrailerAction url={movie.trailer}>{trailerText.source}</TrailerAction>
+                </>
+              ) : (
+                <TrailerAction url={movie.trailer} onPlay={trailerSource ? onOpenTrailer : null}>
+                  {trailerText.play}
+                </TrailerAction>
               )}
             </div>
           )}
