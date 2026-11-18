@@ -468,12 +468,7 @@ export default function App() {
     t,
     watchable,
     externalWatchUrl,
-    guestLocked,
-    onOutbound: outboundClick,
-    open: (movie, play = false) => {
-      if (play) openWatch(movie, play === "clean" ? "clean" : true);
-      else navigate("movie/" + encodeURIComponent(movie.id));
-    },
+    open: (movie) => navigate("movie/" + encodeURIComponent(movie.id)),
   };
   const navigation = (mobile) => (
     <nav

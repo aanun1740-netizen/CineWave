@@ -516,27 +516,32 @@ describe("React storefront", () => {
       json:async()=>String(url).includes("kinolab_external_catalog") ? movies : [],
     }));
     render(<App />);
-    await waitFor(()=>expect(document.querySelector('[data-id="catalog:external:1"] a.play-overlay')).toBeTruthy());
-    for(let i=1;i<=5;i++){
-      const card=document.querySelector(`[data-id="catalog:external:${i}"]`);
-      const link=card.querySelector("a.play-overlay");
-      expect(link?.getAttribute("href")).toBe("https://films.example.org/watch/"+i);
+    const openCard = (id) => {
+      fireEvent.click(document.querySelector(`[data-id="catalog:external:${id}"] button.play-overlay`));
+      expect(location.hash).toBe(`#/movie/catalog%3Aexternal%3A${id}`);
+      return screen.getByRole("dialog", { name: "Հյուրի ֆիլմ " + id });
+    };
+    const guestCount = () => JSON.parse(localStorage.getItem("kinolab:guest-films-v1") || "[]").length;
+    await screen.findAllByText("Հյուրի ֆիլմ 1");
+    for (let id = 1; id <= 5; id++) {
+      const dialog = openCard(id);
+      const link = dialog.querySelector(".movielab-external-watch a");
+      expect(guestCount()).toBe(id - 1);
+      expect(link?.getAttribute("href")).toBe("https://films.example.org/watch/" + id);
       fireEvent.click(link);
-      expect(JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))).toHaveLength(i);
+      expect(guestCount()).toBe(id);
+      fireEvent.click(within(dialog).getByRole("button", { name: /փակել/i }));
     }
-    expect(document.querySelector('[data-id="catalog:external:6"] a.play-overlay')).toBeNull();
-    const blocked=document.querySelector('[data-id="catalog:external:6"] button.play-overlay');
-    expect(blocked).toBeTruthy();
-    fireEvent.click(blocked);
+    const watchSixth = () => fireEvent.click(openCard(6).querySelector(".movielab-external-watch button"));
+    watchSixth();
     expect(screen.getByRole("dialog",{name:"Շարունակիր դիտել KinoLab-ում 🎬"})).toBeTruthy();
-    expect(JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))).toHaveLength(5);
+    expect(guestCount()).toBe(5);
     fireEvent.click(screen.getByRole("button",{name:"Շարունակել ուսումնասիրել կատալոգը"}));
-    // A previously selected film remains free to reopen.
-    const first=document.querySelector('[data-id="catalog:external:1"] a.play-overlay');
-    expect(first).toBeTruthy();
-    fireEvent.click(first);
-    expect(JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))).toHaveLength(5);
-    fireEvent.click(blocked);
+    const first = openCard(1);
+    fireEvent.click(first.querySelector(".movielab-external-watch a"));
+    expect(guestCount()).toBe(5);
+    fireEvent.click(within(first).getByRole("button", { name: /փակել/i }));
+    watchSixth();
     fireEvent.click(screen.getByRole("button",{name:"Գրանցվել անվճար"}));
     expect(location.hash).toBe("#/register");
   });
@@ -560,7 +565,7 @@ describe("React storefront", () => {
     render(<App />);
     await waitFor(() => expect(document.querySelector('[data-id="catalog:external:113"] button.play-overlay')).toBeTruthy());
     // Simulate a future catalog component rendering a plain outbound anchor,
-    // without the onOutbound prop used by older movie cards.
+    // without the onOutbound prop used in the title dialog.
     const outbound = document.createElement("a");
     outbound.href = film.external_watch_url;
     outbound.textContent = "Open external film";
@@ -639,8 +644,10 @@ describe("React storefront", () => {
       ok:true,json:async()=>String(url).includes("kinolab_external_catalog")?[film]:[],
     }));
     render(<App />);
-    await waitFor(()=>expect(document.querySelector('[data-id="catalog:external:16"] a.play-overlay')).toBeTruthy());
-    fireEvent.click(document.querySelector('[data-id="catalog:external:16"] a.play-overlay'));
+    await screen.findAllByText("Վեցերորդ ֆիլմը");
+    fireEvent.click(document.querySelector('[data-id="catalog:external:16"] button.play-overlay'));
+    const dialog = screen.getByRole("dialog", { name: "Վեցերորդ ֆիլմը" });
+    fireEvent.click(dialog.querySelector(".movielab-external-watch a"));
     expect(screen.queryByRole("dialog",{name:"Շարունակիր դիտել KinoLab-ում 🎬"})).toBeNull();
     expect(JSON.parse(localStorage.getItem("kinolab:guest-films-v1"))).toHaveLength(5);
   });
