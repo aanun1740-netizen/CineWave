@@ -1206,6 +1206,20 @@ describe("KinoLab AI guest and quota messages", () => {
     await user.click(await screen.findByRole("button", { name: /Նոր KinoLab ֆիլմ/ }));
     expect(openMovie).toHaveBeenCalledWith(movie);
   });
+
+  it("does not guess at cards when the server says there are no recommendation matches", async () => {
+    mocks.backendFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({answer: "Այս պահանջներին համապատասխան ֆիլմ KinoLab-ի կատալոգում չգտա։", recommendations: []}),
+    });
+    const movie = {id: "catalog:1", title: "Funny Story", titles: {en: "Funny Story"}, genres: ["Comedy"]};
+    const user = userEvent.setup();
+    render(<AI open={true} setOpen={vi.fn()} t={t} movies={[movie]} />);
+    await user.type(screen.getByRole("textbox", { name: "Ձեր հաղորդագրությունը" }), "funny movie");
+    await user.click(screen.getByRole("button", { name: "Ուղարկել հաղորդագրությունը" }));
+    expect(await screen.findByText("Այս պահանջներին համապատասխան ֆիլմ KinoLab-ի կատալոգում չգտա։")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Funny Story/ })).toBeNull();
+  });
 });
 
 describe("React admin", () => {

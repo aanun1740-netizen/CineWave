@@ -102,7 +102,7 @@ export default function AI({ open, setOpen, t, movies = [], language = "hy", onO
       const fromServer = Array.isArray(payload?.recommendations)
         ? payload.recommendations.slice(0, 3).map(id => byId.get(String(id))).filter(Boolean)
         : [];
-      setSuggestions(fromServer.length
+      setSuggestions(Array.isArray(payload?.recommendations)
         ? fromServer.map(movie => ({movie, info: localizedMovie(movie, language)}))
         : findCatalogMatches(value, movies, language));
       setMessages((prev) => [
