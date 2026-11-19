@@ -57,7 +57,13 @@ export function filmTitles(film: Film) {
 }
 
 export function mentionsTitle(text: string, titles: string[]) {
-  return titles.some(title => title.length > 2 && ` ${text} `.includes(` ${title} `));
+  return Number.isFinite(titlePosition(text, titles));
+}
+
+export function titlePosition(text: string, titles: string[]) {
+  const positions = titles.filter(title => title.length > 2)
+    .map(title => ` ${text} `.indexOf(` ${title} `)).filter(index => index >= 0);
+  return Math.min(...positions);
 }
 
 function filmGenres(film: Film) {
