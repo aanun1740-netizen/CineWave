@@ -22,6 +22,12 @@ test("honors an explicit exclusion or a different mood", () => {
   assert.equal(genreRecommendations("լացելու բան բեր", films, "").films[0].id, "1");
 });
 
+test("ranks a main-genre comedy above a newer film with comedy as a secondary genre", () => {
+  const actionComedy = { id: "5", title_en: "Action Story", genre_names: ["Action / Comedy"], release_date: "2026-01-01" };
+  const result = genreRecommendations("խնդալու բան բեր", [...films, actionComedy], "");
+  assert.deepEqual(result.films.map(film => film.id), ["3", "4", "5"]);
+});
+
 test("keeps other criteria in the chat and distinguishes no match from a general question", () => {
   const dated = genreRecommendations("A funny movie from 2023", films, "");
   assert.equal(dated.simple, false);

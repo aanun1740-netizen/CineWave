@@ -61,10 +61,10 @@ export function mentionsTitle(text: string, titles: string[]) {
 }
 
 function filmGenres(film: Film) {
-  const tags = film.genre_names?.map(searchable) || [];
-  return new Set(Object.entries(genres).filter(([, pattern]) =>
-    tags.some(tag => tag.split(" ").some(token => pattern.test(token)) || pattern.test(tag)),
-  ).map(([name]) => name));
+  const tags = (film.genre_names || []).flatMap(tag => tag.split(/[/,;|•·]/u)).map(searchable);
+  return new Set(tags.flatMap(tag => Object.entries(genres)
+    .filter(([, pattern]) => pattern.test(tag) || tag.split(" ").some(token => pattern.test(token)))
+    .map(([name]) => name)));
 }
 
 function preference(message: string) {
@@ -116,7 +116,8 @@ export function genreRecommendations(message: string, films: Film[], previousAns
     const heavy = heavyGenres.filter(genre => tags.has(genre) && !include.has(genre)).length;
     if (light && heavy) return [];
     const repeated = mentionsTitle(recent, filmTitles(film));
-    const score = (repeated ? -10 : 0) - (include.has("comedy") ? heavy : 0);
+    const comedyFirst = include.has("comedy") && tags.values().next().value === "comedy";
+    const score = (repeated ? -10 : 0) + (comedyFirst ? 2 : 0) - (include.has("comedy") ? heavy * 3 : 0);
     return [{ film, score }];
   });
   candidates.sort((a, b) => b.score - a.score ||
